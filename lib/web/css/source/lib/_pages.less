@@ -116,164 +116,164 @@
     @_pager-icon-font-position: @pager-icon__position,
     @_pager-icon-font-text-hide: @pager-icon__text-hide
 ) {
-    ._lib-pager-label-display(  // To hide or to display label
+  ._lib-pager-label-display(  // To hide or to display label
         @_pager-label-display: @_pager-label-display,
         @_pager-font-size: @_pager-font-size,
         @_pager-font-weight: @_pager-font-weight,
         @_pager-line-height: @_pager-line-height
     );
 
-    .items {
-        ._lib-pager-inline-block-spaces-container(
+  .items {
+    ._lib-pager-inline-block-spaces-container(
             @_pager-reset-spaces,
             @_pager-item-display
         );
-        .lib-list-reset-styles();
-        .lib-css(display, @_pager-item-display);
-        .lib-css(font-weight, @_pager-font-weight);
-    }
+    .lib-list-reset-styles();
+    .lib-css(display, @_pager-item-display);
+    .lib-css(font-weight, @_pager-font-weight);
+  }
 
-    .item {
-        ._lib-pager-inline-block-spaces-item(
+  .item {
+    ._lib-pager-inline-block-spaces-item(
             @_pager-reset-spaces,
             @_pager-item-display,
             @_pager-font-size,
             @_pager-line-height
         );
-        .lib-css(margin, @_pager-item-margin);
-        .lib-css(display, @_pager-item-display);
+    .lib-css(margin, @_pager-item-margin);
+    .lib-css(display, @_pager-item-display);
 
-        .label {
-            .lib-visually-hidden();
-        }
+    .label {
+      .lib-visually-hidden();
     }
+  }
 
-    a.page {
-        .lib-css(background, @_pager-background);
-        .lib-background-gradient(
+  a.page {
+    .lib-css(background, @_pager-background);
+    .lib-background-gradient(
             @_pager-gradient-color-start,
             @_pager-gradient-color-end,
             @_pager-gradient-direction,
             @_pager-gradient
         );
-        .lib-css(border, @_pager-border);
-        .lib-css(color, @_pager-color);
-        .lib-css(display, @_pager-item-display);
-        .lib-css(padding, @_pager-item-padding);
-        .lib-css(text-decoration, @_pager-text-decoration);
+    .lib-css(border, @_pager-border);
+    .lib-css(color, @_pager-color);
+    .lib-css(display, @_pager-item-display);
+    .lib-css(padding, @_pager-item-padding);
+    .lib-css(text-decoration, @_pager-text-decoration);
 
-        &:visited {
-            .lib-css(background, @_pager-background-visited);
-            .lib-background-gradient(
+    &:visited {
+      .lib-css(background, @_pager-background-visited);
+      .lib-background-gradient(
                 @_pager-gradient-color-start-visited,
                 @_pager-gradient-color-end-visited,
                 @_pager-gradient-direction,
                 @_pager-gradient
             );
-            .lib-css(border, @_pager-border-visited);
-            .lib-css(color, @_pager-color-visited);
-        }
+      .lib-css(border, @_pager-border-visited);
+      .lib-css(color, @_pager-color-visited);
+    }
 
-        &:hover {
-            .lib-css(background, @_pager-background-hover);
-            .lib-background-gradient(
+    &:hover {
+      .lib-css(background, @_pager-background-hover);
+      .lib-background-gradient(
                 @_pager-gradient-color-start-hover,
                 @_pager-gradient-color-end-hover,
                 @_pager-gradient-direction,
                 @_pager-gradient
             );
-            .lib-css(border, @_pager-border-hover);
-            .lib-css(color, @_pager-color-hover);
-            .lib-css(text-decoration, @_pager-text-decoration-hover);
-        }
+      .lib-css(border, @_pager-border-hover);
+      .lib-css(color, @_pager-color-hover);
+      .lib-css(text-decoration, @_pager-text-decoration-hover);
+    }
 
-        &:active {
-            .lib-css(background, @_pager-background-active);
-            .lib-background-gradient(
+    &:active {
+      .lib-css(background, @_pager-background-active);
+      .lib-background-gradient(
                 @_pager-gradient-color-start-active,
                 @_pager-gradient-color-end-active,
                 @_pager-gradient-direction,
                 @_pager-gradient
             );
-            .lib-css(border, @_pager-border-active);
-            .lib-css(color, @_pager-color-active);
-        }
+      .lib-css(border, @_pager-border-active);
+      .lib-css(color, @_pager-color-active);
     }
+  }
 
-    strong.page {
-        .lib-css(background, @_pager-current-background);
-        .lib-background-gradient(
+  strong.page {
+    .lib-css(background, @_pager-current-background);
+    .lib-background-gradient(
             @_pager-current-gradient-color-start,
             @_pager-current-gradient-color-end,
             @_pager-current-gradient-direction,
             @_pager-current-gradient
         );
-        .lib-css(border, @_pager-current-border);
-        ._lib-pager-inline-block-spaces-item(
+    .lib-css(border, @_pager-current-border);
+    ._lib-pager-inline-block-spaces-item(
             @_pager-reset-spaces,
             @_pager-item-display,
             @_pager-font-size,
             @_pager-line-height
         );
-        .lib-css(color, @_pager-current-color);
-        .lib-css(display, @_pager-item-display);
-        .lib-css(font-weight, @_pager-current-font-weight);
-        .lib-css(padding, @_pager-item-padding);
-    }
+    .lib-css(color, @_pager-current-color);
+    .lib-css(display, @_pager-item-display);
+    .lib-css(font-weight, @_pager-current-font-weight);
+    .lib-css(padding, @_pager-item-padding);
+  }
 
-    .action {
-        .lib-css(background, @_pager-action-background);
-        .lib-background-gradient(
+  .action {
+    .lib-css(background, @_pager-action-background);
+    .lib-background-gradient(
             @_pager-action-gradient-color-start,
             @_pager-action-gradient-color-end,
             @_pager-gradient-direction,
             @_pager-action-gradient
         );
-        .lib-css(border, @_pager-action-border);
-        .lib-css(color, @_pager-action-color);
-        .lib-css(display, @_pager-item-display);
-        .lib-css(padding, @_pager-actions-padding);
-        .lib-css(text-decoration, @_pager-action-text-decoration);
+    .lib-css(border, @_pager-action-border);
+    .lib-css(color, @_pager-action-color);
+    .lib-css(display, @_pager-item-display);
+    .lib-css(padding, @_pager-actions-padding);
+    .lib-css(text-decoration, @_pager-action-text-decoration);
 
-        &:visited {
-            .lib-css(background, @_pager-action-background-visited);
-            .lib-background-gradient(
+    &:visited {
+      .lib-css(background, @_pager-action-background-visited);
+      .lib-background-gradient(
                 @_pager-action-gradient-color-start-visited,
                 @_pager-action-gradient-color-end-visited,
                 @_pager-action-gradient-direction,
                 @_pager-action-gradient
             );
-            .lib-css(border, @_pager-action-border-visited);
-            .lib-css(color, @_pager-action-color-visited);
-        }
+      .lib-css(border, @_pager-action-border-visited);
+      .lib-css(color, @_pager-action-color-visited);
+    }
 
-        &:hover {
-            .lib-css(background, @_pager-action-background-hover);
-            .lib-background-gradient(
+    &:hover {
+      .lib-css(background, @_pager-action-background-hover);
+      .lib-background-gradient(
                 @_pager-action-gradient-color-start-hover,
                 @_pager-action-gradient-color-end-hover,
                 @_pager-action-gradient-direction,
                 @_pager-action-gradient
             );
-            .lib-css(border, @_pager-action-border-hover);
-            .lib-css(color, @_pager-action-color-hover);
-            .lib-css(text-decoration, @_pager-action-text-decoration-hover);
-        }
+      .lib-css(border, @_pager-action-border-hover);
+      .lib-css(color, @_pager-action-color-hover);
+      .lib-css(text-decoration, @_pager-action-text-decoration-hover);
+    }
 
-        &:active {
-            .lib-css(background, @_pager-action-background-active);
-            .lib-background-gradient(
+    &:active {
+      .lib-css(background, @_pager-action-background-active);
+      .lib-background-gradient(
                 @_pager-action-gradient-color-start-active,
                 @_pager-action-gradient-color-end-active,
                 @_pager-action-gradient-direction,
                 @_pager-action-gradient
             );
-            .lib-css(border, @_pager-action-border-active);
-            .lib-css(color, @_pager-action-color-active);
-        }
+      .lib-css(border, @_pager-action-border-active);
+      .lib-css(color, @_pager-action-color-active);
+    }
 
-        &.next {
-            ._lib-pager-icon (
+    &.next {
+      ._lib-pager-icon (
                 @_icon-font-content: @_pager-icon-next-content,
                 @_pager-icon-use: @_pager-icon-use,
                 @_icon-font: @_pager-icon-font,
@@ -287,11 +287,11 @@
                 @_icon-font-vertical-align: @_pager-icon-font-vertical-align,
                 @_icon-font-position: @_pager-icon-font-position,
                 @_icon-font-text-hide: @_pager-icon-font-text-hide
-            );
-        }
+            );;
+    }
 
-        &.previous {
-            ._lib-pager-icon (
+    &.previous {
+      ._lib-pager-icon (
                 @_icon-font-content: @_pager-icon-previous-content,
                 @_pager-icon-use: @_pager-icon-use,
                 @_icon-font: @_pager-icon-font,
@@ -305,18 +305,22 @@
                 @_icon-font-vertical-align: @_pager-icon-font-vertical-align,
                 @_icon-font-position: @_pager-icon-font-position,
                 @_icon-font-text-hide: @_pager-icon-font-text-hide
-            );
-        }
+            );;
     }
+  }
 }
 
 //  Delete spaces between elements when pager items have display: inline-block
 ._lib-pager-inline-block-spaces-container(
     @_pager-reset-spaces,
     @_pager-item-display
-) when (@_pager-reset-spaces = true) and (@_pager-item-display = inline-block) {
-    .lib-inline-block-space-container();
-    white-space: nowrap;
+)
+  when
+  (@_pager-reset-spaces = true)
+  and
+  (@_pager-item-display = inline-block) {
+  .lib-inline-block-space-container();
+  white-space: nowrap;
 }
 
 ._lib-pager-inline-block-spaces-item(
@@ -324,8 +328,12 @@
     @_pager-item-display,
     @_pager-font-size,
     @_pager-line-height
-) when (@_pager-reset-spaces = true) and (@_pager-item-display = inline-block) {
-    .lib-inline-block-space-item(
+)
+  when
+  (@_pager-reset-spaces = true)
+  and
+  (@_pager-item-display = inline-block) {
+  .lib-inline-block-space-item(
         @_font-size: @_pager-font-size,
         @_line-height: @_pager-line-height
     );
@@ -337,19 +345,22 @@
     @_pager-font-size,
     @_pager-font-weight,
     @_pager-line-height
-) when not (@_pager-label-display = none){
-    > .label {
-        .lib-css(display, @_pager-label-display);
-        .lib-css(font-weight, @_pager-font-weight);
-        .lib-inline-block-space-item(
+)
+  when
+  not
+  (@_pager-label-display = none) {
+  > .label {
+    .lib-css(display, @_pager-label-display);
+    .lib-css(font-weight, @_pager-font-weight);
+    .lib-inline-block-space-item(
             @_font-size: @_pager-font-size,
             @_line-height: @_pager-line-height
         );
 
-        &:after {
-            content: ': ';
-        }
+    &:after {
+      content: ": ";
     }
+  }
 }
 
 ._lib-pager-label-display(
@@ -357,10 +368,12 @@
     @_pager-font-size,
     @_pager-font-weight,
     @_pager-line-height
-) when (@_pager-label-display = none) {
-    > .label {
-        .lib-visually-hidden();
-    }
+)
+  when
+  (@_pager-label-display = none) {
+  > .label {
+    .lib-visually-hidden();
+  }
 }
 
 ._lib-pager-label-display(
@@ -368,13 +381,16 @@
     @_pager-font-size,
     @_pager-font-weight,
     @_pager-line-height
-) when (@_pager-label-display = false) {
-    > .label {
-        .lib-visually-hidden();
-    }
+)
+  when
+  (@_pager-label-display = false) {
+  > .label {
+    .lib-visually-hidden();
+  }
 }
 
-._lib-pager-icon (
+._lib-pager-icon
+  (
     @_pager-icon-use,
     @_icon-font-content,
     @_icon-font,
@@ -388,20 +404,24 @@
     @_icon-font-vertical-align,
     @_icon-font-position,
     @_icon-font-text-hide
-) when (@_pager-icon-use = true) and (@_icon-font-position = before) {
-    &:visited {
-        &:before {
-            .lib-css(color, @_icon-font-color-visited);
-        }
+)
+  when
+  (@_pager-icon-use = true)
+  and
+  (@_icon-font-position = before) {
+  &:visited {
+    &:before {
+      .lib-css(color, @_icon-font-color-visited);
     }
+  }
 
-    &:active {
-        &:before {
-            .lib-css(color, @_icon-font-color-active);
-        }
+  &:active {
+    &:before {
+      .lib-css(color, @_icon-font-color-active);
     }
+  }
 
-    .lib-icon-font(
+  .lib-icon-font(
         @_icon-font-content: @_icon-font-content,
         @_icon-font: @_icon-font,
         @_icon-font-size: @_icon-font-size,
@@ -416,7 +436,8 @@
     );
 }
 
-._lib-pager-icon (
+._lib-pager-icon
+  (
     @_icon-font-content,
     @_pager-icon-use,
     @_icon-font,
@@ -430,8 +451,12 @@
     @_icon-font-vertical-align,
     @_icon-font-position,
     @_icon-font-text-hide
-) when (@_pager-icon-use = true) and (@_icon-font-position = after) {
-    .lib-icon-font(
+)
+  when
+  (@_pager-icon-use = true)
+  and
+  (@_icon-font-position = after) {
+  .lib-icon-font(
         @_icon-font-content: @_icon-font-content,
         @_icon-font: @_icon-font,
         @_icon-font-size: @_icon-font-size,
@@ -445,11 +470,11 @@
         @_icon-font-text-hide: @_icon-font-text-hide
     );
 
-    &:visited:after {
-        .lib-css(color, @_icon-font-color-visited);
-    }
+  &:visited:after {
+    .lib-css(color, @_icon-font-color-visited);
+  }
 
-    &:active:after {
-        .lib-css(color, @_icon-font-color-active);
-    }
+  &:active:after {
+    .lib-css(color, @_icon-font-color-active);
+  }
 }

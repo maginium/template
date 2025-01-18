@@ -1,114 +1,114 @@
 {
-    "name": "maginium/template",
-    "description": "Batteries included ready to use empty maginium starter project template.",
-    "type": "project",
-    "keywords": [
-        "framework",
-        "magento",
-        "maginium-starter",
-        "starter-template",
-        "starter-kit",
-        "maginium-starter-kit",
-        "maginium-starter-template",
-        "maginium-ready-starter",
-        "bootstrap"
+  "name": "maginium/template",
+  "description": "Batteries included ready to use empty maginium starter project template.",
+  "type": "project",
+  "keywords": [
+    "framework",
+    "magento",
+    "maginium-starter",
+    "starter-template",
+    "starter-kit",
+    "maginium-starter-kit",
+    "maginium-starter-template",
+    "maginium-ready-starter",
+    "bootstrap"
+  ],
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "version": "1.0.0",
+  "require": {
+    "maginium/meta-package": "^1.0",
+    "magento/composer-root-update-plugin": "^2.0.4",
+    "magento/product-community-edition": "2.4.8-beta1",
+    "magento/composer-dependency-version-audit-plugin": "~0.1"
+  },
+  "require-dev": {
+    "allure-framework/allure-phpunit": "^3",
+    "dealerdirect/phpcodesniffer-composer-installer": "^0.7 || ^1.0",
+    "dg/bypass-finals": "^1.4",
+    "friendsofphp/php-cs-fixer": "^3.22",
+    "lusitanian/oauth": "^0.8",
+    "magento/magento-coding-standard": "*",
+    "magento/magento2-functional-testing-framework": "^4.8",
+    "pdepend/pdepend": "^2.10",
+    "phpmd/phpmd": "^2.12",
+    "phpstan/phpstan": "^1.9",
+    "phpunit/phpunit": "^10.5",
+    "symfony/finder": "^6.4"
+  },
+  "autoload": {
+    "exclude-from-classmap": [
+      "**/dev/**",
+      "**/update/**",
+      "*/*/Test/**/*Test"
     ],
-    "license": [
-        "OSL-3.0",
-        "AFL-3.0"
+    "files": [
+      "app/etc/NonComposerComponentRegistration.php"
     ],
-    "version": "1.0.0",
-    "require": {
-        "maginium/meta-package": "^1.0",
-        "magento/composer-root-update-plugin": "^2.0.4",
-        "magento/product-community-edition": "2.4.8-beta1",
-        "magento/composer-dependency-version-audit-plugin": "~0.1"
+    "psr-0": {
+      "": [
+        "app/code/",
+        "generated/code/"
+      ]
     },
-    "require-dev": {
-        "allure-framework/allure-phpunit": "^3",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7 || ^1.0",
-        "dg/bypass-finals": "^1.4",
-        "friendsofphp/php-cs-fixer": "^3.22",
-        "lusitanian/oauth": "^0.8",
-        "magento/magento-coding-standard": "*",
-        "magento/magento2-functional-testing-framework": "^4.8",
-        "pdepend/pdepend": "^2.10",
-        "phpmd/phpmd": "^2.12",
-        "phpstan/phpstan": "^1.9",
-        "phpunit/phpunit": "^10.5",
-        "symfony/finder": "^6.4"
+    "psr-4": {
+      "Magento\\Setup\\": "setup/src/Magento/Setup/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [],
+    "post-update-cmd": [],
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-create-project-cmd": [
+      "bun i"
+    ]
+  },
+  "conflict": {
+    "gene/bluefoot": "*"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Magento\\PhpStan\\": "dev/tests/static/framework/Magento/PhpStan/",
+      "Magento\\Sniffs\\": "dev/tests/static/framework/Magento/Sniffs/",
+      "Magento\\TestFramework\\Inspection\\": "dev/tests/static/framework/Magento/TestFramework/Inspection/",
+      "Magento\\TestFramework\\Utility\\": "dev/tests/static/framework/Magento/TestFramework/Utility/",
+      "Magento\\Tools\\": "dev/tools/Magento/Tools/",
+      "Magento\\Tools\\Sanity\\": "dev/build/publication/sanity/Magento/Tools/Sanity/"
+    }
+  },
+  "repositories": {
+    "composer": {
+      "type": "composer",
+      "url": "https://repo.magento.com/"
     },
-    "autoload": {
-        "exclude-from-classmap": [
-            "**/dev/**",
-            "**/update/**",
-            "*/*/Test/**/*Test"
-        ],
-        "files": [
-            "app/etc/NonComposerComponentRegistration.php"
-        ],
-        "psr-0": {
-            "": [
-                "app/code/",
-                "generated/code/"
-            ]
-        },
-        "psr-4": {
-            "Magento\\Setup\\": "setup/src/Magento/Setup/"
-        }
+    "plumrocket": {
+      "type": "composer",
+      "url": "https://plumrocket.com/repo"
     },
-    "scripts": {
-        "post-autoload-dump": [],
-        "post-update-cmd": [],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "bun i"
-        ]
+    "mirasvit-reports": {
+      "type": "composer",
+      "url": "https://56674:4X52QGHNSI@packages.mirasvit.com/56674:4X52QGHNSI/"
+    }
+  },
+  "extra": {
+    "magento-force": "override"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "laminas/laminas-dependency-plugin": true,
+      "magento/*": true,
+      "php-http/discovery": true
     },
-    "conflict": {
-        "gene/bluefoot": "*"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Magento\\PhpStan\\": "dev/tests/static/framework/Magento/PhpStan/",
-            "Magento\\Sniffs\\": "dev/tests/static/framework/Magento/Sniffs/",
-            "Magento\\TestFramework\\Inspection\\": "dev/tests/static/framework/Magento/TestFramework/Inspection/",
-            "Magento\\TestFramework\\Utility\\": "dev/tests/static/framework/Magento/TestFramework/Utility/",
-            "Magento\\Tools\\": "dev/tools/Magento/Tools/",
-            "Magento\\Tools\\Sanity\\": "dev/build/publication/sanity/Magento/Tools/Sanity/"
-        }
-    },
-    "repositories": {
-        "composer": {
-            "type": "composer",
-            "url": "https://repo.magento.com/"
-        },
-        "plumrocket": {
-            "type": "composer",
-            "url": "https://plumrocket.com/repo"
-        },
-        "mirasvit-reports": {
-            "type": "composer",
-            "url": "https://56674:4X52QGHNSI@packages.mirasvit.com/56674:4X52QGHNSI/"
-        }
-    },
-    "extra": {
-        "magento-force": "override"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "laminas/laminas-dependency-plugin": true,
-            "magento/*": true,
-            "php-http/discovery": true
-        },
-        "preferred-install": "dist",
-        "sort-packages": true
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

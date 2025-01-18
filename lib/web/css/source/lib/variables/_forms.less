@@ -11,7 +11,7 @@
 //  Form elements inputs default variables
 //  ---------------------------------------------
 
-@form-element-input-type: ''; // [input-text|select|textarea|input-radio|input-checkbox]
+@form-element-input-type: ""; // [input-text|select|textarea|input-radio|input-checkbox]
 @form-element-input__background: @color-white;
 @form-element-input__border-color: @color-gray76;
 @form-element-input__border: 1px solid @form-element-input__border-color;
@@ -36,7 +36,7 @@
 //  Disabled state
 @form-element-input__disabled__background: @form-element-input__background;
 @form-element-input__disabled__border: @form-element-input__border;
-@form-element-input__disabled__opacity: .5;
+@form-element-input__disabled__opacity: 0.5;
 @form-element-input__disabled__color: @form-element-input__color;
 @form-element-input__disabled__font-style: @form-element-input__font-style;
 
@@ -47,7 +47,7 @@
 @form-element-input__focus__font-style: @form-element-input__font-style;
 
 //  Form elements choice default variables
-@form-element-choice__type: ''; // [radio|checkbox]
+@form-element-choice__type: ""; // [radio|checkbox]
 @form-element-choice__vertical-align: false;
 @form-element-choice__margin: 2px @indent__xs 0 0;
 @form-element-choice__disabled__opacity: @form-element-input__disabled__opacity;
@@ -240,7 +240,7 @@
 @form-field-type-revert: inline; // [inline|block|false]
 @form-field__border: false;
 @form-field__vertical-indent: @indent__base;
-@form-field__additional-vertical-indent: (@form-field__vertical-indent/2);
+@form-field__additional-vertical-indent: (@form-field__vertical-indent / 2);
 @form-field-type-block__margin: 0 0 @form-field__vertical-indent;
 @form-field-type-inline__margin: 0 0 @form-field__vertical-indent;
 

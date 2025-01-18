@@ -55,29 +55,29 @@
     @_button-icon-font-position: @button-icon__position,
     @_button-icon-font-text-hide: @button-icon__text-hide
 ) {
-    background-image: none; // Reset unusual Firefox-on-Android default style
-    .lib-css(background, @_button-background);
-    .lib-background-gradient(
+  background-image: none; // Reset unusual Firefox-on-Android default style
+  .lib-css(background, @_button-background);
+  .lib-background-gradient(
         @_button-gradient-color-start,
         @_button-gradient-color-end,
         @_button-gradient-direction,
         @_button-gradient
     );
-    .lib-css(border, @_button-border);
-    .lib-css(color, @_button-color);
-    .lib-css(cursor, @_button-cursor);
-    .lib-css(display, @_button-display);
-    .lib-css(font-family, @_button-font-family);
-    .lib-css(font-weight, @_button-font-weight);
-    .lib-css(margin, @_button-margin);
-    .lib-css(padding, @_button-padding);
-    .lib-css(width, @_button-width);
-    .lib-font-size(@_button-font-size);
-    .lib-line-height(@_button-line-height);
-    box-sizing: border-box;
-    vertical-align: middle;
+  .lib-css(border, @_button-border);
+  .lib-css(color, @_button-color);
+  .lib-css(cursor, @_button-cursor);
+  .lib-css(display, @_button-display);
+  .lib-css(font-family, @_button-font-family);
+  .lib-css(font-weight, @_button-font-weight);
+  .lib-css(margin, @_button-margin);
+  .lib-css(padding, @_button-padding);
+  .lib-css(width, @_button-width);
+  .lib-font-size(@_button-font-size);
+  .lib-line-height(@_button-line-height);
+  box-sizing: border-box;
+  vertical-align: middle;
 
-    ._lib-button-icon (
+  ._lib-button-icon (
         @_button-icon-use: @_button-icon-use,
         @_icon-font-content: @_button-font-content,
         @_icon-font: @_button-icon-font,
@@ -90,40 +90,40 @@
         @_icon-font-vertical-align: @_button-icon-font-vertical-align,
         @_icon-font-position: @_button-icon-font-position,
         @_icon-font-text-hide: @_button-icon-font-text-hide
-    );
+    );;
 
-    &:focus,
-    &:active {
-        .lib-css(background, @_button-background-active);
-        .lib-background-gradient(
+  &:focus,
+  &:active {
+    .lib-css(background, @_button-background-active);
+    .lib-background-gradient(
             @_button-gradient-color-start-active,
             @_button-gradient-color-end-active,
             @_button-gradient-direction,
             @_button-gradient
         );
-        .lib-css(border, @_button-border-active);
-        .lib-css(color, @_button-color-active);
-    }
+    .lib-css(border, @_button-border-active);
+    .lib-css(color, @_button-color-active);
+  }
 
-    &:hover {
-        .lib-css(background, @_button-background-hover);
-        .lib-background-gradient(
+  &:hover {
+    .lib-css(background, @_button-background-hover);
+    .lib-background-gradient(
             @_button-gradient-color-start-hover,
             @_button-gradient-color-end-hover,
             @_button-gradient-direction,
             @_button-gradient
         );
-        .lib-css(border, @_button-border-hover);
-        .lib-css(color, @_button-color-hover);
-    }
+    .lib-css(border, @_button-border-hover);
+    .lib-css(color, @_button-color-hover);
+  }
 
-    &.disabled,
-    &[disabled],
-    fieldset[disabled] & {
-        .lib-css(opacity, @_button-disabled-opacity);
-        cursor: default;
-        pointer-events: none; // Disabling of clicks
-    }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    .lib-css(opacity, @_button-disabled-opacity);
+    cursor: default;
+    pointer-events: none; // Disabling of clicks
+  }
 }
 
 //
@@ -133,9 +133,9 @@
 .lib-button-size(
     @_button-line-height: @button__line-height,
     @_button-padding: @button__padding
-){
-    .lib-line-height(@_button-line-height);
-    .lib-css(padding, @_button-padding);
+) {
+  .lib-line-height(@_button-line-height);
+  .lib-css(padding, @_button-padding);
 }
 
 //
@@ -147,11 +147,11 @@
     @_button-l-height: @button__line-height__l,
     @_button-l-padding: @button__padding__l
 ) {
-    .lib-button-size(
+  .lib-button-size(
         @_button-line-height: @_button-l-height,
         @_button-padding: @_button-l-padding
     );
-    .lib-font-size(@_button-l-font-size);
+  .lib-font-size(@_button-l-font-size);
 }
 
 //
@@ -163,11 +163,11 @@
     @_button-s-height: @button__line-height__s,
     @_button-s-padding: @button__padding__s
 ) {
-    .lib-button-size(
+  .lib-button-size(
         @_button-line-height: @_button-s-height,
         @_button-padding: @_button-s-padding
     );
-    .lib-font-size(@_button-s-font-size);
+  .lib-font-size(@_button-s-font-size);
 }
 
 //
@@ -175,14 +175,14 @@
 //  ---------------------------------------------
 
 .lib-link-as-button() {
-    .lib-css(display, @button__display);
-    text-decoration: none;
+  .lib-css(display, @button__display);
+  text-decoration: none;
 
-    &:hover,
-    &:active,
-    &:focus {
-        text-decoration: none;
-    }
+  &:hover,
+  &:active,
+  &:focus {
+    text-decoration: none;
+  }
 }
 
 //
@@ -197,33 +197,33 @@
     @_margin: 0,
     @_padding: 0
 ) {
-    .lib-css(line-height, @_line-height);
-    .lib-css(margin, @_margin);
-    .lib-css(padding, @_padding);
-    .lib-link(
+  .lib-css(line-height, @_line-height);
+  .lib-css(margin, @_margin);
+  .lib-css(padding, @_padding);
+  .lib-link(
         @_link-color: @_link-color,
         @_link-color-hover: @_link-color-hover
     );
+  background: none;
+  border: 0;
+  display: inline;
+
+  &:hover,
+  &:active,
+  &:focus {
     background: none;
     border: 0;
-    display: inline;
+  }
 
-    &:hover,
-    &:active,
-    &:focus {
-        background: none;
-        border: 0;
-    }
-
-    &.disabled,
-    &[disabled],
-    fieldset[disabled] & {
-        .lib-css(color, @_link-color);
-        .lib-css(opacity, @_disabled_opacity);
-        cursor: default;
-        pointer-events: none; // Disabling of clicks
-        text-decoration: underline;
-    }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    .lib-css(color, @_link-color);
+    .lib-css(opacity, @_disabled_opacity);
+    cursor: default;
+    pointer-events: none; // Disabling of clicks
+    text-decoration: underline;
+  }
 }
 
 //
@@ -231,7 +231,7 @@
 //  ---------------------------------------------
 
 .lib-button-responsive() {
-    width: 100%;
+  width: 100%;
 }
 
 //
@@ -239,35 +239,35 @@
 //  ---------------------------------------------
 
 .lib-button-reset() {
-    background-image: none; // Reset unusual Firefox-on-Android default style
+  background-image: none; // Reset unusual Firefox-on-Android default style
+  background: none;
+  -moz-box-sizing: content-box; // Hack: fix Firefox button line-height problem
+  border: 0;
+  box-shadow: none;
+  line-height: inherit;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  text-shadow: none;
+  .lib-css(font-weight, @font-weight__regular);
+
+  &:focus,
+  &:active {
     background: none;
-    -moz-box-sizing: content-box; // Hack: fix Firefox button line-height problem
-    border: 0;
-    box-shadow: none;
-    line-height: inherit;
-    margin: 0;
-    padding: 0;
-    text-decoration: none;
-    text-shadow: none;
-    .lib-css(font-weight, @font-weight__regular);
+    border: none;
+  }
 
-    &:focus,
-    &:active {
-        background: none;
-        border: none;
-    }
+  &:hover {
+    background: none;
+    border: none;
+  }
 
-    &:hover {
-        background: none;
-        border: none;
-    }
-
-    &.disabled,
-    &[disabled],
-    fieldset[disabled] & {
-        pointer-events: none; // Disabling of all pointer events
-        .lib-css(opacity, @button__disabled__opacity);
-    }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    pointer-events: none; // Disabling of all pointer events
+    .lib-css(opacity, @button__disabled__opacity);
+  }
 }
 
 //
@@ -300,7 +300,7 @@
     @_button-gradient: @button-primary__gradient,
     @_button-gradient-direction: @button-primary__gradient-direction
 ) {
-    .lib-button(
+  .lib-button(
         @_button-font-family: @_button-font-family,
         @_button-font-size: @_button-font-size,
         @_button-font-weight: @_button-font-weight,
@@ -345,22 +345,22 @@
     @_button-background-active: @button__active__background,
     @_button-border-active: @button__active__border
 ) {
-    .lib-css(background, @_button-background);
-    .lib-css(border, @_button-border);
-    .lib-css(color, @_button-color);
+  .lib-css(background, @_button-background);
+  .lib-css(border, @_button-border);
+  .lib-css(color, @_button-color);
 
-    &:focus,
-    &:active {
-        .lib-css(background, @_button-background-active);
-        .lib-css(border, @_button-border-active);
-        .lib-css(color, @_button-color-active);
-    }
+  &:focus,
+  &:active {
+    .lib-css(background, @_button-background-active);
+    .lib-css(border, @_button-border-active);
+    .lib-css(color, @_button-color-active);
+  }
 
-    &:hover {
-        .lib-css(background, @_button-background-hover);
-        .lib-css(border, @_button-border-hover);
-        .lib-css(color, @_button-color-hover);
-    }
+  &:hover {
+    .lib-css(background, @_button-background-hover);
+    .lib-css(border, @_button-border-hover);
+    .lib-css(color, @_button-color-hover);
+  }
 }
 
 //
@@ -372,18 +372,19 @@
     @_button-line-height: @button__line-height,
     @_button-padding: @button__padding
 ) {
-    .lib-font-size(@_button-font-size);
-    .lib-button-size(
+  .lib-font-size(@_button-font-size);
+  .lib-button-size(
         @_button-line-height: @_button-line-height,
         @_button-padding: @_button-padding
-    )
+    );
 }
 
 //
 //  Inner buttons mixins
 //  ---------------------------------------------
 
-._lib-button-icon (
+._lib-button-icon
+  (
     @_button-icon-use: @button-icon__use,
     @_icon-font-content: @button-icon__content,
     @_icon-font: @button-icon__font,
@@ -396,8 +397,10 @@
     @_icon-font-vertical-align: @button-icon__vertical-align,
     @_icon-font-position: @button-icon__position,
     @_icon-font-text-hide: @button-icon__text-hide
-) when (@_button-icon-use = true) {
-    .lib-button-icon (
+)
+  when
+  (@_button-icon-use = true) {
+  .lib-button-icon (
         @_icon-font-content: @_icon-font-content,
         @_icon-font: @_icon-font,
         @_icon-font-size: @_icon-font-size,
@@ -409,10 +412,11 @@
         @_icon-font-vertical-align: @_icon-font-vertical-align,
         @_icon-font-position: @_icon-font-position,
         @_icon-font-text-hide: @_icon-font-text-hide
-    );
+    );;
 }
 
-.lib-button-icon (
+.lib-button-icon
+  (
     @_icon-font-content,
     @_icon-font: @button-icon__font,
     @_icon-font-size: @button-icon__font-size,
@@ -425,7 +429,7 @@
     @_icon-font-position: @button-icon__position,
     @_icon-font-text-hide: @button-icon__text-hide
 ) {
-    .lib-icon-font(
+  .lib-icon-font(
         @_icon-font-content: @_icon-font-content,
         @_icon-font: @_icon-font,
         @_icon-font-size: @_icon-font-size,

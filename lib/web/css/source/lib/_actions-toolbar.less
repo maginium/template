@@ -19,44 +19,44 @@
     @_actions-toolbar-primary-actions-links-margin-top: @actions-toolbar-actions-links-primary__margin-top,
     @_actions-toolbar-secondary-actions-links-margin-top: @actions-toolbar-actions-links-secondary__margin-top
 ) {
-    .lib-clearfix();
-    .lib-css(margin, @_actions-toolbar-margin);
-    .lib-css(padding, @_actions-toolbar-padding);
-    ._lib-actions-toolbar-align(@_actions-toolbar-actions-position);
-    ._lib-actions-toolbar-floats(@_actions-toolbar-actions-position, @_actions-toolbar-actions-reverse);
-    .primary,
-    .secondary {
-        display: inline-block;
+  .lib-clearfix();
+  .lib-css(margin, @_actions-toolbar-margin);
+  .lib-css(padding, @_actions-toolbar-padding);
+  ._lib-actions-toolbar-align(@_actions-toolbar-actions-position);
+  ._lib-actions-toolbar-floats(@_actions-toolbar-actions-position, @_actions-toolbar-actions-reverse);
+  .primary,
+  .secondary {
+    display: inline-block;
 
-        .action {
-            .lib-css(margin, @_actions-toolbar-actions-margin);
-        }
-
-        a.action {
-            display: inline-block;
-            .lib-css(margin-top, @_actions-toolbar-actions-links-margin-top);
-        }
+    .action {
+      .lib-css(margin, @_actions-toolbar-actions-margin);
     }
 
-    .primary {
-        .action {
-            .lib-css(margin, @_actions-toolbar-primary-actions-margin);
-        }
+    a.action {
+      display: inline-block;
+      .lib-css(margin-top, @_actions-toolbar-actions-links-margin-top);
+    }
+  }
 
-        a.action {
-            .lib-css(margin-top, @_actions-toolbar-primary-actions-links-margin-top);
-        }
+  .primary {
+    .action {
+      .lib-css(margin, @_actions-toolbar-primary-actions-margin);
     }
 
-    .secondary {
-        .action {
-            .lib-css(margin, @_actions-toolbar-secondary-actions-margin);
-        }
-
-        a.action {
-            .lib-css(margin-top, @_actions-toolbar-secondary-actions-links-margin-top);
-        }
+    a.action {
+      .lib-css(margin-top, @_actions-toolbar-primary-actions-links-margin-top);
     }
+  }
+
+  .secondary {
+    .action {
+      .lib-css(margin, @_actions-toolbar-secondary-actions-margin);
+    }
+
+    a.action {
+      .lib-css(margin-top, @_actions-toolbar-secondary-actions-links-margin-top);
+    }
+  }
 }
 
 //
@@ -64,11 +64,11 @@
 //  ---------------------------------------------
 
 .lib-actions-toolbar-clear-floats() {
-    .primary,
-    .secondary {
-        display: block;
-        float: none;
-    }
+  .primary,
+  .secondary {
+    display: block;
+    float: none;
+  }
 }
 
 //
@@ -76,77 +76,103 @@
 //  ---------------------------------------------
 
 ._lib-actions-toolbar-align(@_actions-toolbar-actions-position) when not (@_actions-toolbar-actions-position = justify) {
-    .lib-css(text-align, @_actions-toolbar-actions-position);
+  .lib-css(text-align, @_actions-toolbar-actions-position);
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = justify) and (@_actions-toolbar-actions-reverse = false) {
-    .primary {
-        float: left;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = justify)
+  and
+  (@_actions-toolbar-actions-reverse = false) {
+  .primary {
+    float: left;
+  }
 
-    .secondary {
-        float: right;
-    }
+  .secondary {
+    float: right;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = justify) and (@_actions-toolbar-actions-reverse = true) {
-    .primary {
-        float: right;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = justify)
+  and
+  (@_actions-toolbar-actions-reverse = true) {
+  .primary {
+    float: right;
+  }
 
-    .secondary {
-        float: left;
-    }
+  .secondary {
+    float: left;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = left) and (@_actions-toolbar-actions-reverse = false) {
-    .primary {
-        float: left;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = left)
+  and
+  (@_actions-toolbar-actions-reverse = false) {
+  .primary {
+    float: left;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = left) and (@_actions-toolbar-actions-reverse = true) {
-    .secondary {
-        float: left;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = left)
+  and
+  (@_actions-toolbar-actions-reverse = true) {
+  .secondary {
+    float: left;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = right) and (@_actions-toolbar-actions-reverse = false) {
-    .secondary {
-        float: right;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = right)
+  and
+  (@_actions-toolbar-actions-reverse = false) {
+  .secondary {
+    float: right;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = right) and (@_actions-toolbar-actions-reverse = true) {
-    .primary {
-        float: right;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = right)
+  and
+  (@_actions-toolbar-actions-reverse = true) {
+  .primary {
+    float: right;
+  }
 }
 
 ._lib-actions-toolbar-floats(
     @_actions-toolbar-actions-position,
     @_actions-toolbar-actions-reverse
-) when (@_actions-toolbar-actions-position = center) {
-    .primary,
-    .secondary {
-        vertical-align: top;
-    }
+)
+  when
+  (@_actions-toolbar-actions-position = center) {
+  .primary,
+  .secondary {
+    vertical-align: top;
+  }
 }

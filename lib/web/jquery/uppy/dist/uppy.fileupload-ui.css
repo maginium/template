@@ -24,7 +24,7 @@
 .files button {
   margin-bottom: 5px;
 }
-.toggle[type='checkbox'] {
+.toggle[type="checkbox"] {
   transform: scale(2);
   margin-left: 10px;
 }

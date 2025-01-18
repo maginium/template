@@ -1,23 +1,9 @@
 {
   "preset": "psr12",
   "single_line": true,
-  "notPath": [
-    "_ide_helper.php",
-    "_ide_helper_models.php",
-    "SwaggerDecorator.php"
-  ],
-  "exclude": [
-    "tests",
-    "stubs",
-    "public",
-    "public",
-    "app/etc",
-    "Output.php",
-    "app/storage"
-  ],
-  "notName": [
-    "*.blade.php"
-  ],
+  "notPath": ["_ide_helper.php", "_ide_helper_models.php", "SwaggerDecorator.php"],
+  "exclude": ["tests", "stubs", "public", "public", "app/etc", "Output.php", "app/storage"],
+  "notName": ["*.blade.php"],
   "rules": {
     "array_push": true,
     "assign_null_coalescing_to_coalesce_equal": true,
@@ -116,7 +102,7 @@
     "ternary_operator_spaces": true,
     "trim_array_spaces": true,
     "simple_to_complex_string_variable": true,
-    "void_return":false,
+    "void_return": false,
     "ordered_class_elements": {
       "order": [
         "use_trait",
@@ -390,35 +376,16 @@
       "use": "echo"
     },
     "no_spaces_around_offset": {
-      "positions": [
-        "inside",
-        "outside"
-      ]
+      "positions": ["inside", "outside"]
     },
     "no_trailing_comma_in_singleline": {
-      "elements": [
-        "arguments",
-        "array",
-        "array_destructuring",
-        "group_import"
-      ]
+      "elements": ["arguments", "array", "array_destructuring", "group_import"]
     },
     "no_unneeded_curly_braces": {
       "namespaces": false
     },
     "no_unneeded_control_parentheses": {
-      "statements": [
-        "break",
-        "clone",
-        "continue",
-        "echo_print",
-        "negative_instanceof",
-        "others",
-        "return",
-        "switch_case",
-        "yield",
-        "yield_from"
-      ]
+      "statements": ["break", "clone", "continue", "echo_print", "negative_instanceof", "others", "return", "switch_case", "yield", "yield_from"]
     },
     "no_unneeded_braces": {
       "namespaces": false
@@ -434,11 +401,7 @@
     },
     "ordered_imports": {
       "sort_algorithm": "alpha",
-      "imports_order": [
-        "const",
-        "class",
-        "function"
-      ],
+      "imports_order": ["const", "class", "function"],
       "case_sensitive": false
     },
     "ordered_interfaces": {
@@ -450,61 +413,21 @@
       "case_sensitive": false
     },
     "phpdoc_inline_tag_normalizer": {
-      "tags": [
-        "example",
-        "id",
-        "internal",
-        "inheritdoc",
-        "inheritdocs",
-        "link",
-        "source",
-        "toc",
-        "tutorial"
-      ]
+      "tags": ["example", "id", "internal", "inheritdoc", "inheritdocs", "link", "source", "toc", "tutorial"]
     },
     "phpdoc_order": {
-      "order": [
-        "param",
-        "throws",
-        "return"
-      ]
+      "order": ["param", "throws", "return"]
     },
     "phpdoc_scalar": {
-      "types": [
-        "boolean",
-        "callback",
-        "double",
-        "integer",
-        "real",
-        "str"
-      ]
+      "types": ["boolean", "callback", "double", "integer", "real", "str"]
     },
     "phpdoc_separation": {
       "groups": [
-        [
-          "author",
-          "copyright",
-          "license"
-        ],
-        [
-          "category",
-          "package",
-          "subpackage"
-        ],
-        [
-          "property",
-          "property-read",
-          "property-write"
-        ],
-        [
-          "deprecated",
-          "link",
-          "see",
-          "since"
-        ],
-        [
-          "OA\\*"
-        ]
+        ["author", "copyright", "license"],
+        ["category", "package", "subpackage"],
+        ["property", "property-read", "property-write"],
+        ["deprecated", "link", "see", "since"],
+        ["OA\\*"]
       ],
       "skip_unlisted_annotations": false
     },
@@ -515,16 +438,10 @@
     },
     "phpdoc_to_comment": {
       "allow_before_return_statement": false,
-      "ignored_tags": [
-        "var"
-      ]
+      "ignored_tags": ["var"]
     },
     "phpdoc_types": {
-      "groups": [
-        "simple",
-        "alias",
-        "meta"
-      ]
+      "groups": ["simple", "alias", "meta"]
     },
     "psr_autoloading": {
       "dir": null
@@ -533,27 +450,19 @@
       "space_before": "none"
     },
     "single_class_element_per_statement": {
-      "elements": [
-        "const",
-        "property"
-      ]
+      "elements": ["const", "property"]
     },
     "single_import_per_statement": {
       "group_to_single_imports": true
     },
     "single_line_comment_style": {
-      "comment_types": [
-        "asterisk",
-        "hash"
-      ]
+      "comment_types": ["asterisk", "hash"]
     },
     "single_quote": {
       "strings_containing_single_quote_chars": false
     },
     "single_space_around_construct": {
-      "constructs_contain_a_single_space": [
-        "yield_from"
-      ],
+      "constructs_contain_a_single_space": ["yield_from"],
       "constructs_followed_by_a_single_space": [
         "abstract",
         "as",
@@ -617,10 +526,7 @@
         "yield",
         "yield_from"
       ],
-      "constructs_preceded_by_a_single_space": [
-        "as",
-        "use_lambda"
-      ]
+      "constructs_preceded_by_a_single_space": ["as", "use_lambda"]
     },
     "space_after_semicolon": {
       "remove_in_empty_for_expressions": false
@@ -633,18 +539,10 @@
     },
     "trailing_comma_in_multiline": {
       "after_heredoc": false,
-      "elements": [
-        "arguments",
-        "arrays",
-        "match",
-        "parameters"
-      ]
+      "elements": ["arguments", "arrays", "match", "parameters"]
     },
     "type_declaration_spaces": {
-      "elements": [
-        "function",
-        "property"
-      ]
+      "elements": ["function", "property"]
     },
     "types_spaces": {
       "space": "none",
@@ -654,11 +552,7 @@
       "only_dec_inc": false
     },
     "visibility_required": {
-      "elements": [
-        "const",
-        "method",
-        "property"
-      ]
+      "elements": ["const", "method", "property"]
     },
     "whitespace_after_comma_in_array": {
       "ensure_single_space": false

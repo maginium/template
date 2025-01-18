@@ -8,34 +8,34 @@
 //  _____________________________________________
 
 .lib-data-tabs__base(@_tab-control-height__base: @tab-control__height__base) {
+  .lib-clearfix();
+  position: relative;
+  z-index: 1;
+
+  > .item.title {
+    float: left;
+    width: auto;
+
+    > .switch {
+      .lib-css(height, @_tab-control-height__base);
+      display: block;
+      position: relative;
+      z-index: 2;
+    }
+  }
+
+  > .item.content {
     .lib-clearfix();
-    position: relative;
-    z-index: 1;
+    .lib-css(margin-top, @_tab-control-height__base);
+    box-sizing: border-box;
+    float: right;
+    margin-left: -100%;
+    width: 100%;
 
-    > .item.title {
-        float: left;
-        width: auto;
-
-        > .switch {
-            .lib-css(height, @_tab-control-height__base);
-            display: block;
-            position: relative;
-            z-index: 2;
-        }
+    &.active {
+      display: block;
     }
-
-    > .item.content {
-        .lib-clearfix();
-        .lib-css(margin-top, @_tab-control-height__base);
-        box-sizing: border-box;
-        float: right;
-        margin-left: -100%;
-        width: 100%;
-
-        &.active {
-            display: block;
-        }
-    }
+  }
 }
 
 .lib-data-tabs(
@@ -81,11 +81,11 @@
     @_tab-content-padding-bottom: @tab-content__padding-bottom,
     @_tab-content-padding-left: @tab-content__padding-left
 ) {
-    .lib-data-tabs__base();
-    > .item.title {
-        .lib-css(margin, 0 @_tab-control-margin-right 0 0);
-        > .switch {
-            .lib-typography(
+  .lib-data-tabs__base();
+  > .item.title {
+    .lib-css(margin, 0 @_tab-control-margin-right 0 0);
+    > .switch {
+      .lib-typography(
                 @_color: @_tab-control-color,
                 @_font-size: @_tab-control-font-size,
                 @_font-family: @_tab-control-font-family,
@@ -93,7 +93,7 @@
                 @_font-style: @_tab-control-font-style,
                 @_line-height: @_tab-control-line-height
             );
-            .lib-link(
+      .lib-link(
                 @_link-color: @_tab-control-color,
                 @_link-text-decoration: @_tab-control-text-decoration,
                 @_link-color-visited: @_tab-control-color-visited,
@@ -103,86 +103,86 @@
                 @_link-color-active: @_tab-control-color-active,
                 @_link-text-decoration-active: @_tab-control-text-decoration-active
             );
-            .lib-css(background, @_tab-control-background-color);
-            .lib-css(border, @_tab-content-border);
-            border-bottom: none;
-            .lib-css(height, @_tab-control-height);
-            .lib-css(padding, @_tab-control-padding-top @_tab-control-padding-right @_tab-control-padding-bottom @_tab-control-padding-left);
-        }
-
-        &:not(.disabled) > .switch:focus,
-        &:not(.disabled) > .switch:hover {
-            .lib-css(background, @_tab-control-background-color-hover);
-        }
-
-        &:not(.disabled) > .switch:active,
-        &.active > .switch,
-        &.active > .switch:focus,
-        &.active > .switch:hover {
-            .lib-css(background, @_tab-control-background-color-active);
-            .lib-css(color, @_tab-control-color-active);
-            .lib-css(text-decoration, @_tab-control-text-decoration-active);
-        }
-
-        &.active > .switch,
-        &.active > .switch:focus,
-        &.active > .switch:hover {
-            .lib-css(padding-bottom, @_tab-control-padding-bottom + @_tab-control-border-width);
-        }
+      .lib-css(background, @_tab-control-background-color);
+      .lib-css(border, @_tab-content-border);
+      border-bottom: none;
+      .lib-css(height, @_tab-control-height);
+      .lib-css(padding, @_tab-control-padding-top @_tab-control-padding-right @_tab-control-padding-bottom @_tab-control-padding-left);
     }
 
-    > .item.content {
-        .lib-css(background, @_tab-content-background-color);
-        margin-top: @_tab-content-margin-top;
-        padding: @_tab-content-padding-top @_tab-content-padding-right @_tab-content-padding-bottom @_tab-content-padding-left;
+    &:not(.disabled) > .switch:focus,
+    &:not(.disabled) > .switch:hover {
+      .lib-css(background, @_tab-control-background-color-hover);
+    }
 
-        ._lib-tab-content-border(
+    &:not(.disabled) > .switch:active,
+    &.active > .switch,
+    &.active > .switch:focus,
+    &.active > .switch:hover {
+      .lib-css(background, @_tab-control-background-color-active);
+      .lib-css(color, @_tab-control-color-active);
+      .lib-css(text-decoration, @_tab-control-text-decoration-active);
+    }
+
+    &.active > .switch,
+    &.active > .switch:focus,
+    &.active > .switch:hover {
+      .lib-css(padding-bottom, @_tab-control-padding-bottom + @_tab-control-border-width);
+    }
+  }
+
+  > .item.content {
+    .lib-css(background, @_tab-content-background-color);
+    margin-top: @_tab-content-margin-top;
+    padding: @_tab-content-padding-top @_tab-content-padding-right @_tab-content-padding-bottom @_tab-content-padding-left;
+
+    ._lib-tab-content-border(
             @_tab-content-border-top-status: @_tab-content-border-top-status,
             @_tab-content-border: @_tab-content-border
         );
-    }
+  }
 }
 
 ._lib-tab-content-border(
     @_tab-content-border-top-status,
     @_tab-content-border
-) when (@_tab-content-border-top-status = false){
-    .lib-css(border, @_tab-content-border);
+) when (@_tab-content-border-top-status = false) {
+  .lib-css(border, @_tab-content-border);
 }
 
 ._lib-tab-content-border(
     @_tab-content-border-top-status,
     @_tab-content-border
-) when (@_tab-content-border-top-status = true){
-    border: 0;
-    .lib-css(border-top, @_tab-content-border);
+) when (@_tab-content-border-top-status = true) {
+  border: 0;
+  .lib-css(border-top, @_tab-content-border);
 }
 
 .lib-data-accordion__base() {
+  margin: 0;
+  padding: 0;
+
+  > .item.title {
+    box-sizing: border-box;
+    float: none;
+    width: 100%;
+
+    > .switch {
+      display: block;
+    }
+  }
+
+  > .item.content {
+    .lib-clearfix();
+    box-sizing: border-box;
+    display: block;
+    float: none;
     margin: 0;
-    padding: 0;
 
-    > .item.title {
-        box-sizing: border-box;
-        float: none;
-        width: 100%;
-
-        > .switch {
-            display: block;
-        }
+    &.active {
+      display: block;
     }
-
-    > .item.content {
-        .lib-clearfix();
-        box-sizing: border-box;
-        display: block;
-        float: none;
-        margin: 0;
-
-        &.active {
-            display: block;
-        }
-    }
+  }
 }
 
 .lib-data-accordion(
@@ -226,27 +226,27 @@
     @_accordion-content-margin: @accordion-content__margin,
     @_accordion-content-padding: @accordion-content__padding
 ) {
-    .lib-data-accordion__base();
-    & when (@_accordion-control-margin-bottom = 0) {
-        > .item.title {
-            .lib-css(margin, 0);
-        }
-    }
-    & when not (@_accordion-control-margin-bottom = 0) {
-        > .item.title {
-            .lib-css(margin, 0 0 @_accordion-control-margin-bottom);
-        }
-    }
+  .lib-data-accordion__base();
+  & when (@_accordion-control-margin-bottom = 0) {
     > .item.title {
-        > .switch {
-            .lib-css(background, @_accordion-control-background-color);
-            .lib-css(border-bottom,@_accordion-control-border-bottom);
-            .lib-css(border-left,@_accordion-control-border-left);
-            .lib-css(border-right,@_accordion-control-border-right);
-            .lib-css(border-top,@_accordion-control-border-top);
-            .lib-css(height, @_accordion-control-height);
-            .lib-css(padding, @_accordion-control-padding-top @_accordion-control-padding-right @_accordion-control-padding-bottom @_accordion-control-padding-left);
-            .lib-typography(
+      .lib-css(margin, 0);
+    }
+  }
+  & when not (@_accordion-control-margin-bottom = 0) {
+    > .item.title {
+      .lib-css(margin, 0 0 @_accordion-control-margin-bottom);
+    }
+  }
+  > .item.title {
+    > .switch {
+      .lib-css(background, @_accordion-control-background-color);
+      .lib-css(border-bottom,@_accordion-control-border-bottom);
+      .lib-css(border-left,@_accordion-control-border-left);
+      .lib-css(border-right,@_accordion-control-border-right);
+      .lib-css(border-top,@_accordion-control-border-top);
+      .lib-css(height, @_accordion-control-height);
+      .lib-css(padding, @_accordion-control-padding-top @_accordion-control-padding-right @_accordion-control-padding-bottom @_accordion-control-padding-left);
+      .lib-typography(
                 @_color: @_accordion-control-color,
                 @_font-family: @_accordion-control-font-family,
                 @_font-size: @_accordion-control-font-size,
@@ -254,7 +254,7 @@
                 @_font-weight: @_accordion-control-font-weight,
                 @_line-height: @_accordion-control-line-height
             );
-            .lib-link(
+      .lib-link(
                 @_link-color: @_accordion-control-color,
                 @_link-text-decoration: @_accordion-control-text-decoration,
                 @_link-color-visited: @_accordion-control-color-visited,
@@ -264,28 +264,28 @@
                 @_link-color-active: @_accordion-control-color-active,
                 @_link-text-decoration-active: @_accordion-control-text-decoration-active
             );
-        }
-
-        &:not(.disabled) > .switch:focus,
-        &:not(.disabled) > .switch:hover {
-            .lib-css(background, @_accordion-control-background-color-hover);
-        }
-
-        &:not(.disabled) > .switch:active,
-        &.active > .switch,
-        &.active > .switch:focus,
-        &.active > .switch:hover {
-            .lib-css(background, @_accordion-control-background-color-active);
-            .lib-css(color, @_accordion-control-color-active);
-            .lib-css(text-decoration, @_accordion-control-text-decoration-active);
-            .lib-css(padding-bottom, @_accordion-control-padding-bottom);
-        }
     }
 
-    > .item.content {
-        .lib-css(background, @_accordion-content-background-color);
-        .lib-css(border, @_accordion-content-border);
-        .lib-css(margin, @_accordion-content-margin);
-        .lib-css(padding, @_accordion-content-padding);
+    &:not(.disabled) > .switch:focus,
+    &:not(.disabled) > .switch:hover {
+      .lib-css(background, @_accordion-control-background-color-hover);
     }
+
+    &:not(.disabled) > .switch:active,
+    &.active > .switch,
+    &.active > .switch:focus,
+    &.active > .switch:hover {
+      .lib-css(background, @_accordion-control-background-color-active);
+      .lib-css(color, @_accordion-control-color-active);
+      .lib-css(text-decoration, @_accordion-control-text-decoration-active);
+      .lib-css(padding-bottom, @_accordion-control-padding-bottom);
+    }
+  }
+
+  > .item.content {
+    .lib-css(background, @_accordion-content-background-color);
+    .lib-css(border, @_accordion-content-border);
+    .lib-css(margin, @_accordion-content-margin);
+    .lib-css(padding, @_accordion-content-padding);
+  }
 }
