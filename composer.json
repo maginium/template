@@ -43,6 +43,9 @@
             "Magento\\Setup\\": "setup/src/Magento/Setup/"
         }
     },
+    "replace": {
+        "magento/magento2-base": "*"
+    },
     "require-dev": {
         "allure-framework/allure-phpunit": "^3",
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7 || ^1.0",
