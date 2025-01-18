@@ -1,6 +1,6 @@
 # maginium-starter
 
-[![maginium-starter](https://ibb.co/KNfMzT6)](https://github.com/maginium/template)
+[![maginium-starter](https://i.ibb.co/ZGy9pMX/github-banner.png)](https://github.com/maginium/template)
 
 Ready to use empty maginium starter project template. It has a simple and clean project structure with many features for development and debugging. When you decide to won't use some tools you can remove them quickly, then you can continue to develop.
 
