@@ -51,12 +51,16 @@ in_array('phar', stream_get_wrappers(), true) && stream_wrapper_unregister('phar
 | exits with a 503 status code indicating service unavailability.
 |
 */
-if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80100) { // Check if PHP version is less than 8.1.0
+if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80100) {
+    // Check if PHP version is less than 8.1.0
     $errorMessage = 'Maginium supports PHP 8.1.0 or later. Please read ' .
-                    'https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/system-requirements.html'; // Error message to display
+
+    // Error message to display
+                    'https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/system-requirements.html';
 
     if (PHP_SAPI === 'cli') { // Check if script is executed from the command line interface
-        echo $errorMessage; // Output the error message to the CLI
+        // Output the error message to the CLI
+        echo $errorMessage;
     } else {
         // Output an HTML error message for web-based requests
         echo <<<'HTML'
@@ -68,9 +72,11 @@ if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80100) { // Check if PHP ver
 HTML;
     }
 
-    http_response_code(503); // Send an HTTP 503 response code indicating service unavailable
+    // Send an HTTP 503 response code indicating service unavailable
+    http_response_code(503);
 
-    exit(1); // Exit the script with failure status
+    // Exit the script with failure status
+    exit(1);
 }
 
 /*
@@ -83,8 +89,11 @@ HTML;
 |
 */
 if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80000) { // Check if PHP version is less than 8.0
-    defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 24001); // Define constant for qualified name if not defined
-    defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 24002); // Define constant for fully qualified name if not defined
+    // Define constant for qualified name if not defined
+    defined('T_NAME_QUALIFIED') || define('T_NAME_QUALIFIED', 24001);
+
+    // Define constant for fully qualified name if not defined
+    defined('T_NAME_FULLY_QUALIFIED') || define('T_NAME_FULLY_QUALIFIED', 24002);
 }
 
 /*
@@ -97,8 +106,12 @@ if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80000) { // Check if PHP ver
 | autoloader mappings, which can be customized as needed.
 |
 */
-require_once __DIR__ . '/autoload.php'; // Include the autoload file to handle class autoloading
-Bootstrap::populateAutoloader(BP, []); // Populate the autoloader with default mappings from the Magento bootstrap
+
+// Include the autoload file to handle class autoloading
+require_once joinPaths(__DIR__, 'autoload.php');
+
+// Populate the autoloader with default mappings from the Magento bootstrap
+Bootstrap::populateAutoloader(BP, []);
 
 /*
 |--------------------------------------------------------------------------
@@ -110,8 +123,12 @@ Bootstrap::populateAutoloader(BP, []); // Populate the autoloader with default m
 | value of 002 is applied to ensure proper permissions.
 |
 */
-$umaskFile = BP . '/maginium_umask'; // Define the path to the umask configuration file
-umask(file_exists($umaskFile) ? octdec(file_get_contents($umaskFile)) : 002); // Set the umask based on the file contents or use a default value of 002
+
+// Define the path to the umask configuration file
+$umaskFile = joinPaths(BP, 'maginium_umask');
+
+// Set the umask based on the file contents or use a default value of 002
+umask(file_exists($umaskFile) ? octdec(file_get_contents($umaskFile)) : 002);
 
 /*
 |--------------------------------------------------------------------------
@@ -144,8 +161,11 @@ if (empty($_SERVER['ENABLE_IIS_REWRITES']) || ($_SERVER['ENABLE_IIS_REWRITES'] !
 */
 if ((! empty($_SERVER['MAGE_PROFILER']) || file_exists(BP . '/var/profiler.flag')) && // Check if profiling is enabled through environment variable or profiler.flag file
     isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'text/html')) { // Check if the request accepts HTML response
-    $profilerConfig = $_SERVER['MAGE_PROFILER'] ?? trim(file_get_contents(BP . '/var/profiler.flag')); // Get the profiler configuration from environment or file
-    $profilerConfig = json_decode($profilerConfig, true) ?: $profilerConfig; // Decode the JSON configuration or fallback to raw value
+    // Get the profiler configuration from environment or file
+    $profilerConfig = $_SERVER['MAGE_PROFILER'] ?? trim(file_get_contents(BP . '/var/profiler.flag'));
+
+    // Decode the JSON configuration or fallback to raw value
+    $profilerConfig = json_decode($profilerConfig, true) ?: $profilerConfig;
 
     Profiler::applyConfig( // Apply the profiler configuration
         $profilerConfig,
