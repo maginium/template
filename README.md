@@ -2,7 +2,7 @@
 
 [![Maginium Starter](https://i.ibb.co/ZGy9pMX/github-banner.png)](https://github.com/maginium/template)
 
-✨ Welcome to the **Maginium Starter Project Template**! This ready-to-use template provides a simple and clean project structure, packed with features to supercharge your development and debugging experience. 🚀 Easily remove unused tools and start building your dream project with ease! 🛠️
+✨ Welcome to the **Maginium Starter Project Template**! This ready-to-use template provides a simple and clean project structure, packed with features to supercharge your development and debugging experience.
 
 ---
 
