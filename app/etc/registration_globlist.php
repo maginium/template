@@ -3,6 +3,20 @@
 declare(strict_types=1);
 
 /*
+ *
+ *  🚀 This file is part of the Maginium Framework.
+ *
+ *  ©️ 2025. Pixielity ©. Technologies <contact@maginium>
+ *  🖋️ Author: Abdelrhman Kouta
+ *      - 📧 Email: pixiedia@gmail.com
+ *      - 🌐 Website: https://maginium.com
+ *  📖 Documentation: https://docs.maginium.com
+ *
+ *  📄 For the full copyright and license information, please view
+ *  the LICENSE file that was distributed with this source code.
+ */
+
+/*
 |--------------------------------------------------------------------------
 | Define Bootstrap Constants
 |--------------------------------------------------------------------------
@@ -32,23 +46,23 @@ defined('SP') || define('SP', DIRECTORY_SEPARATOR);
 
 return [
     // Matches all cli_commands.php files across modules in app/code
-    joinPaths('app', 'code', '*', '*', 'cli_commands.php'),
+    join_paths('app', 'code', '*', '*', 'cli_commands.php'),
 
     // Matches all registration.php files across modules in app/code
-    joinPaths('app', 'code', '*', '*', 'registration.php'),
+    join_paths('app', 'code', '*', '*', 'registration.php'),
 
     // Matches all registration.php files across themes in app/design
-    joinPaths('app', 'design', '*', '*', '*', 'registration.php'),
+    join_paths('app', 'design', '*', '*', '*', 'registration.php'),
 
     // Matches all registration.php files for language packs in app/i18n
-    joinPaths('app', 'i18n', '*', '*', 'registration.php'),
+    join_paths('app', 'i18n', '*', '*', 'registration.php'),
 
     // Matches all registration.php files in the internal library directory
-    joinPaths('lib', 'internal', '*', '*', 'registration.php'),
+    join_paths('lib', 'internal', '*', '*', 'registration.php'),
 
     // Matches all registration.php files in subdirectories under lib/internal
-    joinPaths('lib', 'internal', '*', '*', '*', 'registration.php'),
+    join_paths('lib', 'internal', '*', '*', '*', 'registration.php'),
 
     // Matches all registration.php files in the setup source directory
-    joinPaths('setup', 'src', '*', '*', 'registration.php'),
+    join_paths('setup', 'src', '*', '*', 'registration.php'),
 ];

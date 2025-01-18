@@ -53,7 +53,7 @@ if (! is_readable(VENDOR_PATH)) {
  */
 $findAutoloadFile = function(string $vendorDir, string $autoloadFile): ?string {
     // Construct the path to the autoload file
-    $autoloadPath = joinPaths($vendorDir, $autoloadFile);
+    $autoloadPath = join_paths($vendorDir, $autoloadFile);
 
     // Check if the autoload file exists and is readable
     return is_readable($autoloadPath) ? $autoloadPath : null;

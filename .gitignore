@@ -80,3 +80,6 @@ atlassian*
 .DS_Store
 
 /scripts/*
+
+/env/*.env
+/.env

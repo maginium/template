@@ -108,7 +108,7 @@ if (! defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80000) { // Check if PHP ver
 */
 
 // Include the autoload file to handle class autoloading
-require_once joinPaths(__DIR__, 'autoload.php');
+require_once join_paths(__DIR__, 'autoload.php');
 
 // Populate the autoloader with default mappings from the Magento bootstrap
 Bootstrap::populateAutoloader(BP, []);
@@ -125,7 +125,7 @@ Bootstrap::populateAutoloader(BP, []);
 */
 
 // Define the path to the umask configuration file
-$umaskFile = joinPaths(BP, 'maginium_umask');
+$umaskFile = join_paths(BP, 'maginium_umask');
 
 // Set the umask based on the file contents or use a default value of 002
 umask(file_exists($umaskFile) ? octdec(file_get_contents($umaskFile)) : 002);
