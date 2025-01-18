@@ -1,30 +1,32 @@
-# maginium-starter
+# 🧩 **Maginium Starter**
 
-[![maginium-starter](https://i.ibb.co/ZGy9pMX/github-banner.png)](https://github.com/maginium/template)
+[![Maginium Starter](https://i.ibb.co/ZGy9pMX/github-banner.png)](https://github.com/maginium/template)
 
-Ready to use empty maginium starter project template. It has a simple and clean project structure with many features for development and debugging. When you decide to won't use some tools you can remove them quickly, then you can continue to develop.
+✨ Welcome to the **Maginium Starter Project Template**! This ready-to-use template provides a simple and clean project structure, packed with features to supercharge your development and debugging experience. 🚀 Easily remove unused tools and start building your dream project with ease! 🛠️
 
-## Installation
+---
 
-Create the project with composer:
+## 🛠️ **Installation**
+
+Set up your project in no time with Composer:
 
 ```bash
 composer create-project maginium/template {project_name} --stability=dev
 ```
 
-> [!WARNING]
-> After installation, if you are using VS Code editor CLI, you need to restart with the `F1` (or `Command` + `P`, or `fn` + `F1`) > `Reload Window` command. This is required for indexing and plugin activation.
+⚠️ Heads-Up!
+If you’re using the VS Code editor CLI, remember to restart it after installation. Just hit F1 (or Command + P, or fn + F1) and choose Reload Window. This ensures proper indexing and plugin activation! 💡
 
-## To sync with template repo
+## 🔄 Sync with Template Repo
 
-Run this command
+Keep your project up-to-date with the latest template changes by running this command:
 
-```
 git remote add template https://github.com/maginium/template
 git fetch --all
 git merge template/main --allow-unrelated-histories
-```
 
-## Documentation
+## 📚 Documentation
 
-You can find the documentation **[here](https://pixiedia.gitbook.io/maginium).**
+Find all the details you need in the **[official documentation](https://pixiedia.gitbook.io/maginium).**! 📖
+
+Happy Coding! 🎉
