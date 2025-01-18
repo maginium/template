@@ -1,0 +1,11 @@
+# Ignore Gatsby files
+gatsby-*.js
+
+# Ignore specific files and directories
+.yarn
+.nx
+.cache
+public
+package.json
+yarn.lock
+package-lock.json

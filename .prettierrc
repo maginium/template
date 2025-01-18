@@ -1,0 +1,84 @@
+{
+  "semi": true,
+  "tabWidth": 2,
+  "useTabs": false,
+  "rangeStart": 0,
+  "printWidth": 150,
+  "endOfLine": "auto",
+  "singleQuote": false,
+  "proseWrap": "always",
+  "insertPragma": false,
+  "trailingComma": "all",
+  "requirePragma": false,
+  "bracketSpacing": true,
+  "jsxSingleQuote": false,
+  "arrowParens": "always",
+  "bracketSameLine": false,
+  "quoteProps": "as-needed",
+  "singleAttributePerLine": false,
+  "htmlWhitespaceSensitivity": "css",
+  "embeddedLanguageFormatting": "auto",
+  "overrides": [
+    {
+      "files": ["*.js", "*.jsx", "*.ts", "*.tsx", "*.mts"],
+      "options": {
+        "parser": "typescript"
+      }
+    },
+    {
+      "files": "*.xml",
+      "options": {
+        "tabWidth": 4,
+        "xmlSelfClosingSpace": true,
+        "xmlQuoteAttributes": "double",
+        "xmlSortAttributesByKey": true,
+        "singleAttributePerLine": false,
+        "xmlWhitespaceSensitivity": "preserve"
+      }
+    },
+    {
+      "files": "*.css",
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 150,
+        "singleQuote": false
+      }
+    },
+    {
+      "files": "*.scss",
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 150,
+        "singleQuote": false,
+        "bracketSpacing": true
+      }
+    },
+    {
+      "files": "*.less",
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 150,
+        "singleQuote": false,
+        "bracketSpacing": true
+      }
+    },
+    {
+      "files": "*.json",
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 150,
+        "trailingComma": "none"
+      }
+    },
+    {
+      "files": "*.html",
+      "options": {
+        "tabWidth": 2,
+        "printWidth": 150,
+        "singleQuote": false,
+        "bracketSpacing": true,
+        "htmlWhitespaceSensitivity": "css"
+      }
+    }
+  ]
+}

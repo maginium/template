@@ -1,0 +1,105 @@
+{
+  "name": "maginium-base-service",
+  "version": "0.1.0",
+  "description": "Base service for Maginium microservices",
+  "main": "index.js",
+  "scripts": {
+    "format": "prettier --plugin=@prettier/plugin-xml --write",
+    "format-all": "prettier --write ./app/modules",
+    "imagemin": "cross-env IMAGEMIN_SRC=app/code/Maginiumassets/images IMAGEMIN_DEST=app/code/Maginiumassets/images imagemin $IMAGEMIN_SRC/* --out-dir=$IMAGEMIN_DEST",
+    "icons": "cross-env SVG_SRC=app/code/Maginiumassets/images/svg SVG_DEST=app/code/Maginium/assets/images SVG_SPRITE=svg-icons.svg svg-sprite --symbol --shape-id-generator=\"icon-%s\" --symbol-dest=$SVG_DEST --symbol-sprite=$SVG_SPRITE $SVG_SRC/*.svg",
+    "test": "echo \"No test specified\" && exit 0",
+    "build": "echo \"No build script specified\"",
+    "start": "node index.js",
+    "prepublishOnly": "npm run build",
+    "email:build": "email build",
+    "email:dev": "email dev --dir var/tmp/emails",
+    "release:snapshot": "changeset publish --no-git-tags --snapshot --tag snapshot",
+    "release:next": "chgstangeset publish --no-git-tags --snapshot --tag next",
+    "version:next": "changeset version --snapshot next",
+    "release": "changeset publish",
+    "version": "changeset version && yarn install --no-immutable"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdokouta/maginium.git"
+  },
+  "author": "Abdelrhman Kouta <mkouta@maginium.com> (https://maginium.com)",
+  "license": "MIT",
+  "dependencies": {
+    "@react-email/components": "0.0.31",
+    "create-email": "^0.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "@changesets/changelog-github": "^0.4.8",
+    "@changesets/cli": "^2.26.0"
+  },
+  "devDependencies": {
+    "@prettier/plugin-php": "^0.22.2",
+    "@prettier/plugin-xml": "^3.4.1",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.1",
+    "cross-env": "^7.0.3",
+    "gatsby-cli": "^5.14.0",
+    "husky": "^9.1.7",
+    "imagemin": "^9.0.0",
+    "lint-staged": "^15.2.10",
+    "mkdirp": "^3.0.1",
+    "prettier": "^3.3.3",
+    "react-email": "3.0.4",
+    "svg-sprite": "^3.0.0-rc2",
+    "tsx": "^4.19.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write"
+    ],
+    "*.json": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ],
+    "*.html": [
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --write"
+    ],
+    "*.less": [
+      "prettier --write"
+    ],
+    "*.xml": [
+      "prettier --write"
+    ],
+    "*.php": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "ie 11"
+  ],
+  "files": [
+    "index.js",
+    "app/",
+    "app/code/Maginiumassets/"
+  ],
+  "keywords": [
+    "Maginium",
+    "microservices",
+    "backend",
+    "Prettier",
+    "Husky",
+    "Lint-staged"
+  ],
+  "private": false
+}

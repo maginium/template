@@ -1,0 +1,138 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Exception;
+use Magento\Framework\App\ErrorHandler;
+use Magento\Framework\Console\Cli;
+
+/*
+|--------------------------------------------------------------------------
+| Define Application Constants
+|--------------------------------------------------------------------------
+|
+| This section defines various constants for the application. These constants
+| are used globally within the app, ensuring consistency and easy management.
+|
+*/
+
+// Start time for the application
+define('MAGINIUM_START', microtime(true));
+
+/*
+|--------------------------------------------------------------------------
+| Ensure Script Is Running From CLI
+|--------------------------------------------------------------------------
+|
+| This section checks if the script is being executed from the command line interface (CLI).
+| If it is not, an error message is displayed, and the application exits with a non-zero status.
+| This is important to ensure that the script runs only in the appropriate environment.
+|
+*/
+if (PHP_SAPI !== 'cli') {
+    // Display error message if not running from CLI
+    echo 'bin/maginium must be run as a CLI application';
+
+    // Exit with an error code to prevent further execution
+    exit(1);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Register The Auto Loader
+|--------------------------------------------------------------------------
+|
+| Composer provides a convenient, automatically generated class loader
+| for our application. We just need to utilize it! We'll require it
+| into the script here so that we do not have to worry about the
+| loading of any of our classes manually. It's great to relax.
+|
+*/
+try {
+    /**
+     * Include the bootstrap file to initialize the Magento application environment.
+     *
+     * @throws Exception If the bootstrap file cannot be loaded.
+     */
+    require __DIR__ . '/../app/bootstrap.php';
+} catch (Exception $e) {
+    /**
+     * Handle errors that occur during the loading of the bootstrap file.
+     *
+     * @param string $e->getMessage Error message describing the issue.
+     *
+     * @return void
+     */
+    echo 'Autoload error: ' . $e->getMessage();
+
+    exit(1);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Run The Artisan Application
+|--------------------------------------------------------------------------
+|
+| When we run the console application, the current CLI command will be
+| executed in this console and the response sent back to a terminal
+| or another output device for the developers. Here goes nothing!
+|
+*/
+try {
+    /**
+     * Set up error handling and execute the Maginium CLI application.
+     */
+
+    // Instantiate the error handler to catch PHP errors and convert them into exceptions.
+    $handler = new ErrorHandler;
+    set_error_handler([$handler, 'handler']);
+
+    // Create a new instance of the Maginium CLI application.
+    $application = new Cli('Maginium CLI');
+
+    // Run the CLI application to handle commands.
+    $application->run();
+} catch (\Throwable $e) {
+    /*
+     * Catch and handle any uncaught exceptions or errors during execution.
+     *
+     * This block provides detailed error output, including file, line, message, and trace.
+     */
+
+    while ($e) {
+        if ($e->getFile()) {
+            /**
+             * Display the file where the error occurred.
+             *
+             * @param string $e->getFile The file where the error was thrown.
+             */
+            echo sprintf("\nThere is an error in %s", $e->getFile());
+
+            if ($e->getLine()) {
+                /**
+                 * Display the line number where the error occurred.
+                 *
+                 * @param int $e->getLine The line number of the error.
+                 */
+                echo sprintf(' at line: %d', $e->getLine());
+            }
+
+            echo "\n";
+        }
+
+        // Display the error message.
+        echo $e->getMessage();
+
+        // Display the stack trace for debugging purposes.
+        echo $e->getTraceAsString();
+
+        echo "\n\n";
+
+        // If the error has a previous exception, continue iterating to display it.
+        $e = $e->getPrevious();
+    }
+
+    // Exit with a failure code to indicate the error to the system.
+    exit(Cli::RETURN_FAILURE);
+}
