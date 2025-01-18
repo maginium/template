@@ -1,20 +1,26 @@
-# PHP Built-in webserver
+# PHP Built-in Webserver 🖥️
 
-PHP has had a [built-in web sever](https://secure.php.net/manual/en/features.commandline.webserver.php) since version 5.4.
+Since PHP version 5.4, PHP has included a [built-in web server](https://secure.php.net/manual/en/features.commandline.webserver.php), making it easier to serve applications during development without requiring a full-fledged web server like Apache or Nginx.
 
-PHP's web server provides a router script for use with server rewrites. Magento, like many other applications and frameworks, requires server rewrites. The router script either:
+Magento, like many other applications, relies on server rewrites. The built-in PHP web server provides a **router script** to handle these rewrites. The router script does the following:
 
-- The web server executes the requested PHP script using a server-side include
-- Returns `false`, which means the web server returns the file using file system lookup
+- Executes the requested PHP script using a server-side include.
+- Returns `false` if the file isn't found, causing the server to return the file using a file system lookup.
 
-Example:
-requests to `/static/frontend/Magento/blank/en_US/mage/calendar.css` should deliver the file if it exists, or execute `/static.php` if not.
+### Example 🛠️
 
-Without a router script, that is not possible via the php built-in server.
+For example, a request to `/static/frontend/Magento/blank/en_US/mage/calendar.css` will either:
 
-## How to install Magento
+- Return the file if it exists.
+- Execute `/static.php` if the file doesn’t exist.
 
-Please read how to install Magento using the [command line](https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/advanced.html). An example follows:
+Without the router script, this functionality isn’t possible with the PHP built-in server.
+
+---
+
+## 🚀 How to Install Magento
+
+To install Magento, follow the [command line installation guide](https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/advanced.html). Below is a sample installation command:
 
 ```php
 php bin/magento setup:install --base-url=http://127.0.0.1:8082 \
@@ -25,38 +31,45 @@ php bin/magento setup:install --base-url=http://127.0.0.1:8082 \
 --search-engine=elasticsearch7 --elasticsearch-host=es-host.example.com --elasticsearch-port=9200
 ```
 
-Note: By default, Magento creates a random Admin URI for you. Make sure to write this value down because it's how you access the Magento Admin later. For example: `http://127.0.0.1:8082/index.php/admin_1vpn01`.
+⚠️ Important Note: Magento generates a random Admin URI during installation. Be sure to write it down, as it’s needed to access the Magento Admin later (e.g., <http://127.0.0.1:8082/index.php/admin_1vpn01>).
 
-For more information about the installation process using the CLI, you can consult the dedicated documentation that can found in [the developer documentation](https://experienceleague.adobe.com/docs/commerce-operations/installation-guide/composer.html).
+For more details, check out the developer documentation.
 
-### How to run Magento
+🏃‍♂️ How to Run Magento
 
-Example usage:
+Once Magento is installed, you can start the server with the following command:
 
-```shell
 php -S 127.0.0.1:8082 -t ./pub/ ./phpserver/router.php
-```
 
-### What exactly the script does
+🔍 What Does the Script Do?
 
-The `$debug` option provides low-level logging for debugging purposes.
+The router.php script handles various tasks, including logging, server rewrites, and file routing.
 
-Forwarding rules:
+🔄 Forwarding Rules:
 
-- Any request for `favicon.ico` or for any path that starts with `index.php`, `get.php`, `static.php` are processed normally.
-- Requests for the path `pub/errors/default` are rewritten as `errors/default`. This is provided for compatibility with older versions.
-- Files under request paths `media`, `opt`, or `static` are tested; if the file exists, the file is served. If the file does not exist, `static` files are forwarded to `static.php` and `media` files are forwarded to `get.php` ((How about `opt`?))
-- If no rules are matched, return a 404 (Not Found).
+- Requests for favicon.ico or paths starting with index.php, get.php, static.php are processed normally.
+- Requests to pub/errors/default are rewritten to errors/default for compatibility with older versions.
+- Requests to media, opt, or static paths are tested for file existence:
+- If the file exists, it is served.
+- If the file does not exist:
+- Static files are forwarded to static.php.
+- Media files are forwarded to get.php.
+- If none of the above rules match, a 404 Not Found is returned.
 
-Then rewrite paths for `pub/errors/default/` by removing the `pub/` part. (was at least needed for older versions)
+📝 Rewriting Paths:
 
-Request starting with `media/`, `opt/`, `static/` test if the file exists. If Yes, then handle it, if not "forward" `static` to `static.php` and `media` to `get.php`
+- For backward compatibility with older Magento versions, paths like pub/errors/default/ are rewritten by removing the pub/ prefix.
+- Requests for paths starting with media/, opt/, or static/ are tested:
+- If the file exists, it’s served.
+- If the file does not exist, requests for static are forwarded to static.php, and requests for media are forwarded to get.php.
 
-If none of the rules matched, return 404. You may instead include the index.php, if 404 should be handled by Magento or you want urls without `index.php/`.
+If no rules match, a 404 Not Found error is returned. Alternatively, you can include index.php if you prefer to handle 404s within Magento or wish to have URLs without index.php/.
 
-### How to access to the admin dashboard
+Accessing the Admin Dashboard 🛒
 
-When the installation is finished, you can access Magento as follows:
+Once the installation is complete, you can access the Magento store and admin dashboard:
 
-- Storefront: `<your Magento base URL>`
-- Magento Admin: `<your Magento base URL>/<admin URI>`
+- Storefront: <your Magento base URL>
+- Magento Admin: <your Magento base URL>/<admin URI>
+
+This setup is great for development purposes. If you’re deploying Magento to a production environment, be sure to use a more robust web server like Apache or Nginx. 🚀
