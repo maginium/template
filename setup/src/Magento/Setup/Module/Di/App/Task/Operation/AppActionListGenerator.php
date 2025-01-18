@@ -1,16 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task\Operation;
 
-use Magento\Setup\Module\Di\App\Task\OperationInterface;
-use Magento\Framework\Module\Dir\Reader as ModuleReader;
 use Magento\Framework\App\ObjectManager\ConfigWriterInterface;
+use Magento\Framework\Module\Dir\Reader as ModuleReader;
+use Magento\Setup\Module\Di\App\Task\OperationInterface;
 
 /**
- * Pregenerates actions for Magento
+ * Pregenerates actions for Magento.
  */
 class AppActionListGenerator implements OperationInterface
 {
@@ -30,14 +34,14 @@ class AppActionListGenerator implements OperationInterface
      */
     public function __construct(
         ModuleReader $moduleReader,
-        ConfigWriterInterface $configWriter
+        ConfigWriterInterface $configWriter,
     ) {
         $this->moduleReader = $moduleReader;
         $this->configWriter = $configWriter;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function doOperation()
     {
@@ -50,7 +54,7 @@ class AppActionListGenerator implements OperationInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getName()
     {

@@ -1,15 +1,19 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Setup\Model\ObjectManagerProvider;
 
 /**
- * Factory class to create Setup
+ * Factory class to create Setup.
  *
  * @api
  */
@@ -21,7 +25,7 @@ class SetupFactory
     private $objectManagerProvider;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param ObjectManagerProvider $objectManagerProvider
      */
@@ -31,17 +35,20 @@ class SetupFactory
     }
 
     /**
-     * Creates setup
+     * Creates setup.
      *
      * @param ResourceConnection $appResource
+     *
      * @return Setup
      */
-    public function create(ResourceConnection $appResource = null)
+    public function create(?ResourceConnection $appResource = null)
     {
         $objectManager = $this->objectManagerProvider->get();
+
         if ($appResource === null) {
-            $appResource = $objectManager->get(\Magento\Framework\App\ResourceConnection::class);
+            $appResource = $objectManager->get(ResourceConnection::class);
         }
+
         return new Setup($appResource);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,10 +19,13 @@ class DictionaryTest extends TestCase
     private $dictionary = [
         'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing',
         'elit', 'sed', 'do', 'eiusmod', 'tempor', 'incididunt', 'ut', 'labore',
-        'et', 'dolore', 'magna', 'aliqua'
+        'et', 'dolore', 'magna', 'aliqua',
     ];
 
-    public function testDictionaryFileNotFoundException()
+    /**
+     * @test
+     */
+    public function dictionaryFileNotFoundException()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessage('Description file some-wrong-file.csv not found or is not readable');
@@ -29,7 +33,10 @@ class DictionaryTest extends TestCase
         $dictionary->getRandWord();
     }
 
-    public function testDictionaryFileIsEmptyException()
+    /**
+     * @test
+     */
+    public function dictionaryFileIsEmptyException()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessageMatches('/Dictionary file .*empty-dictionary\.csv is empty/');
@@ -44,7 +51,10 @@ class DictionaryTest extends TestCase
         }
     }
 
-    public function testGetRandWord()
+    /**
+     * @test
+     */
+    public function getRandWord()
     {
         $filePath = __DIR__ . '/_files/valid-dictionary.csv';
         file_put_contents($filePath, implode(PHP_EOL, $this->dictionary));

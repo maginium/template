@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -8,9 +11,10 @@ namespace Magento\Setup\Module\Di\App\Task\Operation;
 
 use Magento\Setup\Module\Di\App\Task\OperationInterface;
 use Magento\Setup\Module\Di\Code\Scanner;
+use Magento\Setup\Module\Di\Code\Scanner\ConfigurationScanner;
 
 /**
- * Class ServiceDataAttributesGenerator
+ * Class ServiceDataAttributesGenerator.
  *
  * Generates extension classes for data objects.
  */
@@ -27,19 +31,19 @@ class ServiceDataAttributesGenerator implements OperationInterface
     private $data;
 
     /**
-     * @var Scanner\ConfigurationScanner
+     * @var ConfigurationScanner
      */
     private $configurationScanner;
 
     /**
      * @param Scanner\ServiceDataAttributesScanner $serviceDataAttributesScanner
-     * @param Scanner\ConfigurationScanner $configurationScanner
+     * @param ConfigurationScanner $configurationScanner
      * @param array $data
      */
     public function __construct(
         Scanner\ServiceDataAttributesScanner $serviceDataAttributesScanner,
-        \Magento\Setup\Module\Di\Code\Scanner\ConfigurationScanner $configurationScanner,
-        $data = []
+        ConfigurationScanner $configurationScanner,
+        $data = [],
     ) {
         $this->serviceDataAttributesScanner = $serviceDataAttributesScanner;
         $this->data = $data;
@@ -47,7 +51,7 @@ class ServiceDataAttributesGenerator implements OperationInterface
     }
 
     /**
-     * Processes operation task
+     * Processes operation task.
      *
      * @return void
      */
@@ -55,13 +59,14 @@ class ServiceDataAttributesGenerator implements OperationInterface
     {
         $files = $this->configurationScanner->scan('extension_attributes.xml');
         $entities = $this->serviceDataAttributesScanner->collectEntities($files);
+
         foreach ($entities as $entityName) {
             class_exists($entityName);
         }
     }
 
     /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */

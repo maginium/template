@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,20 +31,14 @@ class DescriptionSentenceGeneratorTest extends TestCase
     private $sentenceConfig = [
         'words' => [
             'count-min' => 7,
-            'count-max' => 7
-        ]
+            'count-max' => 7,
+        ],
     ];
 
-    protected function setUp(): void
-    {
-        $this->dictionaryMock = $this->createMock(Dictionary::class);
-        $this->sentenceGenerator = new DescriptionSentenceGenerator(
-            $this->dictionaryMock,
-            $this->sentenceConfig
-        );
-    }
-
-    public function testSentenceGeneration()
+    /**
+     * @test
+     */
+    public function sentenceGeneration()
     {
         $this->dictionaryMock
             ->expects($this->exactly(7))
@@ -55,12 +50,21 @@ class DescriptionSentenceGeneratorTest extends TestCase
                 'sit',
                 'amet',
                 'consectetur',
-                'adipiscing'
+                'adipiscing',
             ));
 
         $this->assertEquals(
             'Lorem ipsum dolor sit amet consectetur adipiscing.',
-            $this->sentenceGenerator->generate()
+            $this->sentenceGenerator->generate(),
+        );
+    }
+
+    protected function setUp(): void
+    {
+        $this->dictionaryMock = $this->createMock(Dictionary::class);
+        $this->sentenceGenerator = new DescriptionSentenceGenerator(
+            $this->dictionaryMock,
+            $this->sentenceConfig,
         );
     }
 }

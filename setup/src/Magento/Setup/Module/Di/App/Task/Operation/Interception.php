@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task\Operation;
 
 use Magento\Framework\App;
@@ -53,7 +57,7 @@ class Interception implements OperationInterface
         App\AreaList $areaList,
         ClassesScanner $classesScanner,
         GeneratorFactory $generatorFactory,
-        $data = []
+        $data = [],
     ) {
         $this->interceptionConfigurationBuilder = $interceptionConfigurationBuilder;
         $this->areaList = $areaList;
@@ -63,7 +67,7 @@ class Interception implements OperationInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function doOperation()
     {
@@ -77,31 +81,33 @@ class Interception implements OperationInterface
         }
 
         $classesList = [];
+
         foreach ($this->data['intercepted_paths'] as $paths) {
-            if (!is_array($paths)) {
+            if (! is_array($paths)) {
                 $paths = (array)$paths;
             }
+
             foreach ($paths as $path) {
                 $classesList[] = $this->classesScanner->getList($path);
             }
         }
         $classesList = array_merge([], ...$classesList);
 
-        $generatorIo = new Io(new File(), $this->data['path_to_store']);
+        $generatorIo = new Io(new File, $this->data['path_to_store']);
         $generator = $this->generatorFactory->create(
             [
                 'ioObject' => $generatorIo,
                 'generatedEntities' => [
                     Interceptor::ENTITY_TYPE => \Magento\Setup\Module\Di\Code\Generator\Interceptor::class,
-                ]
-            ]
+                ],
+            ],
         );
         $configuration = $this->interceptionConfigurationBuilder->getInterceptionConfiguration($classesList);
         $generator->generateList($configuration);
     }
 
     /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */

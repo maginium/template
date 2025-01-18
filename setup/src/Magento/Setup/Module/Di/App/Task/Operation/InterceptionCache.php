@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task\Operation;
 
 use Magento\Framework\Interception\Config\Config;
@@ -34,7 +38,7 @@ class InterceptionCache implements OperationInterface
     public function __construct(
         Config $configInterface,
         Interceptions $interceptionsInstancesNamesList,
-        array $data = []
+        array $data = [],
     ) {
         $this->configInterface = $configInterface;
         $this->interceptionsInstancesNamesList = $interceptionsInstancesNamesList;
@@ -42,7 +46,7 @@ class InterceptionCache implements OperationInterface
     }
 
     /**
-     * Flushes interception cached configuration and generates a new one
+     * Flushes interception cached configuration and generates a new one.
      *
      * @return void
      */
@@ -53,10 +57,12 @@ class InterceptionCache implements OperationInterface
         }
 
         $definitions = [];
+
         foreach ($this->data as $paths) {
-            if (!is_array($paths)) {
+            if (! is_array($paths)) {
                 $paths = (array)$paths;
             }
+
             foreach ($paths as $path) {
                 $definitions[] = $this->interceptionsInstancesNamesList->getList($path);
             }
@@ -68,7 +74,7 @@ class InterceptionCache implements OperationInterface
     }
 
     /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */

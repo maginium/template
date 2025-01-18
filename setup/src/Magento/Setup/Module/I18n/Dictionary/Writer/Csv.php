@@ -1,36 +1,42 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Dictionary\Writer;
 
+use InvalidArgumentException;
 use Magento\Setup\Module\I18n\Dictionary\Phrase;
 use Magento\Setup\Module\I18n\Dictionary\WriterInterface;
 
 /**
- * Csv writer
+ * Csv writer.
  */
 class Csv implements WriterInterface
 {
     /**
-     * File handler
+     * File handler.
      *
      * @var resource
      */
     protected $_fileHandler;
 
     /**
-     * Writer construct
+     * Writer construct.
      *
      * @param string $outputFilename
-     * @throws \InvalidArgumentException
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct($outputFilename)
     {
         if (false === ($fileHandler = @fopen($outputFilename, 'w'))) {
-            throw new \InvalidArgumentException(
-                sprintf('Cannot open file for write dictionary: "%s"', $outputFilename)
+            throw new InvalidArgumentException(
+                sprintf('Cannot open file for write dictionary: "%s"', $outputFilename),
             );
         }
         $this->_fileHandler = $fileHandler;
@@ -42,6 +48,7 @@ class Csv implements WriterInterface
     public function write(Phrase $phrase)
     {
         $fields = [$phrase->getCompiledPhrase(), $phrase->getCompiledTranslation()];
+
         if (($contextType = $phrase->getContextType()) && ($contextValue = $phrase->getContextValueAsString())) {
             $fields[] = $contextType;
             $fields[] = $contextValue;
@@ -51,7 +58,7 @@ class Csv implements WriterInterface
     }
 
     /**
-     * Destructor for closing resource
+     * Destructor for closing resource.
      *
      * @return void
      */

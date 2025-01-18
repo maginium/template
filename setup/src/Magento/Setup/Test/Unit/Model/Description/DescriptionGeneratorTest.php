@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -29,7 +30,7 @@ class DescriptionGeneratorTest extends TestCase
      * @var array
      */
     private $paragraphs = [
-        'Paragraph#1', 'Paragraph#2', 'Paragraph#3'
+        'Paragraph#1', 'Paragraph#2', 'Paragraph#3',
     ];
 
     /**
@@ -38,11 +39,11 @@ class DescriptionGeneratorTest extends TestCase
     private $descriptionConfigWithMixin = [
         'paragraphs' => [
             'count-min' => 3,
-            'count-max' => 3
+            'count-max' => 3,
         ],
         'mixin' => [
-            'tags' => ['p', 'b', 'div']
-        ]
+            'tags' => ['p', 'b', 'div'],
+        ],
     ];
 
     /**
@@ -51,9 +52,47 @@ class DescriptionGeneratorTest extends TestCase
     private $descriptionConfigWithoutMixin = [
         'paragraphs' => [
             'count-min' => 3,
-            'count-max' => 3
-        ]
+            'count-max' => 3,
+        ],
     ];
+
+    /**
+     * @test
+     */
+    public function generatorWithMixin()
+    {
+        $descriptionWithMixin = 'Some description with mixin';
+        $this->mixinManagerMock
+            ->expects($this->once())
+            ->method('apply')
+            ->with(
+                implode(PHP_EOL, $this->paragraphs),
+                $this->descriptionConfigWithMixin['mixin']['tags'],
+            )
+            ->willReturn($descriptionWithMixin);
+
+        $generator = new DescriptionGenerator(
+            $this->descriptionParagraphGeneratorMock,
+            $this->mixinManagerMock,
+            $this->descriptionConfigWithMixin,
+        );
+
+        $this->assertEquals($descriptionWithMixin, $generator->generate());
+    }
+
+    /**
+     * @test
+     */
+    public function generatorWithoutMixin()
+    {
+        $generator = new DescriptionGenerator(
+            $this->descriptionParagraphGeneratorMock,
+            $this->mixinManagerMock,
+            $this->descriptionConfigWithoutMixin,
+        );
+
+        $this->assertEquals(implode(PHP_EOL, $this->paragraphs), $generator->generate());
+    }
 
     protected function setUp(): void
     {
@@ -65,41 +104,9 @@ class DescriptionGeneratorTest extends TestCase
             ->will($this->onConsecutiveCalls(
                 $this->paragraphs[0],
                 $this->paragraphs[1],
-                $this->paragraphs[2]
+                $this->paragraphs[2],
             ));
 
         $this->mixinManagerMock = $this->createMock(MixinManager::class);
-    }
-
-    public function testGeneratorWithMixin()
-    {
-        $descriptionWithMixin = 'Some description with mixin';
-        $this->mixinManagerMock
-            ->expects($this->once())
-            ->method('apply')
-            ->with(
-                implode(PHP_EOL, $this->paragraphs),
-                $this->descriptionConfigWithMixin['mixin']['tags']
-            )
-            ->willReturn($descriptionWithMixin);
-
-        $generator = new DescriptionGenerator(
-            $this->descriptionParagraphGeneratorMock,
-            $this->mixinManagerMock,
-            $this->descriptionConfigWithMixin
-        );
-
-        $this->assertEquals($descriptionWithMixin, $generator->generate());
-    }
-
-    public function testGeneratorWithoutMixin()
-    {
-        $generator = new DescriptionGenerator(
-            $this->descriptionParagraphGeneratorMock,
-            $this->mixinManagerMock,
-            $this->descriptionConfigWithoutMixin
-        );
-
-        $this->assertEquals(implode(PHP_EOL, $this->paragraphs), $generator->generate());
     }
 }

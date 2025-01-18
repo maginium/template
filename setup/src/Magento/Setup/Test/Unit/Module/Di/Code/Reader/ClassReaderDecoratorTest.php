@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,21 +26,16 @@ class ClassReaderDecoratorTest extends TestCase
      */
     private $classReaderMock;
 
-    protected function setUp(): void
-    {
-        $this->classReaderMock = $this->getMockBuilder(ClassReader::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->model = new ClassReaderDecorator($this->classReaderMock);
-    }
-
     /**
      * @param $expectation
      * @param $className
      * @param $willReturn
+     *
      * @dataProvider getConstructorDataProvider
+     *
+     * @test
      */
-    public function testGetConstructor($expectation, $className, $willReturn)
+    public function getConstructor($expectation, $className, $willReturn)
     {
         $this->classReaderMock->expects($this->once())
             ->method('getConstructor')
@@ -47,7 +43,7 @@ class ClassReaderDecoratorTest extends TestCase
             ->willReturn($willReturn);
         $this->assertEquals(
             $expectation,
-            $this->model->getConstructor($className)
+            $this->model->getConstructor($className),
         );
     }
 
@@ -61,12 +57,15 @@ class ClassReaderDecoratorTest extends TestCase
             [
                 [new ConstructorArgument(['name', 'type', 'isRequired', 'defaultValue'])],
                 'array',
-                [['name', 'type', 'isRequired', 'defaultValue']]
-            ]
+                [['name', 'type', 'isRequired', 'defaultValue']],
+            ],
         ];
     }
 
-    public function testGetParents()
+    /**
+     * @test
+     */
+    public function getParents()
     {
         $stringArray = ['Parent_Class_Name1', 'Interface_1'];
         $this->classReaderMock->expects($this->once())
@@ -74,5 +73,13 @@ class ClassReaderDecoratorTest extends TestCase
             ->with('Child_Class_Name')
             ->willReturn($stringArray);
         $this->assertEquals($stringArray, $this->model->getParents('Child_Class_Name'));
+    }
+
+    protected function setUp(): void
+    {
+        $this->classReaderMock = $this->getMockBuilder(ClassReader::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->model = new ClassReaderDecorator($this->classReaderMock);
     }
 }

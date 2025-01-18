@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,22 +13,26 @@ use Magento\Setup\Console\Command\InfoLanguageListCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableFactory;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class InfoLanguageListCommandTest extends TestCase
 {
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $languages = [
-            'LNG' => 'Language description'
+            'LNG' => 'Language description',
         ];
 
         $table = $this->createMock(Table::class);
         $table->expects($this->once())->method('setHeaders')->with(['Language', 'Code']);
         $table->expects($this->once())->method('addRow')->with(['Language description', 'LNG']);
 
-        /** @var \Symfony\Component\Console\Helper\TableFactory|MockObject $helperSet */
-        $tableFactoryMock = $this->createMock(\Symfony\Component\Console\Helper\TableFactory::class);
+        /** @var TableFactory|MockObject $helperSet */
+        $tableFactoryMock = $this->createMock(TableFactory::class);
         $tableFactoryMock->expects($this->once())->method('create')->willReturn($table);
 
         /** @var Lists|MockObject $list */

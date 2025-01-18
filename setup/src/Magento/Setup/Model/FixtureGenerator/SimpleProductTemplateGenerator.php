@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,7 +17,7 @@ use Magento\Catalog\Model\ProductFactory;
 
 /**
  * Simple product template generator. Return newly created simple product for specified attribute set
- * with default values for product attributes
+ * with default values for product attributes.
  */
 class SimpleProductTemplateGenerator implements TemplateEntityGeneratorInterface
 {
@@ -39,14 +42,14 @@ class SimpleProductTemplateGenerator implements TemplateEntityGeneratorInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function generateEntity()
     {
         $attributeSet = $this->fixture['attribute_set_id'];
         $product = $this->getProductTemplate(
             $attributeSet,
-            $this->fixture['additional_attributes']($attributeSet, 0, 0)
+            $this->fixture['additional_attributes']($attributeSet, 0, 0),
         );
         $product->save();
 
@@ -54,10 +57,11 @@ class SimpleProductTemplateGenerator implements TemplateEntityGeneratorInterface
     }
 
     /**
-     * Get product template
+     * Get product template.
      *
      * @param int $attributeSet
      * @param array $additionalAttributes
+     *
      * @return ProductInterface
      */
     private function getProductTemplate($attributeSet, $additionalAttributes = [])
@@ -86,9 +90,9 @@ class SimpleProductTemplateGenerator implements TemplateEntityGeneratorInterface
                     'use_config_manage_stock' => 1,
                     'qty' => 100500,
                     'is_qty_decimal' => 0,
-                    'is_in_stock' => 1
+                    'is_in_stock' => 1,
                 ],
-            ]
+            ],
         ]);
 
         foreach ($additionalAttributes as $attributeCode => $attributeValue) {

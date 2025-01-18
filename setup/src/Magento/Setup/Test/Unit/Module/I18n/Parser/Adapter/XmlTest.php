@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -23,19 +24,17 @@ class XmlTest extends TestCase
      */
     protected $_adapter;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->_adapter = $objectManagerHelper->getObject(Xml::class);
-    }
-
     /**
      * @dataProvider parseDataProvider
+     *
      * @param string $file
      * @param array $expectedResult
+     *
      * @return void
+     *
+     * @test
      */
-    public function testParse(string $file, array $expectedResult)
+    public function parse(string $file, array $expectedResult)
     {
         $this->_adapter->parse($file);
 
@@ -70,5 +69,11 @@ class XmlTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->_adapter = $objectManagerHelper->getObject(Xml::class);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -24,7 +25,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * Test for static content deploy command
+ * Test for static content deploy command.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -56,10 +57,9 @@ class DeployStaticContentCommandTest extends TestCase
     private $deployService;
 
     /**
-     * Object manager to create various objects
+     * Object manager to create various objects.
      *
      * @var ObjectManagerInterface|Mock
-     *
      */
     private $objectManager;
 
@@ -69,35 +69,15 @@ class DeployStaticContentCommandTest extends TestCase
     private $appState;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->inputValidator = $this->createMock(InputValidator::class);
-        $this->consoleLoggerFactory = $this->createMock(ConsoleLoggerFactory::class);
-        $this->logger = $this->createMock(ConsoleLogger::class);
-        $this->objectManager = $this->getMockForAbstractClass(ObjectManagerInterface::class);
-        $this->appState = $this->createMock(State::class);
-        $this->deployService = $this->createMock(DeployStaticContent::class);
-
-        $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
-        $objectManagerProvider->method('get')->willReturn($this->objectManager);
-
-        $this->command = (new ObjectManager($this))->getObject(DeployStaticContentCommand::class, [
-            'inputValidator' => $this->inputValidator,
-            'consoleLoggerFactory' => $this->consoleLoggerFactory,
-            'options' => new DeployStaticOptions(),
-            'appState' => $this->appState,
-            'objectManagerProvider' => $objectManagerProvider
-        ]);
-    }
-
-    /**
      * @param array $input
+     *
      * @see DeployStaticContentCommand::execute()
+     *
      * @dataProvider executeDataProvider
+     *
+     * @test
      */
-    public function testExecute($input)
+    public function execute($input)
     {
         $this->appState->expects($this->once())
             ->method('getMode')
@@ -125,18 +105,20 @@ class DeployStaticContentCommandTest extends TestCase
     {
         return [
             'No options' => [
-                []
+                [],
             ],
             'With static content version option' => [
-                ['--content-version' => '123456']
-            ]
+                ['--content-version' => '123456'],
+            ],
         ];
     }
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testExecuteWithError()
+    public function executeWithError()
     {
         $this->appState->expects($this->once())
             ->method('getMode')
@@ -156,7 +138,7 @@ class DeployStaticContentCommandTest extends TestCase
             ->willReturn($this->deployService);
         $this->deployService->expects($this->once())
             ->method('deploy')
-            ->willThrowException(new TimeoutException());
+            ->willThrowException(new TimeoutException);
 
         $tester = new CommandTester($this->command);
         $exitCode = $tester->execute([]);
@@ -165,10 +147,14 @@ class DeployStaticContentCommandTest extends TestCase
 
     /**
      * @param string $mode
+     *
      * @return void
+     *
      * @dataProvider executionInNonProductionModeDataProvider
+     *
+     * @test
      */
-    public function testExecuteInNonProductionMode($mode)
+    public function executeInNonProductionMode($mode)
     {
         $this->expectException('Magento\Framework\Exception\LocalizedException');
         $this->appState->expects($this->any())->method('getMode')->willReturn($mode);
@@ -187,5 +173,29 @@ class DeployStaticContentCommandTest extends TestCase
             [State::MODE_DEFAULT],
             [State::MODE_DEVELOPER],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->inputValidator = $this->createMock(InputValidator::class);
+        $this->consoleLoggerFactory = $this->createMock(ConsoleLoggerFactory::class);
+        $this->logger = $this->createMock(ConsoleLogger::class);
+        $this->objectManager = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+        $this->appState = $this->createMock(State::class);
+        $this->deployService = $this->createMock(DeployStaticContent::class);
+
+        $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
+        $objectManagerProvider->method('get')->willReturn($this->objectManager);
+
+        $this->command = (new ObjectManager($this))->getObject(DeployStaticContentCommand::class, [
+            'inputValidator' => $this->inputValidator,
+            'consoleLoggerFactory' => $this->consoleLoggerFactory,
+            'options' => new DeployStaticOptions,
+            'appState' => $this->appState,
+            'objectManagerProvider' => $objectManagerProvider,
+        ]);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -57,38 +58,18 @@ class ConfigModelTest extends TestCase
     private $configOptionsList;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->collector = $this->createMock(ConfigOptionsListCollector::class);
-        $this->writer = $this->createMock(Writer::class);
-        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
-        $this->configOptionsList = $this->createMock(ConfigOptionsList::class);
-        $this->configData = $this->createMock(ConfigData::class);
-        $this->filePermissions = $this->createMock(FilePermissions::class);
-
-        $this->deploymentConfig->expects($this->any())->method('get');
-
-        $this->configModel = new ConfigModel(
-            $this->collector,
-            $this->writer,
-            $this->deploymentConfig,
-            $this->filePermissions
-        );
-    }
-
-    /**
      * @return void
+     *
+     * @test
      */
-    public function testValidate(): void
+    public function validate(): void
     {
         $option = $this->createMock(TextConfigOption::class);
         $option->expects($this->exactly(3))->method('getName')->willReturn('Fake');
         $optionsSet = [
             $option,
             $option,
-            $option
+            $option,
         ];
         $configOption = $this->configOptionsList;
         $configOption->expects($this->once())->method('getOptions')->willReturn($optionsSet);
@@ -104,41 +85,43 @@ class ConfigModelTest extends TestCase
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testProcess(): void
+    public function process(): void
     {
         $testSet1 = [
             ConfigFilePool::APP_CONFIG => [
                 'segment' => [
                     'someKey' => 'value',
-                    'test' => 'value1'
-                ]
-            ]
+                    'test' => 'value1',
+                ],
+            ],
         ];
 
         $testSet2 = [
             ConfigFilePool::APP_CONFIG => [
                 'segment' => [
-                    'test' => 'value2'
-                ]
-            ]
+                    'test' => 'value2',
+                ],
+            ],
         ];
 
         $testSetExpected1 = [
             ConfigFilePool::APP_CONFIG => [
                 'segment' => [
                     'someKey' => 'value',
-                    'test' => 'value1'
-                ]
-            ]
+                    'test' => 'value1',
+                ],
+            ],
         ];
 
         $testSetExpected2 = [
             ConfigFilePool::APP_CONFIG => [
                 'segment' => [
-                    'test' => 'value2'
-                ]
-            ]
+                    'test' => 'value2',
+                ],
+            ],
         ];
 
         $configData1 = clone $this->configData;
@@ -162,7 +145,7 @@ class ConfigModelTest extends TestCase
             ->willReturn([$configData1, $configData2]);
 
         $configOptionsList = [
-            'Fake_Module' => $configOption
+            'Fake_Module' => $configOption,
         ];
         $this->collector->expects($this->once())
             ->method('collectOptionsLists')
@@ -171,11 +154,11 @@ class ConfigModelTest extends TestCase
         $this->writer
             ->method('saveConfig')
             ->willReturnCallback(
-                function ($arg) use ($testSetExpected1, $testSetExpected2) {
-                    if ($arg == $testSetExpected1 || $arg == $testSetExpected2) {
-                        return null;
+                function($arg) use ($testSetExpected1, $testSetExpected2) {
+                    if ($arg === $testSetExpected1 || $arg === $testSetExpected2) {
+                        return;
                     }
-                }
+                },
             );
 
         $this->configModel->process([]);
@@ -183,8 +166,10 @@ class ConfigModelTest extends TestCase
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testProcessException(): void
+    public function processException(): void
     {
         $this->expectException('Exception');
         $this->expectExceptionMessage('In module : Fake_ModuleConfigOption::createConfig');
@@ -194,7 +179,7 @@ class ConfigModelTest extends TestCase
             ->willReturn([null]);
 
         $wrongData = [
-            'Fake_Module' => $configOption
+            'Fake_Module' => $configOption,
         ];
 
         $this->collector->expects($this->once())->method('collectOptionsLists')->willReturn($wrongData);
@@ -204,13 +189,37 @@ class ConfigModelTest extends TestCase
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testWritePermissionErrors(): void
+    public function writePermissionErrors(): void
     {
         $this->expectException('Exception');
         $this->expectExceptionMessage('Missing write permissions to the following paths:');
         $this->filePermissions->expects($this->once())->method('getMissingWritablePathsForInstallation')
             ->willReturn(['/a/ro/dir', '/media']);
         $this->configModel->process([]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->collector = $this->createMock(ConfigOptionsListCollector::class);
+        $this->writer = $this->createMock(Writer::class);
+        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
+        $this->configOptionsList = $this->createMock(ConfigOptionsList::class);
+        $this->configData = $this->createMock(ConfigData::class);
+        $this->filePermissions = $this->createMock(FilePermissions::class);
+
+        $this->deploymentConfig->expects($this->any())->method('get');
+
+        $this->configModel = new ConfigModel(
+            $this->collector,
+            $this->writer,
+            $this->deploymentConfig,
+            $this->filePermissions,
+        );
     }
 }

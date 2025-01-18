@@ -1,12 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
 /**
- * Command for enabling list or all of modules
+ * Command for enabling list or all of modules.
  */
 class ModuleEnableCommand extends AbstractModuleManageCommand
 {
@@ -21,7 +25,7 @@ class ModuleEnableCommand extends AbstractModuleManageCommand
     }
 
     /**
-     * Enable modules
+     * Enable modules.
      *
      * @return bool
      */

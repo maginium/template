@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,9 +17,9 @@ return [
         [
             Bootstrap::INIT_PARAM_FILESYSTEM_DIR_PATHS => [
                 DirectoryList::ROOT => [
-                    DirectoryList::PATH => BP
-                ]
-            ]
-        ]
-    )
+                    DirectoryList::PATH => BP,
+                ],
+            ],
+        ],
+    ),
 ];

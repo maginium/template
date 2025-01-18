@@ -1,12 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- * Public alias for the application entry point
+ * Public alias for the application entry point.
  *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 
 use Magento\Framework\App\Bootstrap;
+use Magento\Framework\App\Http;
 
 try {
     require __DIR__ . '/../app/bootstrap.php';
@@ -21,10 +25,12 @@ try {
 </div>
 HTML;
     http_response_code(500);
+
     exit(1);
 }
 
 $bootstrap = Bootstrap::create(BP, $_SERVER);
-/** @var \Magento\Framework\App\Http $app */
-$app = $bootstrap->createApplication(\Magento\Framework\App\Http::class);
+
+/** @var Http $app */
+$app = $bootstrap->createApplication(Http::class);
 $bootstrap->run($app);

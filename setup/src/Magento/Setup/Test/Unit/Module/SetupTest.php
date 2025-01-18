@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -15,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 
 class SetupTest extends TestCase
 {
-    const CONNECTION_NAME = 'connection';
+    public const CONNECTION_NAME = 'connection';
 
     /**
      * @var AdapterInterface|MockObject
@@ -32,22 +33,10 @@ class SetupTest extends TestCase
      */
     private $resourceModelMock;
 
-    protected function setUp(): void
-    {
-        $this->resourceModelMock = $this->createMock(ResourceConnection::class);
-        $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
-        $this->resourceModelMock->expects($this->any())
-            ->method('getConnection')
-            ->with(self::CONNECTION_NAME)
-            ->willReturn($this->connection);
-        $this->resourceModelMock->expects($this->any())
-            ->method('getConnectionByName')
-            ->with(ResourceConnection::DEFAULT_CONNECTION)
-            ->willReturn($this->connection);
-        $this->setup = new Setup($this->resourceModelMock, self::CONNECTION_NAME);
-    }
-
-    public function testGetIdxName()
+    /**
+     * @test
+     */
+    public function getIdxName()
     {
         $tableName = 'table';
         $fields = ['field'];
@@ -67,7 +56,10 @@ class SetupTest extends TestCase
         $this->assertEquals('idxName', $this->setup->getIdxName($tableName, $fields, $indexType));
     }
 
-    public function testGetFkName()
+    /**
+     * @test
+     */
+    public function getFkName()
     {
         $tableName = 'table';
         $refTable = 'ref_table';
@@ -85,5 +77,20 @@ class SetupTest extends TestCase
             ->willReturn('fkName');
 
         $this->assertEquals('fkName', $this->setup->getFkName($tableName, $columnName, $refTable, $refColumnName));
+    }
+
+    protected function setUp(): void
+    {
+        $this->resourceModelMock = $this->createMock(ResourceConnection::class);
+        $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
+        $this->resourceModelMock->expects($this->any())
+            ->method('getConnection')
+            ->with(self::CONNECTION_NAME)
+            ->willReturn($this->connection);
+        $this->resourceModelMock->expects($this->any())
+            ->method('getConnectionByName')
+            ->with(ResourceConnection::DEFAULT_CONNECTION)
+            ->willReturn($this->connection);
+        $this->setup = new Setup($this->resourceModelMock, self::CONNECTION_NAME);
     }
 }

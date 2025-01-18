@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,20 +8,18 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Console;
 
+use Laminas\ServiceManager\ServiceManager;
 use Magento\Framework\App\Bootstrap;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Console\Exception\GenerationDirectoryAccessException;
 use Magento\Framework\Console\GenerationDirectoryAccess;
-use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Filesystem\Driver\File;
-use Magento\Framework\Phrase;
 use Magento\Setup\Console\Command\DiCompileCommand;
 use Magento\Setup\Mvc\Bootstrap\InitParamListener;
 use Symfony\Component\Console\Input\ArgvInput;
-use Laminas\ServiceManager\ServiceManager;
 
 /**
- * Class prepares folders for code generation
+ * Class prepares folders for code generation.
  */
 class CompilerPreparation
 {
@@ -52,7 +51,7 @@ class CompilerPreparation
     public function __construct(
         ServiceManager $serviceManager,
         ArgvInput $input,
-        File $filesystemDriver
+        File $filesystemDriver,
     ) {
         $this->serviceManager = $serviceManager;
         $this->input = $input;
@@ -63,21 +62,22 @@ class CompilerPreparation
      * Determine whether a CLI command is for compilation, and if so, clear the directory.
      *
      * @throws GenerationDirectoryAccessException If generation directory is read-only
+     *
      * @return void
      */
     public function handleCompilerEnvironment()
     {
-        if (!$this->shouldInvalidateCompiledDI()) {
+        if (! $this->shouldInvalidateCompiledDI()) {
             return;
         }
-        if (!$this->getGenerationDirectoryAccess()->check()) {
-            throw new GenerationDirectoryAccessException();
+
+        if (! $this->getGenerationDirectoryAccess()->check()) {
+            throw new GenerationDirectoryAccessException;
         }
 
         $mageInitParams = $this->serviceManager->get(InitParamListener::BOOTSTRAP_PARAM);
-        $mageDirs = isset($mageInitParams[Bootstrap::INIT_PARAM_FILESYSTEM_DIR_PATHS])
-            ? $mageInitParams[Bootstrap::INIT_PARAM_FILESYSTEM_DIR_PATHS]
-            : [];
+        $mageDirs = $mageInitParams[Bootstrap::INIT_PARAM_FILESYSTEM_DIR_PATHS]
+            ?? [];
         $directoryList = new DirectoryList(BP, $mageDirs);
         $compileDirList = [
             $directoryList->getPath(DirectoryList::GENERATED_CODE),
@@ -92,7 +92,7 @@ class CompilerPreparation
     }
 
     /**
-     * Retrieves command list with commands which invalidates compiler
+     * Retrieves command list with commands which invalidates compiler.
      *
      * @return array
      */
@@ -113,7 +113,7 @@ class CompilerPreparation
      */
     private function getGenerationDirectoryAccess()
     {
-        if (null === $this->generationDirectoryAccess) {
+        if ($this->generationDirectoryAccess === null) {
             $this->generationDirectoryAccess = new GenerationDirectoryAccess($this->serviceManager);
         }
 
@@ -131,21 +131,23 @@ class CompilerPreparation
         $cmdName = $this->input->getFirstArgument();
         $isHelpOption = $this->input->hasParameterOption('--help') || $this->input->hasParameterOption('-h');
         $invalidate = false;
-        if (!$isHelpOption) {
+
+        if (! $isHelpOption) {
             $invalidate = in_array($cmdName, $compilationCommands);
-            if (!$invalidate) {
+
+            if (! $invalidate) {
                 // Check if it's an abbreviation of compilation commands.
                 $expr = preg_replace_callback(
                     '{([^:]+|)}',
-                    function ($matches) {
-                        return preg_quote($matches[1]) . '[^:]*';
-                    },
-                    ($cmdName ?? '')
+                    fn($matches) => preg_quote($matches[1]) . '[^:]*',
+                    $cmdName ?? '',
                 );
                 $commands = preg_grep('{^' . $expr . '$}', $compilationCommands);
+
                 if (empty($commands)) {
                     $commands = preg_grep('{^' . $expr . '$}i', $compilationCommands);
                 }
+
                 if (count($commands) === 1) {
                     $invalidate = true;
                 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,33 +10,33 @@
 namespace Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer;
 
 /**
- * The PHP tokenizer token for i18n parser
+ * The PHP tokenizer token for i18n parser.
  */
 class Token
 {
     /**
-     * Value
+     * Value.
      *
      * @var int|string
      */
     private $_value;
 
     /**
-     * Name
+     * Name.
      *
      * @var int|string
      */
     private $_name;
 
     /**
-     * Line
+     * Line.
      *
      * @var int
      */
     private $_line;
 
     /**
-     * Token construct
+     * Token construct.
      *
      * @param int|string $name
      * @param int|string $value
@@ -47,7 +50,7 @@ class Token
     }
 
     /**
-     * Get token name
+     * Get token name.
      *
      * @return int|string
      */
@@ -57,7 +60,7 @@ class Token
     }
 
     /**
-     * Get token value
+     * Get token value.
      *
      * @return int|string
      */
@@ -67,7 +70,7 @@ class Token
     }
 
     /**
-     * Get line of token beginning
+     * Get line of token beginning.
      *
      * @return int
      */
@@ -77,13 +80,13 @@ class Token
     }
 
     /**
-     * Is "new" operator
+     * Is "new" operator.
      *
      * @return bool
      */
     public function isNew()
     {
-        return $this->getName() == T_NEW;
+        return $this->getName() === T_NEW;
     }
 
     /**
@@ -97,113 +100,114 @@ class Token
     }
 
     /**
-     * Whenever token is equal function
+     * Whenever token is equal function.
      *
      * @param string $functionName
+     *
      * @return bool
      */
     public function isEqualFunction($functionName)
     {
-        return $this->getName() == T_STRING && $this->getValue() == $functionName;
+        return $this->getName() === T_STRING && $this->getValue() === $functionName;
     }
 
     /**
-     * Is object operator
+     * Is object operator.
      *
      * @return bool
      */
     public function isObjectOperator()
     {
-        return $this->getName() == T_OBJECT_OPERATOR;
+        return $this->getName() === T_OBJECT_OPERATOR;
     }
 
     /**
-     * Is whitespace
+     * Is whitespace.
      *
      * @return bool
      */
     public function isWhitespace()
     {
-        return $this->getName() == T_WHITESPACE;
+        return $this->getName() === T_WHITESPACE;
     }
 
     /**
-     * Is constant encapsed string
+     * Is constant encapsed string.
      *
      * @return bool
      */
     public function isConstantEncapsedString()
     {
-        return $this->getName() == T_CONSTANT_ENCAPSED_STRING;
+        return $this->getName() === T_CONSTANT_ENCAPSED_STRING;
     }
 
     /**
-     * Is open brace
+     * Is open brace.
      *
      * @return bool
      */
     public function isOpenBrace()
     {
-        return $this->getValue() == '(';
+        return $this->getValue() === '(';
     }
 
     /**
-     * Is close brace
+     * Is close brace.
      *
      * @return bool
      */
     public function isCloseBrace()
     {
-        return $this->getValue() == ')';
+        return $this->getValue() === ')';
     }
 
     /**
-     * Is comma
+     * Is comma.
      *
      * @return bool
      */
     public function isComma()
     {
-        return $this->getValue() == ',';
+        return $this->getValue() === ',';
     }
 
     /**
-     * Is semicolon
+     * Is semicolon.
      *
      * @return bool
      */
     public function isSemicolon()
     {
-        return $this->getValue() == ';';
+        return $this->getValue() === ';';
     }
 
     /**
-     * Checks value if this is concatenation operator
+     * Checks value if this is concatenation operator.
      *
      * @return bool
      */
     public function isConcatenateOperator()
     {
-        return $this->getValue() == '.';
+        return $this->getValue() === '.';
     }
 
     /**
-     * Is namespace separator
+     * Is namespace separator.
      *
      * @return bool
      */
     public function isNamespaceSeparator()
     {
-        return $this->getName() == T_NS_SEPARATOR;
+        return $this->getName() === T_NS_SEPARATOR;
     }
 
     /**
-     * Is identifier
+     * Is identifier.
      *
      * @return bool
      */
     public function isIdentifier()
     {
-        return $this->getName() == T_STRING;
+        return $this->getName() === T_STRING;
     }
 }

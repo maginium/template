@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,6 +19,7 @@ class DriverOptions
      * Get mysql driver options.
      *
      * @param array $options
+     *
      * @return array
      */
     public function getDriverOptions(array $options): array
@@ -26,14 +28,16 @@ class DriverOptions
             ConfigOptionsListConstants::KEY_MYSQL_SSL_KEY => ConfigOptionsListConstants::INPUT_KEY_DB_SSL_KEY,
             ConfigOptionsListConstants::KEY_MYSQL_SSL_CERT => ConfigOptionsListConstants::INPUT_KEY_DB_SSL_CERT,
             ConfigOptionsListConstants::KEY_MYSQL_SSL_CA => ConfigOptionsListConstants::INPUT_KEY_DB_SSL_CA,
-            ConfigOptionsListConstants::KEY_MYSQL_SSL_VERIFY => ConfigOptionsListConstants::INPUT_KEY_DB_SSL_VERIFY
+            ConfigOptionsListConstants::KEY_MYSQL_SSL_VERIFY => ConfigOptionsListConstants::INPUT_KEY_DB_SSL_VERIFY,
         ];
         $driverOptions = [];
+
         foreach ($driverOptionKeys as $configKey => $driverOptionKey) {
             if ($this->optionExists($options, $driverOptionKey)) {
                 $driverOptions[$configKey] = $options[$driverOptionKey];
             }
         }
+
         return $driverOptions;
     }
 
@@ -42,11 +46,12 @@ class DriverOptions
      *
      * @param array $options
      * @param string $driverOptionKey
+     *
      * @return bool
      */
     private function optionExists($options, $driverOptionKey): bool
     {
         return isset($options[$driverOptionKey])
-            && ($options[$driverOptionKey] === false || !empty($options[$driverOptionKey]));
+            && ($options[$driverOptionKey] === false || ! empty($options[$driverOptionKey]));
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,24 @@
 
 namespace Magento\Setup\Fixtures;
 
+use Exception;
+use Generator;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Type;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\ConfigurableProduct\Api\LinkManagementInterface;
+use Magento\ConfigurableProduct\Api\OptionRepositoryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Framework\Stdlib\DateTime;
+use Magento\Sales\Model\ResourceModel\Order;
+use Magento\Sales\Model\ResourceModel\Order\Item;
+use Magento\SalesRule\Model\ResourceModel\Rule;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use RuntimeException;
 
 /**
  * Fixture generator for Order entities with configurable number of different types of order items.
@@ -50,56 +69,56 @@ class OrdersFixture extends Fixture
      *
      * @var string
      */
-    const BATCH_SIZE = 1000;
+    public const BATCH_SIZE = 1000;
 
     /**
      * Product type for "big" configurable products.
      *
      * @var string
      */
-    const BIG_CONFIGURABLE_TYPE = 'big_configurable';
+    public const BIG_CONFIGURABLE_TYPE = 'big_configurable';
 
     /**
      * Default value for minimum items (simple) per order configuration.
      *
      * @var int
      */
-    const ORDER_SIMPLE_PRODUCT_COUNT_FROM = 2;
+    public const ORDER_SIMPLE_PRODUCT_COUNT_FROM = 2;
 
     /**
      * Default value for maximum items (simple) per order configuration.
      *
      * @var int
      */
-    const ORDER_SIMPLE_PRODUCT_COUNT_TO = 2;
+    public const ORDER_SIMPLE_PRODUCT_COUNT_TO = 2;
 
     /**
      * Default value for minimum items (configurable) per order configuration.
      *
      * @var int
      */
-    const ORDER_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
+    public const ORDER_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
 
     /**
      * Default value for maximum items (configurable) per order configuration.
      *
      * @var int
      */
-    const ORDER_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
+    public const ORDER_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
 
     /**
      * Default value for minimum items (big configurable) per order configuration.
      *
      * @var int
      */
-    const ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
+    public const ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
 
     /**
      * Default value for maximum items (big configurable) per order configuration.
      *
      * @var int
      */
-    const ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
+    public const ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
 
     /**
      * Fixture execution priority.
@@ -118,37 +137,37 @@ class OrdersFixture extends Fixture
     /**
      * Array of resource connections ordered by tables.
      *
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface[]
+     * @var AdapterInterface[]
      */
     private $resourceConnections;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     * @var CollectionFactory
      */
     private $productCollectionFactory;
 
     /**
-     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * @var \Magento\ConfigurableProduct\Api\OptionRepositoryInterface
+     * @var OptionRepositoryInterface
      */
     private $optionRepository;
 
     /**
-     * @var \Magento\ConfigurableProduct\Api\LinkManagementInterface
+     * @var LinkManagementInterface
      */
     private $linkManagement;
 
     /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -160,22 +179,22 @@ class OrdersFixture extends Fixture
     private $orderQuotesEnable = true;
 
     /**
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
-     * @param \Magento\ConfigurableProduct\Api\OptionRepositoryInterface $optionRepository
-     * @param \Magento\ConfigurableProduct\Api\LinkManagementInterface $linkManagement
-     * @param \Magento\Framework\Serialize\SerializerInterface $serializer
+     * @param StoreManagerInterface $storeManager
+     * @param CollectionFactory $productCollectionFactory
+     * @param ProductRepositoryInterface $productRepository
+     * @param OptionRepositoryInterface $optionRepository
+     * @param LinkManagementInterface $linkManagement
+     * @param SerializerInterface $serializer
      * @param FixtureModel $fixtureModel
      */
     public function __construct(
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-        \Magento\ConfigurableProduct\Api\OptionRepositoryInterface $optionRepository,
-        \Magento\ConfigurableProduct\Api\LinkManagementInterface $linkManagement,
-        \Magento\Framework\Serialize\SerializerInterface $serializer,
-        FixtureModel $fixtureModel
+        StoreManagerInterface $storeManager,
+        CollectionFactory $productCollectionFactory,
+        ProductRepositoryInterface $productRepository,
+        OptionRepositoryInterface $optionRepository,
+        LinkManagementInterface $linkManagement,
+        SerializerInterface $serializer,
+        FixtureModel $fixtureModel,
     ) {
         $this->storeManager = $storeManager;
         $this->productCollectionFactory = $productCollectionFactory;
@@ -187,88 +206,94 @@ class OrdersFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * Design of Performance Fixture Generators require generator classes to override Fixture Model's execute method.
      *
-     * @throws \Exception Any exception raised during DB query.
+     * @throws Exception Any exception raised during DB query.
+     *
      * @return void
+     *
      * @SuppressWarnings(PHPMD)
      */
     public function execute()
     {
         $orderSimpleCountFrom = (int)$this->fixtureModel->getValue(
             'order_simple_product_count_from',
-            self::ORDER_SIMPLE_PRODUCT_COUNT_FROM
+            self::ORDER_SIMPLE_PRODUCT_COUNT_FROM,
         );
         $orderSimpleCountTo = (int)$this->fixtureModel->getValue(
             'order_simple_product_count_to',
-            self::ORDER_SIMPLE_PRODUCT_COUNT_TO
+            self::ORDER_SIMPLE_PRODUCT_COUNT_TO,
         );
         $orderConfigurableCountFrom = (int)$this->fixtureModel->getValue(
             'order_configurable_product_count_from',
-            self::ORDER_CONFIGURABLE_PRODUCT_COUNT_FROM
+            self::ORDER_CONFIGURABLE_PRODUCT_COUNT_FROM,
         );
         $orderConfigurableCountTo = (int)$this->fixtureModel->getValue(
             'order_configurable_product_count_to',
-            self::ORDER_CONFIGURABLE_PRODUCT_COUNT_TO
+            self::ORDER_CONFIGURABLE_PRODUCT_COUNT_TO,
         );
         $orderBigConfigurableCountFrom = (int)$this->fixtureModel->getValue(
             'order_big_configurable_product_count_from',
-            self::ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_FROM
+            self::ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_FROM,
         );
         $orderBigConfigurableCountTo = (int)$this->fixtureModel->getValue(
             'order_big_configurable_product_count_to',
-            self::ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_TO
+            self::ORDER_BIG_CONFIGURABLE_PRODUCT_COUNT_TO,
         );
         $this->orderQuotesEnable = (bool)$this->fixtureModel->getValue('order_quotes_enable', true);
 
         $entityId = $this->getMaxEntityId(
             'sales_order',
-            \Magento\Sales\Model\ResourceModel\Order::class,
-            'entity_id'
+            Order::class,
+            'entity_id',
         );
         $requestedOrders = (int)$this->fixtureModel->getValue('orders', 0);
+
         if ($requestedOrders - $entityId < 1) {
             return;
         }
 
         $ruleId = $this->getMaxEntityId(
             'salesrule',
-            \Magento\SalesRule\Model\ResourceModel\Rule::class,
-            'rule_id'
+            Rule::class,
+            'rule_id',
         );
 
         $maxItemId = $this->getMaxEntityId(
             'sales_order_item',
-            \Magento\Sales\Model\ResourceModel\Order\Item::class,
-            'item_id'
+            Item::class,
+            'item_id',
         );
         $maxItemsPerOrder = $orderSimpleCountTo + ($orderConfigurableCountTo + $orderBigConfigurableCountTo) * 2;
 
-        /** @var \Generator $itemIdSequence */
+        /** @var Generator $itemIdSequence */
         $itemIdSequence = $this->getItemIdSequence($maxItemId, $requestedOrders, $maxItemsPerOrder);
 
         $this->prepareQueryTemplates();
 
         $result = [];
+
         foreach ($this->storeManager->getStores() as $store) {
             $productsResult = [];
             $this->storeManager->setCurrentStore($store->getId());
 
             if ($orderSimpleCountTo > 0) {
                 $productsResult[Type::TYPE_SIMPLE] = $this->prepareSimpleProducts(
-                    $this->getProductIds($store, Type::TYPE_SIMPLE, $orderSimpleCountTo)
+                    $this->getProductIds($store, Type::TYPE_SIMPLE, $orderSimpleCountTo),
                 );
             }
+
             if ($orderConfigurableCountTo > 0) {
                 $productsResult[Configurable::TYPE_CODE] = $this->prepareConfigurableProducts(
-                    $this->getProductIds($store, Configurable::TYPE_CODE, $orderConfigurableCountTo)
+                    $this->getProductIds($store, Configurable::TYPE_CODE, $orderConfigurableCountTo),
                 );
             }
+
             if ($orderBigConfigurableCountTo > 0) {
                 $productsResult[self::BIG_CONFIGURABLE_TYPE] = $this->prepareConfigurableProducts(
-                    $this->getProductIds($store, self::BIG_CONFIGURABLE_TYPE, $orderBigConfigurableCountTo)
+                    $this->getProductIds($store, self::BIG_CONFIGURABLE_TYPE, $orderBigConfigurableCountTo),
                 );
             }
 
@@ -277,36 +302,20 @@ class OrdersFixture extends Fixture
                 implode(PHP_EOL, [
                     $this->storeManager->getWebsite($store->getWebsiteId())->getName(),
                     $this->storeManager->getGroup($store->getStoreGroupId())->getName(),
-                    $store->getName()
+                    $store->getName(),
                 ]),
-                $productsResult
+                $productsResult,
             ];
         }
 
-        $productStoreId = function ($index) use ($result) {
-            return $result[$index % count($result)][0];
-        };
-        $productStoreName = function ($index) use ($result) {
-            return $result[$index % count($result)][1];
-        };
-        $productId = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['id'];
-        };
-        $productSku = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['sku'];
-        };
-        $productName = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['name'];
-        };
-        $productBuyRequest = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['buyRequest'];
-        };
-        $productChildBuyRequest = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['childBuyRequest'];
-        };
-        $productChildId = function ($entityId, $index, $type) use ($result) {
-            return $result[$entityId % count($result)][2][$type][$index]['childId'];
-        };
+        $productStoreId = fn($index) => $result[$index % count($result)][0];
+        $productStoreName = fn($index) => $result[$index % count($result)][1];
+        $productId = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['id'];
+        $productSku = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['sku'];
+        $productName = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['name'];
+        $productBuyRequest = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['buyRequest'];
+        $productChildBuyRequest = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['childBuyRequest'];
+        $productChildId = fn($entityId, $index, $type) => $result[$entityId % count($result)][2][$type][$index]['childId'];
 
         $address = [
             '%firstName%' => 'First Name',
@@ -317,11 +326,12 @@ class OrdersFixture extends Fixture
             '%state%' => 'Alabama',
             '%country%' => 'US',
             '%zip%' => '11111',
-            '%phone%' => '911'
+            '%phone%' => '911',
         ];
 
         $batchNumber = 0;
         $entityId++;
+
         while ($entityId <= $requestedOrders) {
             $batchNumber++;
             // phpcs:ignore Magento2.Functions.DiscouragedFunction
@@ -330,14 +340,14 @@ class OrdersFixture extends Fixture
                 // phpcs:disable Magento2.Security.InsecureFunction
                 Type::TYPE_SIMPLE => mt_rand($orderSimpleCountFrom, $orderSimpleCountTo),
                 Configurable::TYPE_CODE => mt_rand($orderConfigurableCountFrom, $orderConfigurableCountTo),
-                self::BIG_CONFIGURABLE_TYPE => mt_rand($orderBigConfigurableCountFrom, $orderBigConfigurableCountTo)
+                self::BIG_CONFIGURABLE_TYPE => mt_rand($orderBigConfigurableCountFrom, $orderBigConfigurableCountTo),
                 // phpcs:enable
             ];
             $order = [
                 '%itemsPerOrder%' => array_sum($productCount),
                 '%orderNumber%' => 100000000 * $productStoreId($entityId) + $entityId,
                 '%email%' => "order_{$entityId}@example.com",
-                '%time%' => date(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT),
+                '%time%' => date(DateTime::DATETIME_PHP_FORMAT),
                 '%productStoreId%' => $productStoreId($entityId),
                 '%productStoreName%' => $productStoreName($entityId),
                 '%entityId%' => $entityId,
@@ -377,9 +387,9 @@ class OrdersFixture extends Fixture
                         '%code%' => 'info_buyRequest',
                         '%value%' => $this->serializer->serialize([
                             'product' => $productId($entityId, $i, Type::TYPE_SIMPLE),
-                            'qty' => "1",
-                            'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw'
-                        ])
+                            'qty' => '1',
+                            'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw',
+                        ]),
                     ]);
                     $itemIdSequence->next();
                 }
@@ -395,26 +405,26 @@ class OrdersFixture extends Fixture
                             '%productOptions%' => $productBuyRequest($entityId, $i, $type)['order'],
                             '%itemId%' => $parentItemId,
                             '%parentItemId%' => 'null',
-                            '%productType%' => Configurable::TYPE_CODE
+                            '%productType%' => Configurable::TYPE_CODE,
                         ];
                         $this->query('sales_order_item', $order, $itemData);
                         $this->query('quote_item', $order, $itemData);
                         $this->query('quote_item_option', $order, $itemData, [
                             '%code%' => 'info_buyRequest',
-                            '%value%' => $productBuyRequest($entityId, $i, $type)['quote']
+                            '%value%' => $productBuyRequest($entityId, $i, $type)['quote'],
                         ]);
                         $this->query('quote_item_option', $order, $itemData, [
                             '%code%' => 'attributes',
-                            '%value%' => $productBuyRequest($entityId, $i, $type)['super_attribute']
+                            '%value%' => $productBuyRequest($entityId, $i, $type)['super_attribute'],
                         ]);
                         $itemData['%productId%'] = $productChildId($entityId, $i, $type);
                         $this->query('quote_item_option', $itemData, [
-                            '%code%' => "product_qty_" . $productChildId($entityId, $i, $type),
-                            '%value%' => "1"
+                            '%code%' => 'product_qty_' . $productChildId($entityId, $i, $type),
+                            '%value%' => '1',
                         ]);
                         $this->query('quote_item_option', $itemData, [
-                            '%code%' => "simple_product",
-                            '%value%' => $productChildId($entityId, $i, $type)
+                            '%code%' => 'simple_product',
+                            '%value%' => $productChildId($entityId, $i, $type),
                         ]);
                         $itemIdSequence->next();
 
@@ -426,28 +436,29 @@ class OrdersFixture extends Fixture
                             '%productOptions%' => $productChildBuyRequest($entityId, $i, $type)['order'],
                             '%itemId%' => $itemIdSequence->current(),
                             '%parentItemId%' => $parentItemId,
-                            '%productType%' => Type::TYPE_SIMPLE
+                            '%productType%' => Type::TYPE_SIMPLE,
                         ];
 
                         $this->query('sales_order_item', $order, $itemData);
                         $this->query('quote_item', $order, $itemData);
                         $this->query('quote_item_option', $itemData, [
-                            '%code%' => "info_buyRequest",
-                            '%value%' => $productChildBuyRequest($entityId, $i, $type)['quote']
+                            '%code%' => 'info_buyRequest',
+                            '%value%' => $productChildBuyRequest($entityId, $i, $type)['quote'],
                         ]);
                         $this->query('quote_item_option', $itemData, [
-                            '%code%' => "parent_product_id",
-                            '%value%' => $productId($entityId, $i, $type)
+                            '%code%' => 'parent_product_id',
+                            '%value%' => $productId($entityId, $i, $type),
                         ]);
                         $itemIdSequence->next();
                     }
                 }
-            } catch (\Exception $lastException) {
+            } catch (Exception $lastException) {
                 foreach ($this->resourceConnections as $connection) {
                     if ($connection->getTransactionLevel() > 0) {
                         $connection->rollBack();
                     }
                 }
+
                 throw $lastException;
             }
 
@@ -466,6 +477,67 @@ class OrdersFixture extends Fixture
     }
 
     /**
+     * Build and execute query.
+     *
+     * Builds a database query by replacing placeholder values in the cached queries and executes query in appropriate
+     * DB connection (if setup). Additionally filters out quote-related queries, if appropriate flag is set.
+     *
+     * @param string $table
+     * @param array $replacements
+     *
+     * @return void
+     */
+    protected function query($table, ...$replacements)
+    {
+        if (! $this->orderQuotesEnable && str_contains($table, 'quote')) {
+            return;
+        }
+        $query = $this->queryTemplates[$table];
+
+        foreach ($replacements as $data) {
+            $query = str_replace(array_keys($data), array_values($data), $query);
+        }
+
+        $this->resourceConnections[$table]->query($query);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getActionTitle()
+    {
+        return 'Generating orders';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function introduceParamLabels()
+    {
+        return [
+            'orders' => 'Orders',
+        ];
+    }
+
+    /**
+     * Get real table name for db table, validated by db adapter.
+     *
+     * In case prefix or other features mutating default table names are used.
+     *
+     * @param string $tableName
+     * @param string $resourceName
+     *
+     * @return string
+     */
+    public function getTableName($tableName, $resourceName)
+    {
+        /** @var AbstractDb $resource */
+        $resource = $this->fixtureModel->getObjectManager()->get($resourceName);
+
+        return $resource->getConnection()->getTableName($resource->getTable($tableName));
+    }
+
+    /**
      * Load and prepare INSERT query templates data from external file.
      *
      * Queries are prepared using external json file, where keys are DB column names and values represent data,
@@ -477,31 +549,35 @@ class OrdersFixture extends Fixture
      */
     private function prepareQueryTemplates()
     {
-        $fileName = __DIR__ . DIRECTORY_SEPARATOR . "_files" . DIRECTORY_SEPARATOR . "orders_fixture_data.json";
+        $fileName = __DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'orders_fixture_data.json';
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
         $templateData = json_decode(file_get_contents(realpath($fileName)), true);
+
         foreach ($templateData as $table => $template) {
             if (isset($template['_table'])) {
                 $table = $template['_table'];
                 unset($template['_table']);
             }
+
             if (isset($template['_resource'])) {
                 $resource = $template['_resource'];
                 unset($template['_resource']);
             } else {
-                $resource = explode("_", $table);
+                $resource = explode('_', $table);
+
                 foreach ($resource as &$item) {
                     $item = ucfirst($item);
                 }
-                $resource = "Magento\\"
+                $resource = 'Magento\\'
                     . array_shift($resource)
-                    . "\\Model\\ResourceModel\\"
-                    . implode("\\", $resource);
+                    . '\\Model\\ResourceModel\\'
+                    . implode('\\', $resource);
             }
 
             $tableName = $this->getTableName($table, $resource);
 
-            $querySuffix = "";
+            $querySuffix = '';
+
             if (isset($template['_query_suffix'])) {
                 $querySuffix = $template['_query_suffix'];
                 unset($template['_query_suffix']);
@@ -510,10 +586,11 @@ class OrdersFixture extends Fixture
             $fields = implode(', ', array_keys($template));
             $values = implode(', ', array_values($template));
 
-            /** @var \Magento\Framework\Model\ResourceModel\Db\AbstractDb $resourceModel */
+            /** @var AbstractDb $resourceModel */
             $resourceModel = $this->fixtureModel->getObjectManager()->get($resource);
             $connection = $resourceModel->getConnection();
-            if ($connection->getTransactionLevel() == 0) {
+
+            if ($connection->getTransactionLevel() === 0) {
                 $connection->beginTransaction();
             }
 
@@ -521,29 +598,6 @@ class OrdersFixture extends Fixture
             $this->queryTemplates[$table] = "INSERT INTO `{$tableName}` ({$fields}) VALUES ({$values}){$querySuffix};";
             $this->resourceConnections[$table] = $connection;
         }
-    }
-
-    /**
-     * Build and execute query.
-     *
-     * Builds a database query by replacing placeholder values in the cached queries and executes query in appropriate
-     * DB connection (if setup). Additionally filters out quote-related queries, if appropriate flag is set.
-     *
-     * @param string $table
-     * @param array $replacements
-     * @return void
-     */
-    protected function query($table, ... $replacements)
-    {
-        if (!$this->orderQuotesEnable && strpos($table, "quote") !== false) {
-            return;
-        }
-        $query = $this->queryTemplates[$table];
-        foreach ($replacements as $data) {
-            $query = str_replace(array_keys($data), array_values($data), $query);
-        }
-
-        $this->resourceConnections[$table]->query($query);
     }
 
     /**
@@ -555,18 +609,20 @@ class OrdersFixture extends Fixture
      * @param string $tableName
      * @param string $resourceName
      * @param string $column
+     *
      * @return int
      */
     private function getMaxEntityId($tableName, $resourceName, $column = 'entity_id')
     {
         $tableName = $this->getTableName(
             $tableName,
-            $resourceName
+            $resourceName,
         );
 
         /** @var \Magento\Framework\Model\ResourceModel\Db\VersionControl\AbstractDb $resource */
         $resource = $this->fixtureModel->getObjectManager()->get($resourceName);
         $connection = $resource->getConnection();
+
         // phpcs:ignore Magento2.SQL.RawQuery
         return (int)$connection->query("SELECT MAX(`{$column}`) FROM `{$tableName}`;")->fetchColumn(0);
     }
@@ -574,13 +630,15 @@ class OrdersFixture extends Fixture
     /**
      * Get a limited amount of product id's from a collection filtered by store and specific product type.
      *
-     * @param \Magento\Store\Api\Data\StoreInterface $store
+     * @param StoreInterface $store
      * @param string $typeId
      * @param int $limit
+     *
+     * @throws RuntimeException
+     *
      * @return array
-     * @throws \RuntimeException
      */
-    private function getProductIds(\Magento\Store\Api\Data\StoreInterface $store, $typeId, $limit = null)
+    private function getProductIds(StoreInterface $store, $typeId, $limit = null)
     {
         /** @var $productCollection \Magento\Catalog\Model\ResourceModel\Product\Collection */
         $productCollection = $this->productCollectionFactory->create();
@@ -593,13 +651,15 @@ class OrdersFixture extends Fixture
             $productCollection->getSelect()->where(" type_id = '" . Configurable::TYPE_CODE . "' ");
             $productCollection->getSelect()->where(" sku LIKE 'Big%' ");
         } else {
-            $productCollection->getSelect()->where(" type_id = '$typeId' ");
+            $productCollection->getSelect()->where(" type_id = '{$typeId}' ");
             $productCollection->getSelect()->where(" sku NOT LIKE 'Big%' ");
         }
         $ids = $productCollection->getAllIds($limit);
+
         if ($limit && count($ids) < $limit) {
-            throw new \RuntimeException('Not enough products of type: ' . $typeId);
+            throw new RuntimeException('Not enough products of type: ' . $typeId);
         }
+
         return $ids;
     }
 
@@ -609,6 +669,7 @@ class OrdersFixture extends Fixture
      * Based on the Product Id's load data, which is required to replace placeholders in queries.
      *
      * @param array $productIds
+     *
      * @return array
      */
     private function prepareSimpleProducts(array $productIds = [])
@@ -621,13 +682,14 @@ class OrdersFixture extends Fixture
             $productsResult[$key]['sku'] = $simpleProduct->getSku();
             $productsResult[$key]['name'] = $simpleProduct->getName();
             $productsResult[$key]['buyRequest'] = $this->serializer->serialize([
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,",
-                    "product" => $simpleId,
-                    "qty" => "1"
-                ]
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,',
+                    'product' => $simpleId,
+                    'qty' => '1',
+                ],
             ]);
         }
+
         return $productsResult;
     }
 
@@ -637,11 +699,13 @@ class OrdersFixture extends Fixture
      * Based on the Product Id's load data, which is required to replace placeholders in queries.
      *
      * @param array $productIds
+     *
      * @return array
      */
     private function prepareConfigurableProducts(array $productIds = [])
     {
         $productsResult = [];
+
         foreach ($productIds as $key => $configurableId) {
             $configurableProduct = $this->productRepository->getById($configurableId);
             $options = $this->optionRepository->getList($configurableProduct->getSku());
@@ -652,44 +716,44 @@ class OrdersFixture extends Fixture
 
             $attributesInfo = [];
             $superAttribute = [];
+
             foreach ($options as $option) {
                 $attributesInfo[] = [
-                    "label" => $option->getLabel(),
-                    "value" => $option['options']['0']['label'],
-                    "option_id" => $option->getAttributeId(),
-                    "option_value" => $option->getValues()[0]->getValueIndex()
+                    'label' => $option->getLabel(),
+                    'value' => $option['options']['0']['label'],
+                    'option_id' => $option->getAttributeId(),
+                    'option_value' => $option->getValues()[0]->getValueIndex(),
                 ];
                 $superAttribute[$option->getAttributeId()] = $option->getValues()[0]->getValueIndex();
             }
 
             $configurableBuyRequest = [
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw",
-                    "product" => $configurableId,
-                    "selected_configurable_option" => $simpleId,
-                    "related_product" => "",
-                    "super_attribute" => $superAttribute,
-                    "qty" => 1
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw',
+                    'product' => $configurableId,
+                    'selected_configurable_option' => $simpleId,
+                    'related_product' => '',
+                    'super_attribute' => $superAttribute,
+                    'qty' => 1,
                 ],
-                "attributes_info" => $attributesInfo,
-                "simple_name" => $configurableChild->getName(),
-                "simple_sku" => $configurableChild->getSku(),
+                'attributes_info' => $attributesInfo,
+                'simple_name' => $configurableChild->getName(),
+                'simple_sku' => $configurableChild->getSku(),
             ];
             $simpleBuyRequest = [
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,",
-                    "product" => $configurableId,
-                    "selected_configurable_option" => $simpleId,
-                    "related_product" => "",
-                    "super_attribute" => $superAttribute,
-                    "qty" => "1"
-                ]
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,',
+                    'product' => $configurableId,
+                    'selected_configurable_option' => $simpleId,
+                    'related_product' => '',
+                    'super_attribute' => $superAttribute,
+                    'qty' => '1',
+                ],
             ];
 
             $quoteConfigurableBuyRequest = $configurableBuyRequest['info_buyRequest'];
             $quoteSimpleBuyRequest = $simpleBuyRequest['info_buyRequest'];
-            unset($quoteConfigurableBuyRequest['selected_configurable_option']);
-            unset($quoteSimpleBuyRequest['selected_configurable_option']);
+            unset($quoteConfigurableBuyRequest['selected_configurable_option'], $quoteSimpleBuyRequest['selected_configurable_option']);
 
             $productsResult[$key]['id'] = $configurableId;
             $productsResult[$key]['sku'] = $simpleSku;
@@ -698,13 +762,14 @@ class OrdersFixture extends Fixture
             $productsResult[$key]['buyRequest'] = [
                 'order' => $this->serializer->serialize($configurableBuyRequest),
                 'quote' => $this->serializer->serialize($quoteConfigurableBuyRequest),
-                'super_attribute' => $this->serializer->serialize($superAttribute)
+                'super_attribute' => $this->serializer->serialize($superAttribute),
             ];
             $productsResult[$key]['childBuyRequest'] = [
                 'order' => $this->serializer->serialize($simpleBuyRequest),
                 'quote' => $this->serializer->serialize($quoteSimpleBuyRequest),
             ];
         }
+
         return $productsResult;
     }
 
@@ -726,50 +791,18 @@ class OrdersFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getActionTitle()
-    {
-        return 'Generating orders';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function introduceParamLabels()
-    {
-        return [
-            'orders' => 'Orders'
-        ];
-    }
-
-    /**
-     * Get real table name for db table, validated by db adapter.
-     *
-     * In case prefix or other features mutating default table names are used.
-     *
-     * @param string $tableName
-     * @param string $resourceName
-     * @return string
-     */
-    public function getTableName($tableName, $resourceName)
-    {
-        /** @var \Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource */
-        $resource = $this->fixtureModel->getObjectManager()->get($resourceName);
-        return $resource->getConnection()->getTableName($resource->getTable($tableName));
-    }
-
-    /**
-     * Get sequence for order items
+     * Get sequence for order items.
      *
      * @param int $maxItemId
      * @param int $requestedOrders
      * @param int $maxItemsPerOrder
-     * @return \Generator
+     *
+     * @return Generator
      */
     private function getItemIdSequence($maxItemId, $requestedOrders, $maxItemsPerOrder)
     {
         $requestedItems = $requestedOrders * $maxItemsPerOrder;
+
         for ($i = $maxItemId + 1; $i <= $requestedItems; $i++) {
             yield $i;
         }

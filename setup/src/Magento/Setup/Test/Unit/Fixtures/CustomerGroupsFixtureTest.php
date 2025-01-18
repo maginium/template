@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,7 +19,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Test Customer Groups generation
+ * Test Customer Groups generation.
  */
 class CustomerGroupsFixtureTest extends TestCase
 {
@@ -52,7 +53,10 @@ class CustomerGroupsFixtureTest extends TestCase
      */
     private $model;
 
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
             ->disableOriginalConstructor()
@@ -122,7 +126,7 @@ class CustomerGroupsFixtureTest extends TestCase
             $this->fixtureModelMock,
             $this->groupCollectionFactoryMock,
             $this->groupRepositoryMock,
-            $this->groupFactoryMock
+            $this->groupFactoryMock,
         );
 
         $this->model->execute();

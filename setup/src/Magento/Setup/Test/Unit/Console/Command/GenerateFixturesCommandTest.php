@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,13 +26,10 @@ class GenerateFixturesCommandTest extends TestCase
      */
     private $command;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModel = $this->createMock(FixtureModel::class);
-        $this->command = new GenerateFixturesCommand($this->fixtureModel);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $this->fixtureModel->expects($this->once())->method('loadConfig')->with('path_to_profile.xml');
         $this->fixtureModel->expects($this->once())->method('initObjectManager');
@@ -41,7 +39,10 @@ class GenerateFixturesCommandTest extends TestCase
         $commandTester->execute(['profile' => 'path_to_profile.xml']);
     }
 
-    public function testExecuteInvalidLanguageArgument()
+    /**
+     * @test
+     */
+    public function executeInvalidLanguageArgument()
     {
         $this->expectException('RuntimeException');
         $this->expectExceptionMessage('Not enough arguments');
@@ -49,11 +50,20 @@ class GenerateFixturesCommandTest extends TestCase
         $commandTester->execute([]);
     }
 
-    public function testSkipReindexOption()
+    /**
+     * @test
+     */
+    public function skipReindexOption()
     {
         $this->fixtureModel->expects($this->never())->method('reindex');
 
         $commandTester = new CommandTester($this->command);
         $commandTester->execute(['profile' => 'path_to_profile.xml', '--skip-reindex' => true]);
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModel = $this->createMock(FixtureModel::class);
+        $this->command = new GenerateFixturesCommand($this->fixtureModel);
     }
 }

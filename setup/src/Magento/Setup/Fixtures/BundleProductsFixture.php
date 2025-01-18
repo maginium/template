@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,6 +12,9 @@ namespace Magento\Setup\Fixtures;
 use Magento\Bundle\Api\Data\LinkInterface;
 use Magento\Bundle\Model\Product\Type;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Setup\Model\FixtureGenerator\BundleProductGenerator;
+use Magento\Setup\Model\FixtureGenerator\ProductGenerator;
 
 /**
  * Generate bundle products based on profile configuration
@@ -16,20 +22,21 @@ use Magento\Catalog\Model\Product\Visibility;
  * Support the following format:
  * <bundle_products>{products amount}</bundle_products>
  * <bundle_products_options>{bundle product options amount}</bundle_products_options>
- * <bundle_products_variation>{amount of simple products per each option}</bundle_products_variation>
+ * <bundle_products_variation>{amount of simple products per each option}</bundle_products_variation>.
  *
  * Products will be uniformly distributed per categories and websites
  * If node "assign_entities_to_all_websites" from profile is set to "1" then products will be assigned to all websites
  *
  * @see setup/performance-toolkit/profiles/ce/small.xml
+ *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class BundleProductsFixture extends Fixture
 {
     /**
-     * Bundle sku pattern with entity number and suffix. Suffix equals "{options}-{variations_per_option}"
+     * Bundle sku pattern with entity number and suffix. Suffix equals "{options}-{variations_per_option}".
      */
-    const SKU_PATTERN = 'Bundle Product %s - %s';
+    public const SKU_PATTERN = 'Bundle Product %s - %s';
 
     /**
      * @var int
@@ -37,17 +44,17 @@ class BundleProductsFixture extends Fixture
     protected $priority = 42;
 
     /**
-     * @var \Magento\Setup\Model\FixtureGenerator\ProductGenerator
+     * @var ProductGenerator
      */
     private $productGenerator;
 
     /**
-     * @var \Magento\Setup\Model\FixtureGenerator\BundleProductGenerator
+     * @var BundleProductGenerator
      */
     private $bundleProductGenerator;
 
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     * @var CollectionFactory
      */
     private $productCollectionFactory;
 
@@ -73,21 +80,21 @@ class BundleProductsFixture extends Fixture
 
     /**
      * @param FixtureModel $fixtureModel
-     * @param \Magento\Setup\Model\FixtureGenerator\ProductGenerator $productGenerator
-     * @param \Magento\Setup\Model\FixtureGenerator\BundleProductGenerator $bundleProductGenerator
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+     * @param ProductGenerator $productGenerator
+     * @param BundleProductGenerator $bundleProductGenerator
+     * @param CollectionFactory $productCollectionFactory
      * @param ProductsAmountProvider $productsAmountProvider
      * @param WebsiteCategoryProvider $websiteCategoryProvider
      * @param PriceProvider $priceProvider
      */
     public function __construct(
         FixtureModel $fixtureModel,
-        \Magento\Setup\Model\FixtureGenerator\ProductGenerator $productGenerator,
-        \Magento\Setup\Model\FixtureGenerator\BundleProductGenerator $bundleProductGenerator,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
+        ProductGenerator $productGenerator,
+        BundleProductGenerator $bundleProductGenerator,
+        CollectionFactory $productCollectionFactory,
         ProductsAmountProvider $productsAmountProvider,
         WebsiteCategoryProvider $websiteCategoryProvider,
-        PriceProvider $priceProvider
+        PriceProvider $priceProvider,
     ) {
         parent::__construct($fixtureModel);
         $this->productGenerator = $productGenerator;
@@ -99,7 +106,7 @@ class BundleProductsFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
@@ -112,13 +119,13 @@ class BundleProductsFixture extends Fixture
         $variationCount = $bundleOptions * $bundleProductsPerOption;
         $bundlesAmount = $this->productsAmountProvider->getAmount(
             $bundlesAmount,
-            $this->getBundleSkuPattern($bundleOptionSuffix)
+            $this->getBundleSkuPattern($bundleOptionSuffix),
         );
 
-        if (!$bundlesAmount) {
+        if (! $bundlesAmount) {
             return;
         }
-        $variationSkuClosure = function ($productId, $entityNumber) use ($bundleOptionSuffix, $variationCount) {
+        $variationSkuClosure = function($productId, $entityNumber) use ($bundleOptionSuffix, $variationCount) {
             $productIndex = $this->getBundleProductIndex($entityNumber, $variationCount);
             $variationIndex = $this->getBundleVariationIndex($entityNumber, $variationCount);
 
@@ -127,10 +134,8 @@ class BundleProductsFixture extends Fixture
         $fixtureMap = [
             'name' => $variationSkuClosure,
             'sku' => $variationSkuClosure,
-            'price' => function ($index, $entityNumber) {
-                return $this->priceProvider->getPrice($entityNumber);
-            },
-            'website_ids' => function ($index, $entityNumber) use ($variationCount) {
+            'price' => fn($index, $entityNumber) => $this->priceProvider->getPrice($entityNumber),
+            'website_ids' => function($index, $entityNumber) use ($variationCount) {
                 $configurableIndex = $this->getBundleProductIndex($entityNumber, $variationCount);
 
                 return $this->websiteCategoryProvider->getWebsiteIds($configurableIndex);
@@ -143,28 +148,24 @@ class BundleProductsFixture extends Fixture
             LinkInterface::PRICE_TYPE_FIXED,
             LinkInterface::PRICE_TYPE_PERCENT,
         ];
-        $priceTypeClosure = function ($index) use ($optionPriceType) {
-            return $optionPriceType[$index % count($optionPriceType)];
-        };
-        $skuClosure = function ($index, $entityNumber) use ($bundleOptionSuffix) {
-            return sprintf(
-                $this->getBundleSkuPattern($bundleOptionSuffix),
-                $entityNumber + $this->getNewProductStartIndex()
-            );
-        };
+        $priceTypeClosure = fn($index) => $optionPriceType[$index % count($optionPriceType)];
+        $skuClosure = fn($index, $entityNumber) => sprintf(
+            $this->getBundleSkuPattern($bundleOptionSuffix),
+            $entityNumber + $this->getNewProductStartIndex(),
+        );
         $fixtureMap = [
             '_bundle_options' => $bundleOptions,
             '_bundle_products_per_option' => $bundleProductsPerOption,
             '_bundle_variation_sku_pattern' => sprintf(
                 $this->getBundleOptionItemSkuPattern($bundleOptionSuffix),
                 $this->getNewProductStartIndex(),
-                '%s'
+                '%s',
             ),
             'type_id' => Type::TYPE_CODE,
             'name' => $skuClosure,
             'sku' => $skuClosure,
             'meta_title' => $skuClosure,
-            'price' => function ($index) use ($priceTypeClosure) {
+            'price' => function($index) use ($priceTypeClosure) {
                 // phpcs:ignore Magento2.Functions.DiscouragedFunction
                 return $priceTypeClosure($index) === LinkInterface::PRICE_TYPE_PERCENT
                     // mt_rand() here is not for cryptographic use.
@@ -173,20 +174,35 @@ class BundleProductsFixture extends Fixture
                     : $this->priceProvider->getPrice($index);
             },
             'priceType' => $priceTypeClosure,
-            'website_ids' => function ($index, $entityNumber) {
-                return $this->websiteCategoryProvider->getWebsiteIds($entityNumber + $this->getNewProductStartIndex());
-            },
-            'category_ids' => function ($index, $entityNumber) {
-                return $this->websiteCategoryProvider->getCategoryId($entityNumber + $this->getNewProductStartIndex());
-            },
+            'website_ids' => fn($index, $entityNumber) => $this->websiteCategoryProvider->getWebsiteIds($entityNumber + $this->getNewProductStartIndex()),
+            'category_ids' => fn($index, $entityNumber) => $this->websiteCategoryProvider->getCategoryId($entityNumber + $this->getNewProductStartIndex()),
         ];
         $this->bundleProductGenerator->generate($bundlesAmount, $fixtureMap);
     }
 
     /**
-     * Get sku pattern for bundle product option item
+     * {@inheritdoc}
+     */
+    public function getActionTitle()
+    {
+        return 'Generating bundle products';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function introduceParamLabels()
+    {
+        return [
+            'bundle_products' => 'Bundle products',
+        ];
+    }
+
+    /**
+     * Get sku pattern for bundle product option item.
      *
      * @param string $bundleOptionSuffix
+     *
      * @return string
      */
     private function getBundleOptionItemSkuPattern($bundleOptionSuffix)
@@ -195,9 +211,10 @@ class BundleProductsFixture extends Fixture
     }
 
     /**
-     * Get sku pattern for bundle product. Replace suffix pattern with passed value
+     * Get sku pattern for bundle product. Replace suffix pattern with passed value.
      *
      * @param string $bundleOptionSuffix
+     *
      * @return string
      */
     private function getBundleSkuPattern($bundleOptionSuffix)
@@ -206,26 +223,27 @@ class BundleProductsFixture extends Fixture
     }
 
     /**
-     * Get start index for product number generation
+     * Get start index for product number generation.
      *
      * @return int
      */
     private function getNewProductStartIndex()
     {
-        if (null === $this->productStartIndex) {
+        if ($this->productStartIndex === null) {
             $this->productStartIndex = $this->productCollectionFactory->create()
-                    ->addFieldToFilter('type_id', Type::TYPE_CODE)
-                    ->getSize() + 1;
+                ->addFieldToFilter('type_id', Type::TYPE_CODE)
+                ->getSize() + 1;
         }
 
         return $this->productStartIndex;
     }
 
     /**
-     * Get bundle product index number
+     * Get bundle product index number.
      *
      * @param int $entityNumber
      * @param int $variationCount
+     *
      * @return float
      */
     private function getBundleProductIndex($entityNumber, $variationCount)
@@ -234,32 +252,15 @@ class BundleProductsFixture extends Fixture
     }
 
     /**
-     * Get bundle variation index number
+     * Get bundle variation index number.
      *
      * @param int $entityNumber
      * @param int $variationCount
+     *
      * @return float
      */
     private function getBundleVariationIndex($entityNumber, $variationCount)
     {
         return $entityNumber % $variationCount + 1;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionTitle()
-    {
-        return 'Generating bundle products';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function introduceParamLabels()
-    {
-        return [
-            'bundle_products' => 'Bundle products',
-        ];
     }
 }

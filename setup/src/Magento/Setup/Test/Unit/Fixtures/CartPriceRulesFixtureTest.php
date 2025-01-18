@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -16,6 +17,7 @@ use Magento\SalesRule\Model\Rule\Condition\Address;
 use Magento\SalesRule\Model\Rule\Condition\Combine;
 use Magento\SalesRule\Model\Rule\Condition\Product;
 use Magento\SalesRule\Model\Rule\Condition\Product\Found;
+use Magento\SalesRule\Model\RuleFactory;
 use Magento\Setup\Fixtures\CartPriceRulesFixture;
 use Magento\Setup\Fixtures\FixtureModel;
 use Magento\Store\Model\Store;
@@ -23,6 +25,7 @@ use Magento\Store\Model\StoreManager;
 use Magento\Store\Model\Website;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 /**
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
@@ -40,18 +43,14 @@ class CartPriceRulesFixtureTest extends TestCase
     private $model;
 
     /**
-     * @var \Magento\SalesRule\Model\RuleFactory|MockObject
+     * @var RuleFactory|MockObject
      */
     private $ruleFactoryMock;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-        $this->ruleFactoryMock = $this->createPartialMock(\Magento\SalesRule\Model\RuleFactory::class, ['create']);
-        $this->model = new CartPriceRulesFixture($this->fixtureModelMock, $this->ruleFactoryMock);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $storeMock = $this->createMock(Store::class);
         $storeMock->expects($this->once())
@@ -74,7 +73,7 @@ class CartPriceRulesFixtureTest extends TestCase
             true,
             true,
             true,
-            ['getAllChildren']
+            ['getAllChildren'],
         );
         $abstractDbMock->expects($this->once())
             ->method('getAllChildren')
@@ -97,7 +96,7 @@ class CartPriceRulesFixtureTest extends TestCase
             ->willReturn('category_id');
 
         $objectValueMap = [
-            [Category::class, $categoryMock]
+            [Category::class, $categoryMock],
         ];
 
         $objectManagerMock = $this->createMock(ObjectManager::class);
@@ -111,7 +110,7 @@ class CartPriceRulesFixtureTest extends TestCase
         $valueMap = [
             ['cart_price_rules', 0, 1],
             ['cart_price_rules_floor', 3, 3],
-            ['cart_price_rules_advanced_type', false, false]
+            ['cart_price_rules_advanced_type', false, false],
         ];
 
         $this->fixtureModelMock
@@ -131,7 +130,10 @@ class CartPriceRulesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testNoFixtureConfigValue()
+    /**
+     * @test
+     */
+    public function noFixtureConfigValue()
     {
         $ruleMock = $this->createMock(Rule::class);
         $ruleMock->expects($this->never())->method('save');
@@ -158,16 +160,20 @@ class CartPriceRulesFixtureTest extends TestCase
      * @param int $ruleId
      * @param array $categoriesArray
      * @param int $ruleCount
+     *
      * @dataProvider dataProviderGenerateAdvancedCondition
+     *
+     * @test
      */
-    public function testGenerateAdvancedCondition($ruleId, $categoriesArray, $ruleCount)
+    public function generateAdvancedCondition($ruleId, $categoriesArray, $ruleCount)
     {
-        $reflection = new \ReflectionClass($this->model);
+        $reflection = new ReflectionClass($this->model);
         $reflectionProperty = $reflection->getProperty('cartPriceRulesCount');
         $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($this->model, $ruleCount);
 
         $result = $this->model->generateAdvancedCondition($ruleId, $categoriesArray);
+
         if ($ruleId < ($ruleCount - 200)) {
             $firstCondition = [
                 'type' => Product::class,
@@ -197,16 +203,16 @@ class CartPriceRulesFixtureTest extends TestCase
                         'new_child' => '',
                     ],
                     '1--1--1' => $firstCondition,
-                    '1--2' => $secondCondition
+                    '1--2' => $secondCondition,
                 ],
                 'actions' => [
                     1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Combine::class,
+                        'type' => Product\Combine::class,
                         'aggregator' => 'all',
                         'value' => '1',
                         'new_child' => '',
                     ],
-                ]
+                ],
             ];
         } else {
             // Shipping Region
@@ -240,16 +246,16 @@ class CartPriceRulesFixtureTest extends TestCase
                         'new_child' => '',
                     ],
                     '1--1' => $firstCondition,
-                    '1--2' => $secondCondition
+                    '1--2' => $secondCondition,
                 ],
                 'actions' => [
                     1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Combine::class,
+                        'type' => Product\Combine::class,
                         'aggregator' => 'all',
                         'value' => '1',
                         'new_child' => '',
                     ],
-                ]
+                ],
             ];
         }
         $this->assertSame($expected, $result);
@@ -262,22 +268,35 @@ class CartPriceRulesFixtureTest extends TestCase
     {
         return [
             [1, [[0]], 1],
-            [1, [[0]], 300]
+            [1, [[0]], 300],
         ];
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating cart price rules', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame(
             [
-                'cart_price_rules' => 'Cart Price Rules'
+                'cart_price_rules' => 'Cart Price Rules',
             ],
-            $this->model->introduceParamLabels()
+            $this->model->introduceParamLabels(),
         );
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+        $this->ruleFactoryMock = $this->createPartialMock(RuleFactory::class, ['create']);
+        $this->model = new CartPriceRulesFixture($this->fixtureModelMock, $this->ruleFactoryMock);
     }
 }

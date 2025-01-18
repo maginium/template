@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -32,7 +33,45 @@ class XmlScannerTest extends TestCase
     private array $testFiles = [];
 
     /**
-     * @inheritdoc
+     * @return void
+     *
+     * @test
+     */
+    public function collectEntities(): void
+    {
+        $className = 'Magento\Store\Model\Config\Invalidator\Proxy';
+        $this->logMock
+            ->method('add')
+            ->willReturnCallback(function($arg1, $arg2, $arg3) use ($className) {
+                if ($arg1 === 4 && $arg2 === $className && $arg3 === 'Invalid proxy class for ' .
+                    mb_substr($className, 0, -5)) {
+                    return;
+                }
+
+                if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Model\Element\Proxy') {
+                    return;
+                }
+
+                if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Model\Element2\Proxy') {
+                    return;
+                }
+
+                if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Model\Nested\Element\Proxy') {
+                    return;
+                }
+
+                if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Model\Nested\Element2\Proxy') {
+                    return;
+                }
+            });
+
+        $actual = $this->model->collectEntities($this->testFiles);
+        $expected = [];
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -40,7 +79,7 @@ class XmlScannerTest extends TestCase
         $objects = [
             [
                 LoggerInterface::class,
-                $this->createMock(LoggerInterface::class)
+                $this->createMock(LoggerInterface::class),
             ],
         ];
         $objectManagerHelper->prepareObjectManager($objects);
@@ -52,35 +91,9 @@ class XmlScannerTest extends TestCase
             $testDir . '/app/code/Magento/SomeModule/etc/di.xml',
             $testDir . '/app/code/Magento/SomeModule/view/frontend/default.xml',
         ];
-        require_once  __DIR__ . '/../../_files/app/code/Magento/SomeModule/Element.php';
-        require_once  __DIR__ . '/../../_files/app/code/Magento/SomeModule/NestedElement.php';
-    }
 
-    /**
-     * @return void
-     */
-    public function testCollectEntities(): void
-    {
-        $className = 'Magento\Store\Model\Config\Invalidator\Proxy';
-        $this->logMock
-            ->method('add')
-            ->willReturnCallback(function ($arg1, $arg2, $arg3) use ($className) {
-                if ($arg1 == 4 && $arg2 == $className && $arg3 == 'Invalid proxy class for ' .
-                    substr($className, 0, -5)) {
-                    return null;
-                } elseif ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Model\Element\Proxy') {
-                    return null;
-                } elseif ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Model\Element2\Proxy') {
-                    return null;
-                } elseif ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Model\Nested\Element\Proxy') {
-                    return null;
-                } elseif ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Model\Nested\Element2\Proxy') {
-                    return null;
-                }
-            });
+        require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/Element.php';
 
-        $actual = $this->model->collectEntities($this->testFiles);
-        $expected = [];
-        $this->assertEquals($expected, $actual);
+        require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/NestedElement.php';
     }
 }

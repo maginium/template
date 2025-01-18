@@ -1,15 +1,19 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Dictionary\Options;
 
-use Magento\Framework\App\Filesystem\DirectoryList;
+use InvalidArgumentException;
 use Magento\Framework\Component\ComponentRegistrar;
 
 /**
- * Dictionary generator options resolver
+ * Dictionary generator options resolver.
  */
 class Resolver implements ResolverInterface
 {
@@ -34,7 +38,7 @@ class Resolver implements ResolverInterface
     protected $componentRegistrar;
 
     /**
-     * Resolver construct
+     * Resolver construct.
      *
      * @param ComponentRegistrar $componentRegistrar
      * @param string $directory
@@ -43,7 +47,7 @@ class Resolver implements ResolverInterface
     public function __construct(
         ComponentRegistrar $componentRegistrar,
         $directory,
-        $withContext
+        $withContext,
     ) {
         $this->componentRegistrar = $componentRegistrar;
         $this->directory = $directory;
@@ -55,10 +59,10 @@ class Resolver implements ResolverInterface
      */
     public function getOptions()
     {
-        if (null === $this->options) {
+        if ($this->options === null) {
             if ($this->withContext) {
                 $directory = rtrim($this->directory, '\\/');
-                $this->directory = ($directory == '.' || $directory == '..') ? BP : realpath($directory);
+                $this->directory = ($directory === '.' || $directory === '..') ? BP : realpath($directory);
                 $moduleDirs = $this->getComponentDirectories(ComponentRegistrar::MODULE);
                 $themeDirs = $this->getComponentDirectories(ComponentRegistrar::THEME);
 
@@ -81,14 +85,14 @@ class Resolver implements ResolverInterface
                             [
                                 $this->directory . '/lib/web/mage/',
                                 $this->directory . '/lib/web/varien/',
-                            ]
+                            ],
                         ),
-                        'fileMask' => '/\.(js|phtml)$/'
+                        'fileMask' => '/\.(js|phtml)$/',
                     ],
                     [
                         'type' => 'xml',
                         'paths' => array_merge($moduleDirs, $themeDirs),
-                        'fileMask' => '/\.xml$/'
+                        'fileMask' => '/\.xml$/',
                     ],
                 ];
             } else {
@@ -99,43 +103,50 @@ class Resolver implements ResolverInterface
                     ['type' => 'xml', 'paths' => [$this->directory], 'fileMask' => '/\.xml$/'],
                 ];
             }
+
             foreach ($this->options as $option) {
                 $this->isValidPaths($option['paths']);
             }
         }
+
         return $this->options;
     }
 
     /**
      * @param array $directories
+     *
+     * @throws InvalidArgumentException
+     *
      * @return void
-     * @throws \InvalidArgumentException
      */
     protected function isValidPaths($directories)
     {
         foreach ($directories as $path) {
-            if (!is_dir($path)) {
+            if (! is_dir($path)) {
                 if ($this->withContext) {
-                    throw new \InvalidArgumentException('Specified path is not a Magento root directory');
-                } else {
-                    throw new \InvalidArgumentException('Specified path doesn\'t exist');
+                    throw new InvalidArgumentException('Specified path is not a Magento root directory');
                 }
+
+                throw new InvalidArgumentException('Specified path doesn\'t exist');
             }
         }
     }
 
     /**
-     * Get the given type component directories
+     * Get the given type component directories.
      *
      * @param string $componentType
+     *
      * @return array
      */
     private function getComponentDirectories($componentType)
     {
         $dirs = [];
+
         foreach ($this->componentRegistrar->getPaths($componentType) as $componentDir) {
             $dirs[] = $componentDir . '/';
         }
+
         return $dirs;
     }
 }

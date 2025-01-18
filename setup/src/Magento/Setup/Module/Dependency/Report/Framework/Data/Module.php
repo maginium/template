@@ -1,34 +1,38 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Framework\Data;
 
 /**
- * Module
+ * Module.
  */
 class Module
 {
     /**
-     * Module name
+     * Module name.
      *
      * @var string
      */
     protected $name;
 
     /**
-     * Module dependencies
+     * Module dependencies.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\Framework\Data\Dependency[]
+     * @var Dependency[]
      */
     protected $dependencies;
 
     /**
-     * Module construct
+     * Module construct.
      *
      * @param array $name
-     * @param \Magento\Setup\Module\Dependency\Report\Framework\Data\Dependency[] $dependencies
+     * @param Dependency[] $dependencies
      */
     public function __construct($name, array $dependencies = [])
     {
@@ -37,7 +41,7 @@ class Module
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -47,7 +51,7 @@ class Module
     }
 
     /**
-     * Get dependencies
+     * Get dependencies.
      *
      * @return \Magento\Setup\Module\Dependency\Report\Framework\Data\Dependency[]
      */
@@ -57,7 +61,7 @@ class Module
     }
 
     /**
-     * Get total dependencies count
+     * Get total dependencies count.
      *
      * @return int
      */

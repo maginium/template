@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -19,29 +20,22 @@ class AbstractParserTest extends TestCase
      */
     protected $_parserMock;
 
-    protected function setUp(): void
-    {
-        $this->_parserMock = $this->getMockForAbstractClass(
-            AbstractParser::class,
-            [],
-            '',
-            false
-        );
-    }
-
     /**
      * @param array $options
      * @param string $message
+     *
      * @dataProvider dataProviderForValidateOptions
+     *
+     * @test
      */
-    public function testValidateOptions($options, $message)
+    public function validateOptions($options, $message)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage($message);
 
         $this->_parserMock->addAdapter(
             'php',
-            $this->getMockForAbstractClass(AdapterInterface::class)
+            $this->getMockForAbstractClass(AdapterInterface::class),
         );
         $this->_parserMock->parse($options);
     }
@@ -56,15 +50,25 @@ class AbstractParserTest extends TestCase
             [[['type' => '', 'paths' => []]], 'Missed "type" in parser options.'],
             [
                 [['type' => 'wrong_type', 'paths' => []]],
-                'Adapter is not set for type "wrong_type".'
+                'Adapter is not set for type "wrong_type".',
             ],
             [[['type' => 'php']], '"paths" in parser options must be array.'],
-            [[['type' => 'php', 'paths' => '']], '"paths" in parser options must be array.']
+            [[['type' => 'php', 'paths' => '']], '"paths" in parser options must be array.'],
         ];
     }
 
     public function getPhrases()
     {
         $this->assertIsArray($this->_parserMock->getPhrases());
+    }
+
+    protected function setUp(): void
+    {
+        $this->_parserMock = $this->getMockForAbstractClass(
+            AbstractParser::class,
+            [],
+            '',
+            false,
+        );
     }
 }

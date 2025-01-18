@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,7 +31,27 @@ class QuoteGeneratorFactoryTest extends TestCase
     private $fixture;
 
     /**
-     * @inheritdoc
+     * Test create method.
+     *
+     * @return void
+     *
+     * @test
+     */
+    public function create()
+    {
+        $result = $this->getMockBuilder(QuoteGenerator::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->objectManager->expects($this->once())
+            ->method('create')
+            ->with(QuoteGenerator::class, [])
+            ->willReturn($result);
+
+        $this->assertSame($result, $this->fixture->create([]));
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -44,25 +65,7 @@ class QuoteGeneratorFactoryTest extends TestCase
             [
                 'objectManager' => $this->objectManager,
                 'instanceName' => QuoteGenerator::class,
-            ]
+            ],
         );
-    }
-
-    /**
-     * Test create method.
-     *
-     * @return void
-     */
-    public function testCreate()
-    {
-        $result =  $this->getMockBuilder(QuoteGenerator::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->objectManager->expects($this->once())
-            ->method('create')
-            ->with(QuoteGenerator::class, [])
-            ->willReturn($result);
-
-        $this->assertSame($result, $this->fixture->create([]));
     }
 }

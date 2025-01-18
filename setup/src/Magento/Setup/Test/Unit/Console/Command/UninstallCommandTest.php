@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -33,14 +34,10 @@ class UninstallCommandTest extends TestCase
      */
     private $command;
 
-    protected function setUp(): void
-    {
-        $this->installerFactory = $this->createMock(InstallerFactory::class);
-        $this->installer = $this->createMock(Installer::class);
-        $this->command = new UninstallCommand($this->installerFactory);
-    }
-
-    public function testExecuteInteractionYes()
+    /**
+     * @test
+     */
+    public function executeInteractionYes()
     {
         $this->installer->expects($this->once())->method('uninstall');
         $this->installerFactory->expects($this->once())->method('create')->willReturn($this->installer);
@@ -48,7 +45,10 @@ class UninstallCommandTest extends TestCase
         $this->checkInteraction(true);
     }
 
-    public function testExecuteInteractionNo()
+    /**
+     * @test
+     */
+    public function executeInteractionNo()
     {
         $this->installer->expects($this->exactly(0))->method('uninstall');
         $this->installerFactory->expects($this->exactly(0))->method('create');
@@ -78,5 +78,12 @@ class UninstallCommandTest extends TestCase
 
         $tester = new CommandTester($this->command);
         $tester->execute([]);
+    }
+
+    protected function setUp(): void
+    {
+        $this->installerFactory = $this->createMock(InstallerFactory::class);
+        $this->installer = $this->createMock(Installer::class);
+        $this->command = new UninstallCommand($this->installerFactory);
     }
 }

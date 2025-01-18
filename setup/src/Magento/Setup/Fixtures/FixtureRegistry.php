@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,15 +8,15 @@
 declare(strict_types=1);
 
 /**
- * Registry for fixtures
+ * Registry for fixtures.
  */
+
 namespace Magento\Setup\Fixtures;
 
 class FixtureRegistry
 {
-
     /**
-     * List of fixtures applied to the application
+     * List of fixtures applied to the application.
      *
      * @var string[]
      */
@@ -30,11 +31,11 @@ class FixtureRegistry
     }
 
     /**
-     * Get fixtures
+     * Get fixtures.
      *
      * @return string[]
      */
-    public function getFixtures() :array
+    public function getFixtures(): array
     {
         return $this->fixtures;
     }

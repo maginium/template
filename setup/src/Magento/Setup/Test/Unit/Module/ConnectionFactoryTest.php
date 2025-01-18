@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -21,34 +22,14 @@ class ConnectionFactoryTest extends TestCase
      */
     private $connectionFactory;
 
-    protected function setUp(): void
-    {
-        $objectManager = new ObjectManager($this);
-        $serviceLocatorMock = $this->getMockForAbstractClass(ServiceLocatorInterface::class);
-        $objectManagerProviderMock = $this->createMock(ObjectManagerProvider::class);
-        $serviceLocatorMock->expects($this->once())
-            ->method('get')
-            ->with(
-                ObjectManagerProvider::class
-            )
-            ->willReturn($objectManagerProviderMock);
-        $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
-        $objectManagerProviderMock->expects($this->once())
-            ->method('get')
-            ->willReturn($objectManagerMock);
-        $this->connectionFactory = $objectManager->getObject(
-            ConnectionFactory::class,
-            [
-                'serviceLocator' => $serviceLocatorMock
-            ]
-        );
-    }
-
     /**
      * @param array $config
+     *
      * @dataProvider createDataProvider
+     *
+     * @test
      */
-    public function testCreate($config)
+    public function create($config)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('MySQL adapter: Missing required configuration option \'host\'');
@@ -62,14 +43,37 @@ class ConnectionFactoryTest extends TestCase
     {
         return [
             [
-                []
+                [],
             ],
             [
-                ['value']
+                ['value'],
             ],
             [
-                ['active' => 0]
+                ['active' => 0],
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManager = new ObjectManager($this);
+        $serviceLocatorMock = $this->getMockForAbstractClass(ServiceLocatorInterface::class);
+        $objectManagerProviderMock = $this->createMock(ObjectManagerProvider::class);
+        $serviceLocatorMock->expects($this->once())
+            ->method('get')
+            ->with(
+                ObjectManagerProvider::class,
+            )
+            ->willReturn($objectManagerProviderMock);
+        $objectManagerMock = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+        $objectManagerProviderMock->expects($this->once())
+            ->method('get')
+            ->willReturn($objectManagerMock);
+        $this->connectionFactory = $objectManager->getObject(
+            ConnectionFactory::class,
+            [
+                'serviceLocator' => $serviceLocatorMock,
+            ],
+        );
     }
 }

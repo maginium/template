@@ -1,26 +1,30 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Data\Config;
 
 use Magento\Setup\Module\Dependency\Report\Data\ConfigInterface;
 
 /**
- * Config
+ * Config.
  */
 abstract class AbstractConfig implements ConfigInterface
 {
     /**
-     * Modules
+     * Modules.
      *
      * @var array
      */
     private $modules;
 
     /**
-     * Config construct
+     * Config construct.
      *
      * @param array $modules
      */

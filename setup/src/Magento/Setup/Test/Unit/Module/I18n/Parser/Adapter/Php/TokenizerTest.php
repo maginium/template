@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,7 +10,6 @@ namespace Magento\Setup\Test\Unit\Module\I18n\Parser\Adapter\Php;
 
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer;
-
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -27,18 +27,12 @@ class TokenizerTest extends TestCase
      */
     protected $objectManager;
 
-    protected function setUp(): void
-    {
-        $this->objectManager = new ObjectManager($this);
-        $this->tokenizer = $this->objectManager->getObject(
-            Tokenizer::class
-        );
-    }
-
     /**
      * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer::isMatchingClass
+     *
+     * @test
      */
-    public function testIsMatchingClass()
+    public function isMatchingClass()
     {
         $class = 'Phrase';
         $this->parseFile();
@@ -62,9 +56,12 @@ class TokenizerTest extends TestCase
      * Test getting next Real token for PHP > 8, where namespaced names are treated as single token.
      *
      * @requires PHP >= 8.0
+     *
      * @return void
+     *
+     * @test
      */
-    public function testGetNextRealTokenWhenNamespaceIsSingleToken(): void
+    public function getNextRealTokenWhenNamespaceIsSingleToken(): void
     {
         $this->parseFile();
         $this->assertEquals('new', $this->tokenizer->getNextRealToken()->getValue());
@@ -77,9 +74,12 @@ class TokenizerTest extends TestCase
 
     /**
      * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer::getNextRealToken
+     *
      * @requires PHP < 8.0
+     *
+     * @test
      */
-    public function testGetNextRealToken()
+    public function getNextRealToken()
     {
         $this->parseFile();
         $this->assertEquals('new', $this->tokenizer->getNextRealToken()->getValue());
@@ -97,11 +97,15 @@ class TokenizerTest extends TestCase
 
     /**
      * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer::isEndOfLoop
+     *
      * @requires PHP < 8.0
+     *
+     * @test
      */
-    public function testIsEndOfLoop()
+    public function isEndOfLoop()
     {
         $this->parseFile();
+
         //We have 27 total tokens in objectsCode.php file (excluding whitespaces)
         //So the isEndOfLoop function should return true after we pick 28th non-existent token
         for ($i = 0; $i < 28; $i++) {
@@ -109,6 +113,14 @@ class TokenizerTest extends TestCase
             $this->tokenizer->getNextRealToken();
         }
         $this->assertTrue($this->tokenizer->isEndOfLoop());
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManager = new ObjectManager($this);
+        $this->tokenizer = $this->objectManager->getObject(
+            Tokenizer::class,
+        );
     }
 
     protected function parseFile()

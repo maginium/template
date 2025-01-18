@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -19,21 +22,26 @@ use Magento\Tax\Model\ResourceModel\Calculation\Rate\CollectionFactory;
 
 /**
  * Tax rules fixture generator
- * Tax Config Settings setter for different Tax Modes (for example VAT)
+ * Tax Config Settings setter for different Tax Modes (for example VAT).
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class TaxRulesFixture extends Fixture
 {
-    const DEFAULT_CUSTOMER_TAX_CLASS_ID = 3;
+    public const DEFAULT_CUSTOMER_TAX_CLASS_ID = 3;
 
-    const DEFAULT_PRODUCT_TAX_CLASS_ID = 2;
+    public const DEFAULT_PRODUCT_TAX_CLASS_ID = 2;
 
-    const DEFAULT_TAX_MODE = 'VAT';
+    public const DEFAULT_TAX_MODE = 'VAT';
 
-    const DEFAULT_TAX_RATE = 5;
+    public const DEFAULT_TAX_RATE = 5;
 
-    const DEFAULT_TAX_COUNTRY = 'US';
+    public const DEFAULT_TAX_COUNTRY = 'US';
+
+    /**
+     * @var int
+     */
+    protected $priority = 101;
 
     /**
      * @var array config paths and values for tax modes
@@ -55,13 +63,8 @@ class TaxRulesFixture extends Fixture
             Config::XML_PATH_DISPLAY_CART_SUBTOTAL => Config::DISPLAY_TYPE_INCLUDING_TAX,
             Config::XML_PATH_DISPLAY_CART_SHIPPING => Config::DISPLAY_TYPE_INCLUDING_TAX,
             Custom::XML_PATH_TAX_WEEE_ENABLE => 1,
-        ]
+        ],
     ];
-
-    /**
-     * @var int
-     */
-    protected $priority = 101;
 
     /**
      * @var TaxRuleRepositoryInterface
@@ -109,7 +112,7 @@ class TaxRulesFixture extends Fixture
         CollectionFactory $taxRateCollectionFactory,
         TaxRateInterfaceFactory $taxRateFactory,
         TaxRateRepositoryInterface $taxRateRepository,
-        ConfigWriter $configWriter
+        ConfigWriter $configWriter,
     ) {
         parent::__construct($fixtureModel);
 
@@ -154,9 +157,29 @@ class TaxRulesFixture extends Fixture
     }
 
     /**
-     * Adding appropriate Tax Rate, Tax Rule and Config Settings for selected Tax Mode (for example EU/VAT)
+     * {@inheritdoc}
+     */
+    public function getActionTitle()
+    {
+        return 'Generating tax rules';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function introduceParamLabels()
+    {
+        return [
+            'tax_rules' => 'Tax Rules Count',
+            'tax_mode' => 'Tax Mode',
+        ];
+    }
+
+    /**
+     * Adding appropriate Tax Rate, Tax Rule and Config Settings for selected Tax Mode (for example EU/VAT).
      *
      * @param string $taxMode
+     *
      * @return void
      */
     private function setTaxMode($taxMode)
@@ -188,9 +211,10 @@ class TaxRulesFixture extends Fixture
     }
 
     /**
-     * Set appropriate Tax Config Settings for selected Tax Mode
+     * Set appropriate Tax Config Settings for selected Tax Mode.
      *
      * @param string $mode
+     *
      * @return void
      */
     private function setConfigByTaxMode($mode = self::DEFAULT_TAX_MODE)
@@ -199,28 +223,9 @@ class TaxRulesFixture extends Fixture
             foreach ($this->configs[$mode] as $configPath => $value) {
                 $this->configWriter->save(
                     $configPath,
-                    $value
+                    $value,
                 );
             }
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getActionTitle()
-    {
-        return 'Generating tax rules';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function introduceParamLabels()
-    {
-        return [
-            'tax_rules' => 'Tax Rules Count',
-            'tax_mode' => 'Tax Mode',
-        ];
     }
 }

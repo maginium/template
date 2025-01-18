@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -35,23 +36,26 @@ class Pattern
      * @param int $attributesPerSet
      * @param int $optionsPerAttribute
      * @param callable $attributePattern callback in f($index, $attributeData) format
+     *
      * @return array
      */
     public function generateAttributeSet(
         $name,
         $attributesPerSet,
         $optionsPerAttribute,
-        $attributePattern = null
+        $attributePattern = null,
     ) {
         $attributeSet = [
             'name' => $name,
-            'attributes' => []
+            'attributes' => [],
         ];
+
         for ($index = 1; $index <= $attributesPerSet; $index++) {
             $attributeData = $this->generateAttribute(
                 $index,
-                is_array($optionsPerAttribute) ? $optionsPerAttribute[$index - 1] : $optionsPerAttribute
+                is_array($optionsPerAttribute) ? $optionsPerAttribute[$index - 1] : $optionsPerAttribute,
             );
+
             if (is_callable($attributePattern)) {
                 $attributeData = $attributePattern($index, $attributeData);
             }
@@ -66,6 +70,7 @@ class Pattern
      *
      * @param int $index
      * @param int $optionsPerAttribute
+     *
      * @return array
      */
     private function generateAttribute($index, $optionsPerAttribute)
@@ -75,6 +80,7 @@ class Pattern
         $attribute['frontend_label'] = $attribute['frontend_label'] . $index;
         $attribute['options'] = ['option' => $this->generateOptions($optionsPerAttribute)];
         $attribute['default_value'] = $attribute['options']['option'][0]['value'];
+
         return $attribute;
     }
 
@@ -82,15 +88,17 @@ class Pattern
      * Generate Options for Attribute.
      *
      * @param int $optionsPerAttribute
+     *
      * @return array
      */
     private function generateOptions($optionsPerAttribute)
     {
         $options = [];
+
         for ($index = 1; $index <= $optionsPerAttribute; $index++) {
             $options[] = [
                 'label' => 'option ' . $index,
-                'value' => 'option_' . $index
+                'value' => 'option_' . $index,
             ];
         }
 

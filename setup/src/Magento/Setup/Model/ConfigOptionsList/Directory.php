@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,21 +14,24 @@ use Magento\Framework\Config\File\ConfigFilePool;
 use Magento\Framework\Setup\ConfigOptionsListInterface;
 use Magento\Framework\Setup\Option\SelectConfigOption;
 
+use function filter_var;
+
 /**
  * Deployment configuration options for the folders.
+ *
  * @deprecared Magento always uses the pub directory
  */
 class Directory implements ConfigOptionsListInterface
 {
     /**
+     * Path in in configuration.
+     */
+    public const CONFIG_PATH_DOCUMENT_ROOT_IS_PUB = 'directories/document_root_is_pub';
+
+    /**
      * Input key for config command.
      */
     private const INPUT_KEY_DOCUMENT_ROOT_IS_PUB = 'document-root-is-pub';
-
-    /**
-     * Path in in configuration.
-     */
-    const CONFIG_PATH_DOCUMENT_ROOT_IS_PUB = 'directories/document_root_is_pub';
 
     /**
      * The available configuration values.
@@ -37,20 +41,23 @@ class Directory implements ConfigOptionsListInterface
     private $selectOptions = [true, false];
 
     /**
-     * Create config and update document root value according to provided options
+     * Create config and update document root value according to provided options.
      *
      * @param array $options
      * @param DeploymentConfig $deploymentConfig
+     *
      * @return ConfigData|ConfigData[]
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function createConfig(array $options, DeploymentConfig $deploymentConfig)
     {
         $configData = new ConfigData(ConfigFilePool::APP_ENV);
+
         if (isset($options[self::INPUT_KEY_DOCUMENT_ROOT_IS_PUB])) {
             $configData->set(
                 self::CONFIG_PATH_DOCUMENT_ROOT_IS_PUB,
-                \filter_var($options[self::INPUT_KEY_DOCUMENT_ROOT_IS_PUB], FILTER_VALIDATE_BOOLEAN)
+                filter_var($options[self::INPUT_KEY_DOCUMENT_ROOT_IS_PUB], FILTER_VALIDATE_BOOLEAN),
             );
         }
 
@@ -71,7 +78,7 @@ class Directory implements ConfigOptionsListInterface
                 $this->selectOptions,
                 self::CONFIG_PATH_DOCUMENT_ROOT_IS_PUB,
                 'Flag to show is Pub is on root, can be true or false only',
-                true
+                true,
             ),
         ];
     }
@@ -81,7 +88,9 @@ class Directory implements ConfigOptionsListInterface
      *
      * @param array $options
      * @param DeploymentConfig $deploymentConfig
+     *
      * @return array|string[]
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function validate(array $options, DeploymentConfig $deploymentConfig)

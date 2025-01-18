@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -8,9 +11,10 @@ namespace Magento\Setup\Model\FixtureGenerator;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Profiler;
+use Zend_Db_Profiler;
 
 /**
- * Collect insert queries for quick entity generation
+ * Collect insert queries for quick entity generation.
  */
 class SqlCollector
 {
@@ -25,7 +29,7 @@ class SqlCollector
     private $sql = [];
 
     /**
-     * @var \Zend_Db_Profiler
+     * @var Zend_Db_Profiler
      */
     private $profiler;
 
@@ -38,13 +42,54 @@ class SqlCollector
     }
 
     /**
+     * @return array
+     */
+    public function getSql()
+    {
+        return $this->sql;
+    }
+
+    /**
+     * Enable sql parsing.
+     *
+     * @return void
+     */
+    public function enable()
+    {
+        $this->sql = [];
+        $this->getProfiler()->clear();
+        $this->getProfiler()->setEnabled(true);
+    }
+
+    /**
+     * Disable sql parsing and collect all queries from profiler.
+     *
+     * @return void
+     */
+    public function disable()
+    {
+        $this->getProfiler()->setEnabled(false);
+        $queries = $this->getProfiler()->getQueryProfiles() ?: [];
+
+        foreach ($queries as $query) {
+            if ($query->getQueryType() === Profiler::INSERT || $this->isReplaceQuery($query)) {
+                // For generator we do not care about REPLACE query and can use INSERT instead
+                // due to it's not support parallel execution
+                $this->addSql($query->getQuery(), $query->getQueryParams());
+            }
+        }
+    }
+
+    /**
      * @param string $sql
      * @param array $bind
+     *
      * @return void
      */
     private function addSql($sql, $bind)
     {
         preg_match('~(?:INSERT|REPLACE)\s+(?:IGNORE)?\s*INTO `(.*)` \((.*)\) VALUES (\(.*\))+~', $sql, $queryMatches);
+
         if ($queryMatches) {
             $table = $queryMatches[1];
             $fields = preg_replace('~[\s+`]+~', '', $queryMatches[2]);
@@ -57,11 +102,12 @@ class SqlCollector
 
             // process multi queries
             if ($sqlBindGroupAmount > 1) {
-                $valuesCount = count($bind)/$sqlBindGroupAmount;
+                $valuesCount = count($bind) / $sqlBindGroupAmount;
+
                 for ($i = 0; $i < $sqlBindGroupAmount; $i++) {
                     $binds[] = array_combine(
                         $fields,
-                        $this->handleBindValues($sqlBind, $bind, $i * $valuesCount)
+                        $this->handleBindValues($sqlBind, $bind, $i * $valuesCount),
                     );
                 }
             } else {
@@ -76,11 +122,13 @@ class SqlCollector
      * @param array $sqlBind
      * @param array $bind
      * @param int $bindPosition
+     *
      * @return array
      */
     private function handleBindValues(array $sqlBind, array $bind, $bindPosition = 0)
     {
         $bind = array_values($bind);
+
         foreach ($sqlBind as $i => $fieldValue) {
             if ($fieldValue === '?') {
                 $sqlBind[$i] = $bind[$bindPosition];
@@ -92,56 +140,19 @@ class SqlCollector
     }
 
     /**
-     * @return array
-     */
-    public function getSql()
-    {
-        return $this->sql;
-    }
-
-    /**
-     * Enable sql parsing
-     *
-     * @return void
-     */
-    public function enable()
-    {
-        $this->sql = [];
-        $this->getProfiler()->clear();
-        $this->getProfiler()->setEnabled(true);
-    }
-
-    /**
-     * Disable sql parsing and collect all queries from profiler
-     *
-     * @return void
-     */
-    public function disable()
-    {
-        $this->getProfiler()->setEnabled(false);
-        $queries = $this->getProfiler()->getQueryProfiles() ?: [];
-        foreach ($queries as $query) {
-            if ($query->getQueryType() === Profiler::INSERT || $this->isReplaceQuery($query)) {
-                // For generator we do not care about REPLACE query and can use INSERT instead
-                // due to it's not support parallel execution
-                $this->addSql($query->getQuery(), $query->getQueryParams());
-            }
-        }
-    }
-
-    /**
      * Detect "REPLACE INTO ..." query.
      *
      * @param Profiler $query
+     *
      * @return bool
      */
     private function isReplaceQuery($query)
     {
-        return $query->getQueryType() === Profiler::QUERY && 0 === stripos(ltrim($query->getQuery()), 'replace');
+        return $query->getQueryType() === Profiler::QUERY && mb_stripos(ltrim($query->getQuery()), 'replace') === 0;
     }
 
     /**
-     * @return \Zend_Db_Profiler
+     * @return Zend_Db_Profiler
      */
     private function getProfiler()
     {

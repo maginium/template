@@ -1,28 +1,33 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
-use Magento\Deploy\Console\InputValidator;
+use InvalidArgumentException;
 use Magento\Deploy\Console\ConsoleLoggerFactory;
 use Magento\Deploy\Console\DeployStaticOptions as Options;
+use Magento\Deploy\Console\InputValidator;
+use Magento\Deploy\Service\DeployStaticContent;
+use Magento\Framework\App\Cache;
+use Magento\Framework\App\Cache\Type\Dummy as DummyCache;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
-use Psr\Log\LogLevel;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Setup\Model\ObjectManagerProvider;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Magento\Setup\Model\ObjectManagerProvider;
-use Magento\Framework\ObjectManagerInterface;
-use Magento\Framework\App\Cache;
-use Magento\Framework\App\Cache\Type\Dummy as DummyCache;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Deploy\Service\DeployStaticContent;
+use Throwable;
 
 /**
- * Command to Deploy Static Content
+ * Command to Deploy Static Content.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -31,7 +36,7 @@ class DeployStaticContentCommand extends Command
     /**
      * Default language value. Always used for adminhtml, fallback if no frontend locale is supplied.
      */
-    const DEFAULT_LANGUAGE_VALUE = 'en_US';
+    public const DEFAULT_LANGUAGE_VALUE = 'en_US';
 
     /**
      * @var InputValidator
@@ -49,10 +54,9 @@ class DeployStaticContentCommand extends Command
     private $options;
 
     /**
-     * Object manager to create various objects
+     * Object manager to create various objects.
      *
      * @var ObjectManagerInterface
-     *
      */
     private $objectManager;
 
@@ -62,7 +66,7 @@ class DeployStaticContentCommand extends Command
     private $appState;
 
     /**
-     * StaticContentCommand constructor
+     * StaticContentCommand constructor.
      *
      * @param InputValidator $inputValidator
      * @param ConsoleLoggerFactory $consoleLoggerFactory
@@ -73,7 +77,7 @@ class DeployStaticContentCommand extends Command
         InputValidator $inputValidator,
         ConsoleLoggerFactory $consoleLoggerFactory,
         Options $options,
-        ObjectManagerProvider $objectManagerProvider
+        ObjectManagerProvider $objectManagerProvider,
     ) {
         $this->inputValidator = $inputValidator;
         $this->consoleLoggerFactory = $consoleLoggerFactory;
@@ -84,25 +88,12 @@ class DeployStaticContentCommand extends Command
     }
 
     /**
-     * @inheritdoc
-     * @throws \InvalidArgumentException
-     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-     */
-    protected function configure()
-    {
-        $this->setName('setup:static-content:deploy')
-            ->setDescription('Deploys static view files')
-            ->setDefinition($this->options->getOptionsList());
-
-        parent::configure();
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @throws LocalizedException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -121,54 +112,73 @@ class DeployStaticContentCommand extends Command
         $verbose = $output->getVerbosity() > 1 ? $output->getVerbosity() : OutputInterface::VERBOSITY_VERBOSE;
 
         $logger = $this->consoleLoggerFactory->getLogger($output, $verbose);
-        if (!$refreshOnly) {
+
+        if (! $refreshOnly) {
             $logger->notice(PHP_EOL . "Deploy using {$options[Options::STRATEGY]} strategy");
         }
 
         $this->mockCache();
 
         $exitCode = Cli::RETURN_SUCCESS;
+
         try {
             /** @var DeployStaticContent $deployService */
             $deployService = $this->objectManager->create(DeployStaticContent::class, [
-                'logger' => $logger
+                'logger' => $logger,
             ]);
             $deployService->deploy($options);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $logger->error('Error happened during deploy process: ' . $e->getMessage());
             $exitCode = Cli::RETURN_FAILURE;
         }
 
-        if (!$refreshOnly) {
-            $logger->notice(PHP_EOL . "Execution time: " . (microtime(true) - $time));
+        if (! $refreshOnly) {
+            $logger->notice(PHP_EOL . 'Execution time: ' . (microtime(true) - $time));
         }
 
         return $exitCode;
     }
 
     /**
-     * Check application mode
+     * {@inheritdoc}
+     *
+     * @throws InvalidArgumentException
+     *
+     * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     */
+    protected function configure()
+    {
+        $this->setName('setup:static-content:deploy')
+            ->setDescription('Deploys static view files')
+            ->setDefinition($this->options->getOptionsList());
+
+        parent::configure();
+    }
+
+    /**
+     * Check application mode.
      *
      * @param InputInterface $input
+     *
      * @throws LocalizedException
      */
     private function checkAppMode(InputInterface $input): void
     {
-        if (!$input->getOption(Options::FORCE_RUN) && $this->getAppState()->getMode() !== State::MODE_PRODUCTION) {
+        if (! $input->getOption(Options::FORCE_RUN) && $this->getAppState()->getMode() !== State::MODE_PRODUCTION) {
             throw new LocalizedException(
                 __(
                     'NOTE: Manual static content deployment is not required in "default" and "developer" modes.'
                     . PHP_EOL . 'In "default" and "developer" modes static contents are being deployed '
                     . 'automatically on demand.'
                     . PHP_EOL . 'If you still want to deploy in these modes, use -f option: '
-                    . "'bin/magento setup:static-content:deploy -f'"
-                )
+                    . "'bin/magento setup:static-content:deploy -f'",
+                ),
             );
         }
     }
 
     /**
-     * Mock Cache class with dummy implementation
+     * Mock Cache class with dummy implementation.
      *
      * @return void
      */
@@ -176,21 +186,22 @@ class DeployStaticContentCommand extends Command
     {
         $this->objectManager->configure([
             'preferences' => [
-                Cache::class => DummyCache::class
-            ]
+                Cache::class => DummyCache::class,
+            ],
         ]);
     }
 
     /**
-     * Retrieve application state
+     * Retrieve application state.
      *
      * @return State
      */
     private function getAppState()
     {
-        if (null === $this->appState) {
+        if ($this->appState === null) {
             $this->appState = $this->objectManager->get(State::class);
         }
+
         return $this->appState;
     }
 }

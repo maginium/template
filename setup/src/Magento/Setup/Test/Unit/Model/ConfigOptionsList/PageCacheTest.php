@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -8,11 +9,14 @@ declare(strict_types=1);
 namespace Magento\Setup\Test\Unit\Model\ConfigOptionsList;
 
 use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\Cache\Backend\Redis;
 use Magento\Framework\Setup\Option\SelectConfigOption;
 use Magento\Framework\Setup\Option\TextConfigOption;
 use Magento\Setup\Model\ConfigOptionsList\PageCache;
 use Magento\Setup\Validator\RedisConnectionValidator;
 use PHPUnit\Framework\TestCase;
+
+use function hash;
 
 class PageCacheTest extends TestCase
 {
@@ -31,18 +35,12 @@ class PageCacheTest extends TestCase
      */
     private $deploymentConfigMock;
 
-    protected function setUp(): void
-    {
-        $this->validatorMock = $this->createMock(RedisConnectionValidator::class);
-        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
-
-        $this->configList = new PageCache($this->validatorMock);
-    }
-
     /**
-     * testGetOptions
+     * testGetOptions.
+     *
+     * @test
      */
-    public function testGetOptions()
+    public function getOptions()
     {
         $options = $this->configList->getOptions();
         $this->assertCount(8, $options);
@@ -81,9 +79,11 @@ class PageCacheTest extends TestCase
     }
 
     /**
-     * testCreateConfigWithRedis
+     * testCreateConfigWithRedis.
+     *
+     * @test
      */
-    public function testCreateConfigWithRedis()
+    public function createConfigWithRedis()
     {
         $this->deploymentConfigMock->method('get')->willReturn('');
 
@@ -91,7 +91,7 @@ class PageCacheTest extends TestCase
             'cache' => [
                 'frontend' => [
                     'page_cache' => [
-                        'backend' => \Magento\Framework\Cache\Backend\Redis::class,
+                        'backend' => Redis::class,
                         'backend_options' => [
                             'server' => '',
                             'port' => '',
@@ -101,9 +101,9 @@ class PageCacheTest extends TestCase
                             'compression_lib' => '',
                         ],
                         'id_prefix' => $this->expectedIdPrefix(),
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $configData = $this->configList->createConfig(['page-cache' => 'redis'], $this->deploymentConfigMock);
@@ -112,25 +112,39 @@ class PageCacheTest extends TestCase
     }
 
     /**
-     * testCreateConfigWithRedisConfiguration
+     * testCreateConfigWithRedisConfiguration.
+     *
+     * @test
      */
-    public function testCreateConfigWithRedisConfiguration()
+    public function createConfigWithRedisConfiguration()
     {
         $this->deploymentConfigMock->method('get')
-            ->willReturnCallback(function ($arg1, $arg2 = null) {
-                if ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_ID_PREFIX) {
+            ->willReturnCallback(function($arg1, $arg2 = null) {
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_ID_PREFIX) {
                     return 'XXX_';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_SERVER && $arg2 == '127.0.0.1') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_SERVER && $arg2 === '127.0.0.1') {
                     return '127.0.0.1';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_DATABASE && $arg2 == '1') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_DATABASE && $arg2 === '1') {
                     return '1';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_PORT && $arg2 == '6379') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_PORT && $arg2 === '6379') {
                     return '6379';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_PASSWORD && $arg2 == '') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_PASSWORD && $arg2 === '') {
                     return '';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_COMPRESS_DATA && $arg2 == '0') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_COMPRESS_DATA && $arg2 === '0') {
                     return '0';
-                } elseif ($arg1 == PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_COMPRESSION_LIB && $arg2 == '') {
+                }
+
+                if ($arg1 === PageCache::CONFIG_PATH_PAGE_CACHE_BACKEND_COMPRESSION_LIB && $arg2 === '') {
                     return '';
                 }
             });
@@ -139,7 +153,7 @@ class PageCacheTest extends TestCase
             'cache' => [
                 'frontend' => [
                     'page_cache' => [
-                        'backend' => \Magento\Framework\Cache\Backend\Redis::class,
+                        'backend' => Redis::class,
                         'backend_options' => [
                             'server' => 'foo.bar',
                             'port' => '9000',
@@ -148,9 +162,9 @@ class PageCacheTest extends TestCase
                             'compress_data' => '1',
                             'compression_lib' => 'gzip',
                         ],
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $options = [
@@ -168,9 +182,11 @@ class PageCacheTest extends TestCase
     }
 
     /**
-     * testCreateConfigWithRedis
+     * testCreateConfigWithRedis.
+     *
+     * @test
      */
-    public function testCreateConfigWithFileCache()
+    public function createConfigWithFileCache()
     {
         $this->deploymentConfigMock->method('get')->willReturn('');
 
@@ -179,9 +195,9 @@ class PageCacheTest extends TestCase
                 'frontend' => [
                     'page_cache' => [
                         'id_prefix' => $this->expectedIdPrefix(),
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $configData = $this->configList->createConfig([], $this->deploymentConfigMock);
@@ -190,9 +206,11 @@ class PageCacheTest extends TestCase
     }
 
     /**
-     * testCreateConfigCacheRedis
+     * testCreateConfigCacheRedis.
+     *
+     * @test
      */
-    public function testCreateConfigWithIdPrefix()
+    public function createConfigWithIdPrefix()
     {
         $this->deploymentConfigMock->method('get')->willReturn('');
 
@@ -202,23 +220,25 @@ class PageCacheTest extends TestCase
                 'frontend' => [
                     'page_cache' => [
                         'id_prefix' => $explicitPrefix,
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         ];
 
         $configData = $this->configList->createConfig(
             ['page-cache-id-prefix' => $explicitPrefix],
-            $this->deploymentConfigMock
+            $this->deploymentConfigMock,
         );
 
         $this->assertEquals($expectedConfigData, $configData->getData());
     }
 
     /**
-     * testValidationWithValidData
+     * testValidationWithValidData.
+     *
+     * @test
      */
-    public function testValidationWithValidData()
+    public function validationWithValidData()
     {
         $this->validatorMock->expects($this->once())
             ->method('isValidConnection')
@@ -226,7 +246,7 @@ class PageCacheTest extends TestCase
 
         $options = [
             'page-cache' => 'redis',
-            'page-cache-redis-db' => '2'
+            'page-cache-redis-db' => '2',
         ];
 
         $errors = $this->configList->validate($options, $this->deploymentConfigMock);
@@ -235,12 +255,14 @@ class PageCacheTest extends TestCase
     }
 
     /**
-     * testValidationWithInvalidData
+     * testValidationWithInvalidData.
+     *
+     * @test
      */
-    public function testValidationWithInvalidData()
+    public function validationWithInvalidData()
     {
         $options = [
-            'page-cache' => 'foobar'
+            'page-cache' => 'foobar',
         ];
 
         $errors = $this->configList->validate($options, $this->deploymentConfigMock);
@@ -249,13 +271,21 @@ class PageCacheTest extends TestCase
         $this->assertEquals('Invalid cache handler \'foobar\'', $errors[0]);
     }
 
+    protected function setUp(): void
+    {
+        $this->validatorMock = $this->createMock(RedisConnectionValidator::class);
+        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
+
+        $this->configList = new PageCache($this->validatorMock);
+    }
+
     /**
-     * The default ID prefix, based on installation directory
+     * The default ID prefix, based on installation directory.
      *
      * @return string
      */
     private function expectedIdPrefix(): string
     {
-        return substr(\hash('sha256', dirname(__DIR__, 8)), 0, 3) . '_';
+        return mb_substr(hash('sha256', dirname(__DIR__, 8)), 0, 3) . '_';
     }
 }

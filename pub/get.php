@@ -1,11 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-/**
- * Public media files entry point
- */
+// Public media files entry point
 // phpcs:disable Magento2.Functions.DiscouragedFunction.DiscouragedWithAlternative
 // phpcs:disable Magento2.Functions.DiscouragedFunction.Discouraged
 // phpcs:disable Magento2.Security.IncludeFile.FoundIncludeFile
@@ -14,8 +15,13 @@
 use Magento\Framework\App\Bootstrap;
 use Magento\Framework\App\Cache\Frontend\Factory;
 use Magento\Framework\App\ObjectManagerFactory;
+use Magento\Framework\File\Mime;
+use Magento\Framework\File\Transfer\Adapter\Http;
 use Magento\Framework\HTTP\PhpEnvironment\Request;
+use Magento\Framework\HTTP\PhpEnvironment\Response;
 use Magento\Framework\Stdlib\Cookie\PhpCookieReader;
+use Magento\Framework\Stdlib\StringUtils;
+use Magento\MediaStorage\App\Media;
 
 require dirname(__DIR__) . '/app/bootstrap.php';
 
@@ -23,16 +29,17 @@ $mediaDirectory = null;
 $allowedResources = [];
 $configCacheFile = BP . '/var/resource_config.json';
 
-$isAllowed = function ($resource, array $allowedResources) {
+$isAllowed = function($resource, array $allowedResources) {
     foreach ($allowedResources as $allowedResource) {
-        if (0 === stripos($resource, $allowedResource)) {
+        if (mb_stripos($resource, $allowedResource) === 0) {
             return true;
         }
     }
+
     return false;
 };
 
-$createBootstrap = function (array $params = []) {
+$createBootstrap = function(array $params = []) {
     // phpcs:ignore Magento2.Security.Superglobal.SuperglobalUsageWarning
     $params = array_merge($_SERVER, $params);
 
@@ -41,11 +48,12 @@ $createBootstrap = function (array $params = []) {
 
 $request = new \Magento\MediaStorage\Model\File\Storage\Request(
     new Request(
-        new PhpCookieReader(),
-        new Magento\Framework\Stdlib\StringUtils()
-    )
+        new PhpCookieReader,
+        new StringUtils,
+    ),
 );
 $relativePath = $request->getPathInfo();
+
 if (file_exists($configCacheFile) && is_readable($configCacheFile)) {
     $config = json_decode(file_get_contents($configCacheFile), true);
 
@@ -61,25 +69,28 @@ if (file_exists($configCacheFile) && is_readable($configCacheFile)) {
             $fileAbsolutePath = __DIR__ . '/' . $relativePath;
             $fileRelativePath = str_replace(rtrim($mediaDirectory, '/') . '/', '', $fileAbsolutePath);
 
-            if (!$isAllowed($fileRelativePath, $allowedResources)) {
+            if (! $isAllowed($fileRelativePath, $allowedResources)) {
                 require 'errors/404.php';
+
                 exit;
             }
 
             if (is_readable($fileAbsolutePath)) {
                 if (is_dir($fileAbsolutePath)) {
                     require 'errors/404.php';
+
                     exit;
                 }
 
                 // Need to run for object manager instantiation.
                 $createBootstrap();
 
-                $transfer = new \Magento\Framework\File\Transfer\Adapter\Http(
-                    new \Magento\Framework\HTTP\PhpEnvironment\Response(),
-                    new \Magento\Framework\File\Mime()
+                $transfer = new Http(
+                    new Response,
+                    new Mime,
                 );
                 $transfer->send($fileAbsolutePath);
+
                 exit;
             }
         }
@@ -88,19 +99,21 @@ if (file_exists($configCacheFile) && is_readable($configCacheFile)) {
 
 // Materialize file in application
 $params = [];
+
 if (empty($mediaDirectory)) {
     $params[ObjectManagerFactory::INIT_PARAM_DEPLOYMENT_CONFIG] = [];
     $params[Factory::PARAM_CACHE_FORCED_OPTIONS] = ['frontend_options' => ['disable_save' => true]];
 }
 $bootstrap = $createBootstrap($params);
-/** @var \Magento\MediaStorage\App\Media $app */
+
+/** @var Media $app */
 $app = $bootstrap->createApplication(
-    \Magento\MediaStorage\App\Media::class,
+    Media::class,
     [
         'mediaDirectory' => $mediaDirectory,
         'configCacheFile' => $configCacheFile,
         'isAllowed' => $isAllowed,
         'relativeFileName' => $relativePath,
-    ]
+    ],
 );
 $bootstrap->run($app);

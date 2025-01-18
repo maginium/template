@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,6 +31,17 @@ class ConfigTest extends TestCase
      */
     protected $config;
 
+    /**
+     * @test
+     */
+    public function getDependenciesCount()
+    {
+        $this->moduleFirst->expects($this->once())->method('getChainsCount')->willReturn(0);
+        $this->moduleSecond->expects($this->once())->method('getChainsCount')->willReturn(2);
+
+        $this->assertEquals(2, $this->config->getDependenciesCount());
+    }
+
     protected function setUp(): void
     {
         $this->moduleFirst = $this->createMock(Module::class);
@@ -38,15 +50,7 @@ class ConfigTest extends TestCase
         $objectManagerHelper = new ObjectManager($this);
         $this->config = $objectManagerHelper->getObject(
             Config::class,
-            ['modules' => [$this->moduleFirst, $this->moduleSecond]]
+            ['modules' => [$this->moduleFirst, $this->moduleSecond]],
         );
-    }
-
-    public function testGetDependenciesCount()
-    {
-        $this->moduleFirst->expects($this->once())->method('getChainsCount')->willReturn(0);
-        $this->moduleSecond->expects($this->once())->method('getChainsCount')->willReturn(2);
-
-        $this->assertEquals(2, $this->config->getDependenciesCount());
     }
 }

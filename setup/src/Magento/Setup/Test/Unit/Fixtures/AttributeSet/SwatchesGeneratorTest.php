@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -27,8 +28,51 @@ class SwatchesGeneratorTest extends TestCase
     private $imagePathFixture = [
         'option_1' => '/<-o->',
         'option_2' => '/>o<',
-        'option_3' => '/|o|'
+        'option_3' => '/|o|',
     ];
+
+    /**
+     * @test
+     */
+    public function generateSwatchData()
+    {
+        $attributeColorType['swatch_input_type'] = Swatch::SWATCH_INPUT_TYPE_VISUAL;
+        $attributeColorType['swatchvisual']['value'] = array_reduce(
+            range(1, 3),
+            function($values, $index) {
+                $values['option_' . $index] = '#' . str_repeat(dechex(255 * $index / 3), 3);
+
+                return $values;
+            },
+            [],
+        );
+
+        $attributeColorType['optionvisual']['value'] = array_reduce(
+            range(1, 3),
+            function($values, $index) {
+                $values['option_' . $index] = ['option ' . $index];
+
+                return $values;
+            },
+            [],
+        );
+
+        $attributeImageType = $attributeColorType;
+        $attributeImageType['swatchvisual']['value'] = array_map(
+            fn($item) => ltrim($item, '/'),
+            $this->imagePathFixture,
+        );
+
+        $this->assertEquals(
+            $attributeColorType,
+            $this->swatchesGeneratorMock->generateSwatchData(3, 'test', 'color'),
+        );
+
+        $this->assertEquals(
+            $attributeImageType,
+            $this->swatchesGeneratorMock->generateSwatchData(3, 'test', 'image'),
+        );
+    }
 
     protected function setUp(): void
     {
@@ -64,47 +108,7 @@ class SwatchesGeneratorTest extends TestCase
 
         $this->swatchesGeneratorMock = new SwatchesGenerator(
             $swatchHelperMock,
-            $imageGeneratorFactoryMock
-        );
-    }
-
-    public function testGenerateSwatchData()
-    {
-        $attributeColorType['swatch_input_type'] = Swatch::SWATCH_INPUT_TYPE_VISUAL;
-        $attributeColorType['swatchvisual']['value'] = array_reduce(
-            range(1, 3),
-            function ($values, $index) {
-                $values['option_' . $index] = '#' . str_repeat(dechex(255 * $index / 3), 3);
-                return $values;
-            },
-            []
-        );
-
-        $attributeColorType['optionvisual']['value'] = array_reduce(
-            range(1, 3),
-            function ($values, $index) {
-                $values['option_' . $index] = ['option ' . $index];
-                return $values;
-            },
-            []
-        );
-
-        $attributeImageType = $attributeColorType;
-        $attributeImageType['swatchvisual']['value'] = array_map(
-            function ($item) {
-                return ltrim($item, '/');
-            },
-            $this->imagePathFixture
-        );
-
-        $this->assertEquals(
-            $attributeColorType,
-            $this->swatchesGeneratorMock->generateSwatchData(3, 'test', 'color')
-        );
-
-        $this->assertEquals(
-            $attributeImageType,
-            $this->swatchesGeneratorMock->generateSwatchData(3, 'test', 'image')
+            $imageGeneratorFactoryMock,
         );
     }
 }

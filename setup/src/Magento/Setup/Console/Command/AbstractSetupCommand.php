@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
 use Magento\Setup\Mvc\Bootstrap\InitParamListener;
@@ -16,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 abstract class AbstractSetupCommand extends Command
 {
     /**
-     * Initialize basic Magento Setup command
+     * Initialize basic Magento Setup command.
      *
      * @return void
      */
@@ -28,7 +32,7 @@ abstract class AbstractSetupCommand extends Command
             InputOption::VALUE_REQUIRED,
             'Add to any command to customize Magento initialization parameters' . PHP_EOL .
             'For example: "MAGE_MODE=developer&MAGE_DIRS[base][path]' .
-            '=/var/www/example.com&MAGE_DIRS[cache][path]=/var/tmp/cache"'
+            '=/var/www/example.com&MAGE_DIRS[cache][path]=/var/tmp/cache"',
         );
     }
 }

@@ -1,40 +1,45 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model\DateTime;
 
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Setup\Model\ObjectManagerProvider;
 
 /**
- * Provider of DateTime instance
+ * Provider of DateTime instance.
  */
 class DateTimeProvider
 {
     /**
-     * Timezone provider
+     * Timezone provider.
      *
      * @var TimeZoneProvider
      */
     private $tzProvider;
 
     /**
-     * Object Manager provider
+     * Object Manager provider.
      *
      * @var ObjectManagerProvider
      */
     private $objectManagerProvider;
 
     /**
-     * DateTime instance
+     * DateTime instance.
      *
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     * @var DateTime
      */
     private $dateTime;
 
     /**
-     * Init
+     * Init.
      *
      * @param TimeZoneProvider $tzProvider
      * @param ObjectManagerProvider $objectManagerProvider
@@ -46,18 +51,19 @@ class DateTimeProvider
     }
 
     /**
-     * Get instance of DateTime
+     * Get instance of DateTime.
      *
      * @return \Magento\Framework\Stdlib\DateTime\DateTime
      */
     public function get()
     {
-        if (!$this->dateTime) {
+        if (! $this->dateTime) {
             $this->dateTime = $this->objectManagerProvider->get()->create(
-                \Magento\Framework\Stdlib\DateTime\DateTime::class,
-                ['localeDate' => $this->tzProvider->get()]
+                DateTime::class,
+                ['localeDate' => $this->tzProvider->get()],
             );
         }
+
         return $this->dateTime;
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,61 +9,62 @@
 
 namespace Magento\Setup\Fixtures\Quote;
 
+use Magento\Framework\DataObject;
 use Magento\Setup\Fixtures\FixtureModel;
 
 /**
  * Configuration for generating quotes for orders.
  */
-class QuoteConfiguration extends \Magento\Framework\DataObject
+class QuoteConfiguration extends DataObject
 {
     /**
      * Product type for "big" configurable products.
      *
      * @var string
      */
-    const BIG_CONFIGURABLE_TYPE = 'big_configurable';
+    public const BIG_CONFIGURABLE_TYPE = 'big_configurable';
 
     /**
      * Default value for minimum items (simple) per order configuration.
      *
      * @var int
      */
-    const SIMPLE_PRODUCT_COUNT_FROM = 2;
+    public const SIMPLE_PRODUCT_COUNT_FROM = 2;
 
     /**
      * Default value for maximum items (simple) per order configuration.
      *
      * @var int
      */
-    const SIMPLE_PRODUCT_COUNT_TO = 2;
+    public const SIMPLE_PRODUCT_COUNT_TO = 2;
 
     /**
      * Default value for minimum items (configurable) per order configuration.
      *
      * @var int
      */
-    const CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
+    public const CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
 
     /**
      * Default value for maximum items (configurable) per order configuration.
      *
      * @var int
      */
-    const CONFIGURABLE_PRODUCT_COUNT_TO = 0;
+    public const CONFIGURABLE_PRODUCT_COUNT_TO = 0;
 
     /**
      * Default value for minimum items (big configurable) per order configuration.
      *
      * @var int
      */
-    const BIG_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
+    public const BIG_CONFIGURABLE_PRODUCT_COUNT_FROM = 0;
 
     /**
      * Default value for maximum items (big configurable) per order configuration.
      *
      * @var int
      */
-    const BIG_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
+    public const BIG_CONFIGURABLE_PRODUCT_COUNT_TO = 0;
 
     /**
      * Mappings for number of different types of products in quote.
@@ -113,7 +117,7 @@ class QuoteConfiguration extends \Magento\Framework\DataObject
 
         $this->setData(
             'fixture_data_filename',
-            dirname(__DIR__) . DIRECTORY_SEPARATOR . "_files" . DIRECTORY_SEPARATOR . $this->fixtureDataFilename
+            dirname(__DIR__) . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . $this->fixtureDataFilename,
         );
         $this->accumulateData();
 
@@ -129,10 +133,12 @@ class QuoteConfiguration extends \Magento\Framework\DataObject
     {
         foreach ($this->_globalMap as $getKey => $setKey) {
             $value = $this->fixtureModel->getValue($getKey);
-            if (null !== $value) {
+
+            if ($value !== null) {
                 $this->setData($setKey, $value);
             }
         }
+
         return $this;
     }
 }

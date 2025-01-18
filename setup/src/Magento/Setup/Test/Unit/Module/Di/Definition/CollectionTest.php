@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,6 +15,16 @@ use PHPUnit\Framework\TestCase;
 class CollectionTest extends TestCase
 {
     /**
+     * Instance name.
+     */
+    public const INSTANCE_1 = 'Class_Name_1';
+
+    /**
+     * Instance name.
+     */
+    public const INSTANCE_2 = 'Class_Name_2';
+
+    /**
      * @var Collection
      */
     private $model;
@@ -24,17 +35,74 @@ class CollectionTest extends TestCase
     private $collectionMock;
 
     /**
-     * Instance name
+     * @test
      */
-    const INSTANCE_1 = 'Class_Name_1';
+    public function addDefinition()
+    {
+        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
+        $this->assertEquals($this->getExpectedDefinition(), $this->model->getCollection());
+    }
 
     /**
-     * Instance name
+     * @test
      */
-    const INSTANCE_2 = 'Class_Name_2';
+    public function initialize()
+    {
+        $this->model->initialize([self::INSTANCE_1 => $this->getArgument()]);
+        $this->assertEquals($this->getExpectedDefinition(), $this->model->getCollection());
+    }
 
     /**
-     * Returns initialized argument data
+     * @test
+     */
+    public function hasInstance()
+    {
+        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
+        $this->assertTrue($this->model->hasInstance(self::INSTANCE_1));
+    }
+
+    /**
+     * @test
+     */
+    public function getInstancesNamesList()
+    {
+        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
+        $this->assertEquals([self::INSTANCE_1], $this->model->getInstancesNamesList());
+    }
+
+    /**
+     * @test
+     */
+    public function getInstanceArguments()
+    {
+        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
+        $this->assertEquals($this->getArgument(), $this->model->getInstanceArguments(self::INSTANCE_1));
+    }
+
+    /**
+     * @test
+     */
+    public function addCollection()
+    {
+        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
+        $this->collectionMock->expects($this->any())->method('getCollection')
+            ->willReturn([self::INSTANCE_2 => $this->getArgument()]);
+        $this->model->addCollection($this->collectionMock);
+        $this->assertEquals(
+            [self::INSTANCE_1 => $this->getArgument(), self::INSTANCE_2 => $this->getArgument()],
+            $this->model->getCollection(),
+        );
+    }
+
+    protected function setUp(): void
+    {
+        $this->collectionMock = $this->getMockBuilder(Collection::class)
+            ->getMock();
+        $this->model = new Collection;
+    }
+
+    /**
+     * Returns initialized argument data.
      *
      * @return array
      */
@@ -44,61 +112,12 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * Returns initialized expected definitions for most cases
+     * Returns initialized expected definitions for most cases.
      *
      * @return array
      */
     private function getExpectedDefinition()
     {
         return [self::INSTANCE_1 => $this->getArgument()];
-    }
-
-    protected function setUp(): void
-    {
-        $this->collectionMock = $this->getMockBuilder(Collection::class)
-            ->getMock();
-        $this->model = new Collection();
-    }
-
-    public function testAddDefinition()
-    {
-        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
-        $this->assertEquals($this->getExpectedDefinition(), $this->model->getCollection());
-    }
-
-    public function testInitialize()
-    {
-        $this->model->initialize([self::INSTANCE_1 => $this->getArgument()]);
-        $this->assertEquals($this->getExpectedDefinition(), $this->model->getCollection());
-    }
-
-    public function testHasInstance()
-    {
-        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
-        $this->assertTrue($this->model->hasInstance(self::INSTANCE_1));
-    }
-
-    public function testGetInstancesNamesList()
-    {
-        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
-        $this->assertEquals([self::INSTANCE_1], $this->model->getInstancesNamesList());
-    }
-
-    public function testGetInstanceArguments()
-    {
-        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
-        $this->assertEquals($this->getArgument(), $this->model->getInstanceArguments(self::INSTANCE_1));
-    }
-
-    public function testAddCollection()
-    {
-        $this->model->addDefinition(self::INSTANCE_1, $this->getArgument());
-        $this->collectionMock->expects($this->any())->method('getCollection')
-            ->willReturn([self::INSTANCE_2 => $this->getArgument()]);
-        $this->model->addCollection($this->collectionMock);
-        $this->assertEquals(
-            [self::INSTANCE_1 => $this->getArgument(), self::INSTANCE_2 => $this->getArgument()],
-            $this->model->getCollection()
-        );
     }
 }

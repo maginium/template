@@ -1,34 +1,38 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Dependency\Data;
 
 /**
- * Module
+ * Module.
  */
 class Module
 {
     /**
-     * Module name
+     * Module name.
      *
      * @var string
      */
     protected $name;
 
     /**
-     * Module dependencies
+     * Module dependencies.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\Dependency\Data\Dependency[]
+     * @var Dependency[]
      */
     protected $dependencies;
 
     /**
-     * Module construct
+     * Module construct.
      *
      * @param array $name
-     * @param \Magento\Setup\Module\Dependency\Report\Dependency\Data\Dependency[] $dependencies
+     * @param Dependency[] $dependencies
      */
     public function __construct($name, array $dependencies = [])
     {
@@ -37,7 +41,7 @@ class Module
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -47,7 +51,7 @@ class Module
     }
 
     /**
-     * Get dependencies
+     * Get dependencies.
      *
      * @return \Magento\Setup\Module\Dependency\Report\Dependency\Data\Dependency[]
      */
@@ -57,7 +61,7 @@ class Module
     }
 
     /**
-     * Get total dependencies count
+     * Get total dependencies count.
      *
      * @return int
      */
@@ -67,34 +71,38 @@ class Module
     }
 
     /**
-     * Get hard dependencies count
+     * Get hard dependencies count.
      *
      * @return int
      */
     public function getHardDependenciesCount()
     {
         $dependenciesCount = 0;
+
         foreach ($this->getDependencies() as $dependency) {
             if ($dependency->isHard()) {
                 $dependenciesCount++;
             }
         }
+
         return $dependenciesCount;
     }
 
     /**
-     * Get soft dependencies count
+     * Get soft dependencies count.
      *
      * @return int
      */
     public function getSoftDependenciesCount()
     {
         $dependenciesCount = 0;
+
         foreach ($this->getDependencies() as $dependency) {
             if ($dependency->isSoft()) {
                 $dependenciesCount++;
             }
         }
+
         return $dependenciesCount;
     }
 }

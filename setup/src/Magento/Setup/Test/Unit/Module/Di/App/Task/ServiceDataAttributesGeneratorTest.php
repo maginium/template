@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -31,27 +32,10 @@ class ServiceDataAttributesGeneratorTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->configurationScannerMock = $this->getMockBuilder(
-            ConfigurationScanner::class
-        )->disableOriginalConstructor()
-            ->getMock();
-        $this->serviceDataAttributesScannerMock = $this->getMockBuilder(
-            ServiceDataAttributesScanner::class
-        )->disableOriginalConstructor()
-            ->getMock();
-        $objectManagerHelper = new ObjectManager($this);
-        $this->model = $objectManagerHelper->getObject(
-            ServiceDataAttributesGenerator::class,
-            [
-                'serviceDataAttributesScanner' => $this->serviceDataAttributesScannerMock,
-                'configurationScanner' => $this->configurationScannerMock,
-            ]
-        );
-    }
-
-    public function testDoOperation()
+    /**
+     * @test
+     */
+    public function doOperation()
     {
         $files = ['file1', 'file2'];
         $this->configurationScannerMock->expects($this->once())
@@ -64,5 +48,25 @@ class ServiceDataAttributesGeneratorTest extends TestCase
             ->willReturn([]);
 
         $this->model->doOperation();
+    }
+
+    protected function setUp(): void
+    {
+        $this->configurationScannerMock = $this->getMockBuilder(
+            ConfigurationScanner::class,
+        )->disableOriginalConstructor()
+            ->getMock();
+        $this->serviceDataAttributesScannerMock = $this->getMockBuilder(
+            ServiceDataAttributesScanner::class,
+        )->disableOriginalConstructor()
+            ->getMock();
+        $objectManagerHelper = new ObjectManager($this);
+        $this->model = $objectManagerHelper->getObject(
+            ServiceDataAttributesGenerator::class,
+            [
+                'serviceDataAttributesScanner' => $this->serviceDataAttributesScannerMock,
+                'configurationScanner' => $this->configurationScannerMock,
+            ],
+        );
     }
 }

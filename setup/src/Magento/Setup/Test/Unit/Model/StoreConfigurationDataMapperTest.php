@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,7 +10,6 @@ namespace Magento\Setup\Test\Unit\Model;
 
 use Magento\Backend\Model\Url;
 use Magento\Directory\Helper\Data;
-
 use Magento\Directory\Model\Currency;
 use Magento\Setup\Model\StoreConfigurationDataMapper;
 use Magento\Store\Model\Store;
@@ -20,11 +20,14 @@ class StoreConfigurationDataMapperTest extends TestCase
     /**
      * @param array $data
      * @param array $expected
+     *
      * @dataProvider getConfigDataDataProvider
+     *
+     * @test
      */
-    public function testGetConfigData(array $data, array $expected)
+    public function getConfigData(array $data, array $expected)
     {
-        $userConfigurationDataMapper = new StoreConfigurationDataMapper();
+        $userConfigurationDataMapper = new StoreConfigurationDataMapper;
         $this->assertEquals($expected, $userConfigurationDataMapper->getConfigData($data));
     }
 

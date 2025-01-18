@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -16,7 +17,7 @@ use Magento\Setup\Framework\Mail\TransportInterfaceMock;
 class TransportBuilderMock extends TransportBuilder
 {
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getTransport()
     {

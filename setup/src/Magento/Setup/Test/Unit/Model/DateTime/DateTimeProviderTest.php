@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,9 +19,13 @@ use PHPUnit\Framework\TestCase;
 
 class DateTimeProviderTest extends TestCase
 {
-    public function testGet()
+    /**
+     * @test
+     */
+    public function get()
     {
         $dateTime = $this->createMock(DateTime::class);
+
         /** @var TimeZoneProvider|MockObject $timeZoneProvider */
         $timeZoneProvider = $this->createMock(TimeZoneProvider::class);
         $timeZone = $this->createMock(Timezone::class);
@@ -31,15 +36,16 @@ class DateTimeProviderTest extends TestCase
             ObjectManagerInterface::class,
             [],
             '',
-            false
+            false,
         );
         $objectManager->expects($this->once())
             ->method('create')
             ->with(
                 DateTime::class,
-                ['localeDate' => $timeZone]
+                ['localeDate' => $timeZone],
             )
             ->willReturn($dateTime);
+
         /** @var ObjectManagerProvider|MockObject $objectManagerProvider */
         $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
         $objectManagerProvider->expects($this->any())

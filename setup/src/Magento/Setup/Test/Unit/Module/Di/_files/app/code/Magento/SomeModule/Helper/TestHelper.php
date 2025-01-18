@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,7 +8,9 @@ declare(strict_types=1);
 
 namespace Magento\SomeModule\Helper;
 
+use Magento\SomeModule\Element\Factory;
 use Magento\SomeModule\ElementFactory;
+use Magento\SomeModule\ElementFactory\Proxy;
 
 /**
  * @SuppressWarnings(PHPMD.ConstructorWithNameAsEnclosingClass)
@@ -15,12 +18,12 @@ use Magento\SomeModule\ElementFactory;
 class TestHelper
 {
     /**
-     * @var \Magento\SomeModule\ElementFactory\Proxy
+     * @var Proxy
      */
     protected $_factory;
 
     /**
-     * @var \Magento\SomeModule\Element\Factory
+     * @var Factory
      */
     protected $_elementFactory;
 
@@ -31,14 +34,15 @@ class TestHelper
 
     /**
      * Test constructor.
+     *
      * @param \Magento\SomeModule\Module\Factory $factory
-     * @param \Magento\SomeModule\Element\Factory $elementFactory
+     * @param Factory $elementFactory
      * @param ElementFactory $rightElementFactory
      */
     public function __construct(
         \Magento\SomeModule\Module\Factory $factory,
-        \Magento\SomeModule\Element\Factory $elementFactory,
-        ElementFactory $rightElementFactory
+        Factory $elementFactory,
+        ElementFactory $rightElementFactory,
     ) {
         $this->_factory = $factory;
         $this->_elementFactory = $elementFactory;

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -24,31 +25,30 @@ class FixtureConfigTest extends TestCase
      */
     private $fileParserMock;
 
-    protected function setUp(): void
-    {
-        $this->fileParserMock = $this->createPartialMock(Parser::class, ['getDom', 'xmlToArray']);
-
-        $this->model = new FixtureConfig($this->fileParserMock);
-    }
-
-    public function testLoadConfigException()
+    /**
+     * @test
+     */
+    public function loadConfigException()
     {
         $this->expectException('Exception');
         $this->expectExceptionMessage(
-            'Profile configuration file `exception.file` is not readable or does not exists.'
+            'Profile configuration file `exception.file` is not readable or does not exists.',
         );
         $this->model->loadConfig('exception.file');
     }
 
-    public function testLoadConfig()
+    /**
+     * @test
+     */
+    public function loadConfig()
     {
         $this->fileParserMock->expects($this->any())->method('xmlToArray')->willReturn(
-            ['config' => [ 'profile' => ['some_key' => 'some_value']]]
+            ['config' => ['profile' => ['some_key' => 'some_value']]],
         );
 
         $domMock = $this->createPartialMock(\DOMDocument::class, ['load', 'xinclude']);
         $domMock->expects($this->once())->method('load')->with('config.file')->willReturn(
-            false
+            false,
         );
         $domMock->expects($this->once())->method('xinclude');
         $this->fileParserMock->expects($this->exactly(2))->method('getDom')->willReturn($domMock);
@@ -57,27 +57,35 @@ class FixtureConfigTest extends TestCase
         $this->assertSame('some_value', $this->model->getValue('some_key'));
     }
 
-    public function testGetValue()
+    /**
+     * @test
+     */
+    public function getValue()
     {
         $this->assertNull($this->model->getValue('null_key'));
+    }
+
+    protected function setUp(): void
+    {
+        $this->fileParserMock = $this->createPartialMock(Parser::class, ['getDom', 'xmlToArray']);
+
+        $this->model = new FixtureConfig($this->fileParserMock);
     }
 }
 
 namespace Magento\Setup\Fixtures;
 
 /**
- * Overriding the built-in PHP function since it cannot be mocked->
+ * Overriding the built-in PHP function since it cannot be mocked->.
  *
  * The method is used in FixtureModel. loadConfig in an if statement. By overriding this method we are able to test
  * both of the possible cases based on the return value of is_readable.
  *
  * @param string $filename
+ *
  * @return bool
  */
 function is_readable($filename)
 {
-    if (strpos($filename, 'exception') !== false) {
-        return false;
-    }
-    return true;
+    return ! (str_contains($filename, 'exception'));
 }

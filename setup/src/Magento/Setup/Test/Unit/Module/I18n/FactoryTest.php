@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -20,22 +21,19 @@ class FactoryTest extends TestCase
      */
     protected $factory;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->factory = $objectManagerHelper->getObject(Factory::class);
-    }
-
     /**
      * @param string $expectedInstance
      * @param string $fileName
+     *
      * @dataProvider createDictionaryWriterDataProvider
+     *
+     * @test
      */
-    public function testCreateDictionaryWriter($expectedInstance, $fileName)
+    public function createDictionaryWriter($expectedInstance, $fileName)
     {
         $this->assertInstanceOf(
             $expectedInstance,
-            $this->factory->createDictionaryWriter($fileName)
+            $this->factory->createDictionaryWriter($fileName),
         );
     }
 
@@ -51,16 +49,22 @@ class FactoryTest extends TestCase
             ],
             [
                 Csv::class,
-                TESTS_TEMP_DIR . '/filename'
+                TESTS_TEMP_DIR . '/filename',
             ],
             [
                 Csv::class,
-                TESTS_TEMP_DIR . '/filename.csv'
+                TESTS_TEMP_DIR . '/filename.csv',
             ],
             [
                 Stdo::class,
-                ''
+                '',
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->factory = $objectManagerHelper->getObject(Factory::class);
     }
 }

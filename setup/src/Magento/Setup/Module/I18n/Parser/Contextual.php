@@ -1,32 +1,38 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Parser;
 
 use Magento\Setup\Module\I18n;
+use Magento\Setup\Module\I18n\Context;
+use Magento\Setup\Module\I18n\Dictionary\Phrase;
 
 /**
- * Contextual Parser
+ * Contextual Parser.
  */
 class Contextual extends AbstractParser
 {
     /**
-     * Context
+     * Context.
      *
-     * @var \Magento\Setup\Module\I18n\Context
+     * @var Context
      */
     protected $_context;
 
     /**
-     * Parser construct
+     * Parser construct.
      *
      * @param I18n\FilesCollector $filesCollector
      * @param I18n\Factory $factory
-     * @param I18n\Context $context
+     * @param Context $context
      */
-    public function __construct(I18n\FilesCollector $filesCollector, I18n\Factory $factory, I18n\Context $context)
+    public function __construct(I18n\FilesCollector $filesCollector, I18n\Factory $factory, Context $context)
     {
         $this->_context = $context;
 
@@ -34,9 +40,10 @@ class Contextual extends AbstractParser
     }
 
     /**
-     * Parse one type
+     * Parse one type.
      *
      * @param array $options
+     *
      * @return void
      */
     protected function _parseByTypeOptions($options)
@@ -45,7 +52,7 @@ class Contextual extends AbstractParser
             $adapter = $this->_adapters[$options['type']];
             $adapter->parse($file);
 
-            list($contextType, $contextValue) = $this->_context->getContextByPath($file);
+            [$contextType, $contextValue] = $this->_context->getContextByPath($file);
 
             foreach ($adapter->getPhrases() as $phraseData) {
                 $this->_addPhrase($phraseData, $contextType, $contextValue);
@@ -54,19 +61,20 @@ class Contextual extends AbstractParser
     }
 
     /**
-     * Add phrase with context
+     * Add phrase with context.
      *
      * @param array $phraseData
      * @param string $contextType
      * @param string $contextValue
+     *
      * @return void
      */
     protected function _addPhrase($phraseData, $contextType, $contextValue)
     {
-        $phraseKey = $contextType . $contextValue. stripslashes($phraseData['phrase']);
+        $phraseKey = $contextType . $contextValue . stripslashes($phraseData['phrase']);
 
         if (isset($this->_phrases[$phraseKey])) {
-            /** @var \Magento\Setup\Module\I18n\Dictionary\Phrase $phrase */
+            /** @var Phrase $phrase */
             $phrase = $this->_phrases[$phraseKey];
             $phrase->addContextValue($contextValue);
         } else {
@@ -77,7 +85,7 @@ class Contextual extends AbstractParser
                     'context_type' => $contextType,
                     'context_value' => [$contextValue],
                     'quote' => $phraseData['quote'],
-                ]
+                ],
             );
         }
     }

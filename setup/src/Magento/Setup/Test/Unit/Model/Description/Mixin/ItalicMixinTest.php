@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,24 +31,18 @@ class ItalicMixinTest extends TestCase
      */
     private $wordWrapperMock;
 
-    protected function setUp(): void
-    {
-        $this->randomWordSelectorMock =
-            $this->createMock(RandomWordSelector::class);
-        $this->wordWrapperMock = $this->createMock(WordWrapper::class);
-
-        $this->mixin = new ItalicMixin(
-            $this->randomWordSelectorMock,
-            $this->wordWrapperMock
-        );
-    }
-
-    public function testEmptyApply()
+    /**
+     * @test
+     */
+    public function emptyApply()
     {
         $this->assertEquals('', $this->mixin->apply(''));
     }
 
-    public function testApply()
+    /**
+     * @test
+     */
+    public function apply()
     {
         $fixtureString = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
         $fixtureStringResult = '<i>Lorem</i> ipsum <i>dolor</i> sit amet, consectetur adipiscing elit.';
@@ -66,5 +61,17 @@ class ItalicMixinTest extends TestCase
             ->willReturn($fixtureStringResult);
 
         $this->assertEquals($fixtureStringResult, $this->mixin->apply($fixtureString));
+    }
+
+    protected function setUp(): void
+    {
+        $this->randomWordSelectorMock =
+            $this->createMock(RandomWordSelector::class);
+        $this->wordWrapperMock = $this->createMock(WordWrapper::class);
+
+        $this->mixin = new ItalicMixin(
+            $this->randomWordSelectorMock,
+            $this->wordWrapperMock,
+        );
     }
 }

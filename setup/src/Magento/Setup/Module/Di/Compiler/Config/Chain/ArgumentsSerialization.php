@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,10 +9,10 @@
 
 namespace Magento\Setup\Module\Di\Compiler\Config\Chain;
 
-use Magento\Setup\Module\Di\Compiler\Config\ModificationInterface;
-use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Setup\Module\Di\Compiler\Config\ModificationInterface;
 
 /**
  * Used for argument's array serialization and store to the DI configuration.
@@ -31,20 +34,21 @@ class ArgumentsSerialization implements ModificationInterface
      *
      * @param SerializerInterface|null $serializer
      */
-    public function __construct(SerializerInterface $serializer = null)
+    public function __construct(?SerializerInterface $serializer = null)
     {
         $this->serializer = $serializer ?: ObjectManager::getInstance()->get(Json::class);
     }
 
     /**
-     * Modifies input config
+     * Modifies input config.
      *
      * @param array $config
+     *
      * @return array
      */
     public function modify(array $config)
     {
-        if (!isset($config['arguments'])) {
+        if (! isset($config['arguments'])) {
             return $config;
         }
 

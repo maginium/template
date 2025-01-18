@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,15 +9,32 @@
 
 namespace Magento\Setup\Module;
 
-use Magento\Framework\Model\ResourceModel\Type\Db\Pdo\Mysql;
 use Laminas\ServiceManager\ServiceLocatorInterface;
+use Magento\Framework\DB\Adapter\Pdo\MysqlFactory;
+use Magento\Framework\DB\Logger\Quiet;
+use Magento\Framework\DB\Platform\Quote;
+use Magento\Framework\DB\Select\ColumnsRenderer;
+use Magento\Framework\DB\Select\DistinctRenderer;
+use Magento\Framework\DB\Select\ForUpdateRenderer;
+use Magento\Framework\DB\Select\FromRenderer;
+use Magento\Framework\DB\Select\GroupRenderer;
+use Magento\Framework\DB\Select\HavingRenderer;
+use Magento\Framework\DB\Select\LimitRenderer;
+use Magento\Framework\DB\Select\OrderRenderer;
+use Magento\Framework\DB\Select\SelectRenderer;
+use Magento\Framework\DB\Select\UnionRenderer;
+use Magento\Framework\DB\Select\WhereRenderer;
+use Magento\Framework\DB\SelectFactory;
+use Magento\Framework\Model\ResourceModel\Type\Db\ConnectionFactoryInterface;
+use Magento\Framework\Model\ResourceModel\Type\Db\Pdo\Mysql;
+use Magento\Setup\Model\ObjectManagerProvider;
 
 /**
- * Connection adapter factory
+ * Connection adapter factory.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
-class ConnectionFactory implements \Magento\Framework\Model\ResourceModel\Type\Db\ConnectionFactoryInterface
+class ConnectionFactory implements ConnectionFactoryInterface
 {
     /**
      * @var ServiceLocatorInterface
@@ -22,7 +42,7 @@ class ConnectionFactory implements \Magento\Framework\Model\ResourceModel\Type\D
     private $serviceLocator;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param ServiceLocatorInterface $serviceLocator
      */
@@ -32,73 +52,74 @@ class ConnectionFactory implements \Magento\Framework\Model\ResourceModel\Type\D
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function create(array $connectionConfig)
     {
-        $quote = new \Magento\Framework\DB\Platform\Quote();
-        $selectFactory = new \Magento\Framework\DB\SelectFactory(
-            new \Magento\Framework\DB\Select\SelectRenderer(
+        $quote = new Quote;
+        $selectFactory = new SelectFactory(
+            new SelectRenderer(
                 [
                     'distinct' => [
-                            'renderer' => new \Magento\Framework\DB\Select\DistinctRenderer(),
-                            'sort' => 100,
-                            'part' => 'distinct'
-                        ],
+                        'renderer' => new DistinctRenderer,
+                        'sort' => 100,
+                        'part' => 'distinct',
+                    ],
                     'columns' => [
-                            'renderer' => new \Magento\Framework\DB\Select\ColumnsRenderer($quote),
-                            'sort' => 200,
-                            'part' => 'columns'
-                        ],
+                        'renderer' => new ColumnsRenderer($quote),
+                        'sort' => 200,
+                        'part' => 'columns',
+                    ],
                     'union' => [
-                            'renderer' => new \Magento\Framework\DB\Select\UnionRenderer(),
-                            'sort' => 300,
-                            'part' => 'union'
-                        ],
+                        'renderer' => new UnionRenderer,
+                        'sort' => 300,
+                        'part' => 'union',
+                    ],
                     'from' => [
-                            'renderer' => new \Magento\Framework\DB\Select\FromRenderer($quote),
-                            'sort' => 400,
-                            'part' => 'from'
-                        ],
+                        'renderer' => new FromRenderer($quote),
+                        'sort' => 400,
+                        'part' => 'from',
+                    ],
                     'where' => [
-                            'renderer' => new \Magento\Framework\DB\Select\WhereRenderer(),
-                            'sort' => 500,
-                            'part' => 'where'
-                        ],
+                        'renderer' => new WhereRenderer,
+                        'sort' => 500,
+                        'part' => 'where',
+                    ],
                     'group' => [
-                            'renderer' => new \Magento\Framework\DB\Select\GroupRenderer($quote),
-                            'sort' => 600,
-                            'part' => 'group'
-                        ],
+                        'renderer' => new GroupRenderer($quote),
+                        'sort' => 600,
+                        'part' => 'group',
+                    ],
                     'having' => [
-                            'renderer' => new \Magento\Framework\DB\Select\HavingRenderer(),
-                            'sort' => 700,
-                            'part' => 'having'
-                        ],
+                        'renderer' => new HavingRenderer,
+                        'sort' => 700,
+                        'part' => 'having',
+                    ],
                     'order' => [
-                            'renderer' => new \Magento\Framework\DB\Select\OrderRenderer($quote),
-                            'sort' => 800,
-                            'part' => 'order'
-                        ],
+                        'renderer' => new OrderRenderer($quote),
+                        'sort' => 800,
+                        'part' => 'order',
+                    ],
                     'limit' => [
-                            'renderer' => new \Magento\Framework\DB\Select\LimitRenderer(),
-                            'sort' => 900,
-                            'part' => 'limitcount'
-                        ],
+                        'renderer' => new LimitRenderer,
+                        'sort' => 900,
+                        'part' => 'limitcount',
+                    ],
                     'for_update' => [
-                            'renderer' => new \Magento\Framework\DB\Select\ForUpdateRenderer(),
-                            'sort' => 1000,
-                            'part' => 'forupdate'
-                        ],
-                ]
-            )
+                        'renderer' => new ForUpdateRenderer,
+                        'sort' => 1000,
+                        'part' => 'forupdate',
+                    ],
+                ],
+            ),
         );
-        $objectManagerProvider = $this->serviceLocator->get(\Magento\Setup\Model\ObjectManagerProvider::class);
-        $mysqlFactory = new \Magento\Framework\DB\Adapter\Pdo\MysqlFactory($objectManagerProvider->get());
+        $objectManagerProvider = $this->serviceLocator->get(ObjectManagerProvider::class);
+        $mysqlFactory = new MysqlFactory($objectManagerProvider->get());
         $resourceInstance = new Mysql($connectionConfig, $mysqlFactory);
+
         return $resourceInstance->getConnection(
-            $this->serviceLocator->get(\Magento\Framework\DB\Logger\Quiet::class),
-            $selectFactory
+            $this->serviceLocator->get(Quiet::class),
+            $selectFactory,
         );
     }
 }

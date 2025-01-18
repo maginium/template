@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,11 +14,11 @@ use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 
 /**
- * Fixture for creating a Customer Groups
+ * Fixture for creating a Customer Groups.
  */
 class CustomerGroupsFixture extends Fixture
 {
-    const DEFAULT_TAX_CLASS_ID = 3;
+    public const DEFAULT_TAX_CLASS_ID = 3;
 
     /**
      * @var int
@@ -38,13 +41,13 @@ class CustomerGroupsFixture extends Fixture
     private $groupFactory;
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function __construct(
         FixtureModel $fixtureModel,
         CollectionFactory $groupCollectionFactory,
         GroupRepositoryInterface $groupRepository,
-        GroupInterfaceFactory $groupFactory
+        GroupInterfaceFactory $groupFactory,
     ) {
         parent::__construct($fixtureModel);
         $this->groupCollectionFactory = $groupCollectionFactory;
@@ -53,17 +56,18 @@ class CustomerGroupsFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute()
     {
         $existingCustomerGroupsCount = $this->groupCollectionFactory->create()->getSize();
         $customerGroupsCount = $this->fixtureModel->getValue('customer_groups', 0);
+
         if ($customerGroupsCount < 1) {
             return;
         }
 
-        for ($i = $existingCustomerGroupsCount; $i <  $customerGroupsCount; ++$i) {
+        for ($i = $existingCustomerGroupsCount; $i < $customerGroupsCount; $i++) {
             $groupDataObject = $this->groupFactory->create();
             $groupDataObject
                 ->setCode('customer_group_' . $i)
@@ -73,7 +77,7 @@ class CustomerGroupsFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getActionTitle()
     {
@@ -81,12 +85,12 @@ class CustomerGroupsFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function introduceParamLabels()
     {
         return [
-            'customer_groups' => 'Customer groups'
+            'customer_groups' => 'Customer groups',
         ];
     }
 }

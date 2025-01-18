@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,7 +18,10 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class ModuleStatusCommandTest extends TestCase
 {
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
         $objectManager = $this->getMockForAbstractClass(ObjectManagerInterface::class);
@@ -43,7 +47,7 @@ class ModuleStatusCommandTest extends TestCase
         $this->assertStringMatchesFormat(
             'List of enabled modules%aMagento_Module1%aMagento_Module2%a'
             . 'List of disabled modules%aMagento_Module3%a',
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 }

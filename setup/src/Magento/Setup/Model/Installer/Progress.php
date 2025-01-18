@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,27 +9,29 @@
 
 namespace Magento\Setup\Model\Installer;
 
+use LogicException;
+
 /**
- * Installation progress model
+ * Installation progress model.
  */
 class Progress
 {
     /**
-     * Total number of steps
+     * Total number of steps.
      *
      * @var int
      */
     private $total;
 
     /**
-     * Current step
+     * Current step.
      *
      * @var int
      */
     private $current;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param int $total
      * @param int $current
@@ -39,7 +44,7 @@ class Progress
     }
 
     /**
-     * Increments current counter
+     * Increments current counter.
      *
      * @return void
      */
@@ -50,7 +55,7 @@ class Progress
     }
 
     /**
-     * Sets current counter to the end
+     * Sets current counter to the end.
      *
      * @return void
      */
@@ -60,7 +65,7 @@ class Progress
     }
 
     /**
-     * Gets the current counter
+     * Gets the current counter.
      *
      * @return int
      */
@@ -70,7 +75,7 @@ class Progress
     }
 
     /**
-     * Gets the total number
+     * Gets the total number.
      *
      * @return int
      */
@@ -80,7 +85,7 @@ class Progress
     }
 
     /**
-     * Gets ratio of current to total
+     * Gets ratio of current to total.
      *
      * @return float
      */
@@ -90,20 +95,23 @@ class Progress
     }
 
     /**
-     * Asserts invariants
+     * Asserts invariants.
      *
      * @param int $total
      * @param int $current
+     *
+     * @throws LogicException
+     *
      * @return void
-     * @throws \LogicException
      */
     private function validate($total, $current)
     {
-        if (empty($total) || 0 >= $total) {
-            throw new \LogicException('Total number must be more than zero.');
+        if (empty($total) || $total <= 0) {
+            throw new LogicException('Total number must be more than zero.');
         }
+
         if ($current > $total) {
-            throw new \LogicException('Current cannot exceed total number.');
+            throw new LogicException('Current cannot exceed total number.');
         }
     }
 }

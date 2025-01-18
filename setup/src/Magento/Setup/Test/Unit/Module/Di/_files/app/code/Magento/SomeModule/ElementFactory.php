@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -28,11 +29,13 @@ class ElementFactory
     /**
      * @param string $className
      * @param array $data
+     *
      * @return mixed
      */
     public function create($className, array $data = [])
     {
         $instance = $this->_objectManager->create($className, $data);
+
         return $instance;
     }
 }

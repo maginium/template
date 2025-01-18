@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,15 +9,19 @@
 
 namespace Magento\Setup\Validator;
 
+use Credis_Client;
+use CredisException;
+
 /**
- * Connection validator for Redis configurations
+ * Connection validator for Redis configurations.
  */
 class RedisConnectionValidator
 {
     /**
-     * Validate redis connection
+     * Validate redis connection.
      *
      * @param array $redisOptions
+     *
      * @return bool
      */
     public function isValidConnection(array $redisOptions)
@@ -25,26 +32,27 @@ class RedisConnectionValidator
             'db' => '',
             'password' => null,
             'timeout' => null,
-            'persistent' => ''
+            'persistent' => '',
         ];
 
         $config = array_merge($default, $redisOptions);
 
         try {
-            $redisClient = new \Credis_Client(
+            $redisClient = new Credis_Client(
                 $config['host'],
                 $config['port'],
                 $config['timeout'],
                 $config['persistent'],
                 $config['db'],
-                $config['password']
+                $config['password'],
             );
             $redisClient->setMaxConnectRetries(1);
+
             if (isset($config['password']) && $config['password'] !== '') {
                 $redisClient->auth($config['password']);
             }
             $redisClient->connect();
-        } catch (\CredisException $e) {
+        } catch (CredisException $e) {
             return false;
         }
 

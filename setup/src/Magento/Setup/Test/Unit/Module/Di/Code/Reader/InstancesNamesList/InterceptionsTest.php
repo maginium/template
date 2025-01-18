@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Test\Unit\Module\Di\Code\Reader\InstancesNamesList;
 
+use Exception;
 use Magento\Framework\Code\Reader\ClassReader;
 use Magento\Framework\Code\Validator;
 use Magento\Framework\Code\Validator\ConstructorIntegrity;
@@ -18,6 +20,7 @@ use Magento\Setup\Module\Di\Code\Reader\Decorator\Interceptions;
 use Magento\Setup\Module\Di\Compiler\Log\Log;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionException;
 
 class InterceptionsTest extends TestCase
 {
@@ -47,40 +50,9 @@ class InterceptionsTest extends TestCase
     private $logMock;
 
     /**
-     * @inheritdoc
+     * @test
      */
-    protected function setUp(): void
-    {
-        $this->logMock = $this->getMockBuilder(Log::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['add', 'report'])
-            ->getMock();
-
-        $this->classesScanner = $this->getMockBuilder(ClassesScanner::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getList'])
-            ->getMock();
-
-        $this->classReaderMock = $this->getMockBuilder(ClassReader::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getParents'])
-            ->getMock();
-
-        $this->validatorMock = $this->getMockBuilder(Validator::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['validate', 'add'])
-            ->getMock();
-
-        $this->model = new Interceptions(
-            $this->classesScanner,
-            $this->classReaderMock,
-            $this->validatorMock,
-            new ConstructorIntegrity(),
-            $this->logMock
-        );
-    }
-
-    public function testGetList()
+    public function getList()
     {
         $path = '/tmp/test';
 
@@ -104,7 +76,10 @@ class InterceptionsTest extends TestCase
         $this->assertEquals($result, $classes);
     }
 
-    public function testGetListNoValidation()
+    /**
+     * @test
+     */
+    public function getListNoValidation()
     {
         $path = '/generated/code';
 
@@ -132,8 +107,10 @@ class InterceptionsTest extends TestCase
      * @dataProvider getListExceptionDataProvider
      *
      * @param $exception
+     *
+     * @test
      */
-    public function testGetListException(\Exception $exception)
+    public function getListException(Exception $exception)
     {
         $path = '/tmp/test';
 
@@ -151,7 +128,7 @@ class InterceptionsTest extends TestCase
         $this->validatorMock->expects($this->exactly(count($classes)))
             ->method('validate')
             ->willThrowException(
-                $exception
+                $exception,
             );
 
         $this->logMock->expects($this->once())->method('report');
@@ -162,7 +139,7 @@ class InterceptionsTest extends TestCase
     }
 
     /**
-     * DataProvider for test testGetListException
+     * DataProvider for test testGetListException.
      *
      * @return array
      */
@@ -170,7 +147,41 @@ class InterceptionsTest extends TestCase
     {
         return [
             [new ValidatorException(new Phrase('Not Valid!'))],
-            [new \ReflectionException('Not Valid!')]
+            [new ReflectionException('Not Valid!')],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->logMock = $this->getMockBuilder(Log::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['add', 'report'])
+            ->getMock();
+
+        $this->classesScanner = $this->getMockBuilder(ClassesScanner::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getList'])
+            ->getMock();
+
+        $this->classReaderMock = $this->getMockBuilder(ClassReader::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getParents'])
+            ->getMock();
+
+        $this->validatorMock = $this->getMockBuilder(Validator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validate', 'add'])
+            ->getMock();
+
+        $this->model = new Interceptions(
+            $this->classesScanner,
+            $this->classReaderMock,
+            $this->validatorMock,
+            new ConstructorIntegrity,
+            $this->logMock,
+        );
     }
 }

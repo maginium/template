@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,22 +18,26 @@ use PHPUnit\Framework\TestCase;
 
 class TimeZoneProviderTest extends TestCase
 {
-    public function testGet()
+    /**
+     * @test
+     */
+    public function get()
     {
         $timeZone = $this->createMock(Timezone::class);
         $objectManager = $this->getMockForAbstractClass(
             ObjectManagerInterface::class,
             [],
             '',
-            false
+            false,
         );
         $objectManager->expects($this->once())
             ->method('create')
             ->with(
                 Timezone::class,
-                ['scopeType' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT]
+                ['scopeType' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT],
             )
             ->willReturn($timeZone);
+
         /** @var ObjectManagerProvider|MockObject $objectManagerProvider */
         $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
         $objectManagerProvider->expects($this->any())

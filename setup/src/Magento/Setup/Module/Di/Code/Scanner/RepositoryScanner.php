@@ -1,14 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Code\Scanner;
 
+use DOMDocument;
+use DOMXPath;
 use Magento\Framework\Autoload\AutoloaderRegistry;
 
 /**
- * Class RepositoryScanner
+ * Class RepositoryScanner.
  */
 class RepositoryScanner implements ScannerInterface
 {
@@ -18,28 +24,32 @@ class RepositoryScanner implements ScannerInterface
     private $useAutoload = true;
 
     /**
-     * Get array of class names
+     * Get array of class names.
      *
      * @param array $files
+     *
      * @return array
      */
     public function collectEntities(array $files)
     {
         $repositoryClassNames = [];
+
         foreach ($files as $fileName) {
-            $dom = new \DOMDocument();
+            $dom = new DOMDocument;
             $dom->loadXML(file_get_contents($fileName));
-            $xpath = new \DOMXPath($dom);
+            $xpath = new DOMXPath($dom);
+
             /** @var $node \DOMNode */
             foreach ($xpath->query('//preference') as $node) {
                 $forType = $node->attributes->getNamedItem('for');
                 $replacementType = $node->attributes->getNamedItem('type');
+
                 if ($forType !== null
                     && $replacementType !== null
-                    && (substr($forType->nodeValue, -19) == 'RepositoryInterface')
+                    && (mb_substr($forType->nodeValue, -19) === 'RepositoryInterface')
                 ) {
-                    if (!class_exists($replacementType->nodeValue, false)
-                        && !AutoloaderRegistry::getAutoloader()->loadClass($replacementType->nodeValue)) {
+                    if (! class_exists($replacementType->nodeValue, false)
+                        && ! AutoloaderRegistry::getAutoloader()->loadClass($replacementType->nodeValue)) {
                         $persistor = str_replace('\\Repository', 'InterfacePersistor', $replacementType->nodeValue);
                         $factory = str_replace('\\Repository', 'InterfaceFactory', $replacementType->nodeValue);
                         $searchResultFactory
@@ -52,13 +62,15 @@ class RepositoryScanner implements ScannerInterface
                 }
             }
         }
+
         return $repositoryClassNames;
     }
 
     /**
-     * Sets autoload flag
+     * Sets autoload flag.
      *
-     * @param boolean $useAutoload
+     * @param bool $useAutoload
+     *
      * @return void
      */
     public function setUseAutoload($useAutoload)

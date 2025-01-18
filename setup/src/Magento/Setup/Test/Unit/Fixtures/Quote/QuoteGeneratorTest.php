@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -10,6 +11,7 @@ namespace Magento\Setup\Test\Unit\Fixtures\Quote;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Product\Collection;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use Magento\ConfigurableProduct\Api\Data\OptionValueInterface;
 use Magento\ConfigurableProduct\Api\LinkManagementInterface;
 use Magento\ConfigurableProduct\Api\OptionRepositoryInterface;
@@ -54,7 +56,7 @@ class QuoteGeneratorTest extends TestCase
     private $optionRepository;
 
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory|MockObject
+     * @var CollectionFactory|MockObject
      */
     private $productCollectionFactory;
 
@@ -84,75 +86,13 @@ class QuoteGeneratorTest extends TestCase
     private $fixture;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storeManager = $this->getMockBuilder(StoreManagerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->productRepository = $this->getMockBuilder(ProductRepositoryInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->optionRepository = $this->getMockBuilder(
-            OptionRepositoryInterface::class
-        )
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->productCollectionFactory = $this->getMockBuilder(
-            \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory::class
-        )
-            ->disableOriginalConstructor()
-            ->onlyMethods(['create'])
-            ->getMock();
-        $this->linkManagement = $this->getMockBuilder(LinkManagementInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->serializer = $this->getMockBuilder(SerializerInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->config = $this->getMockBuilder(QuoteConfiguration::class)
-            ->disableOriginalConstructor()
-            ->addMethods(
-                [
-                    'getSimpleCountTo',
-                    'getSimpleCountFrom',
-                    'getConfigurableCountTo',
-                    'getConfigurableCountFrom',
-                    'getBigConfigurableCountTo',
-                    'getBigConfigurableCountFrom',
-                    'getRequiredQuoteQuantity',
-                    'getFixtureDataFilename',
-                    'getExistsQuoteQuantity',
-                ]
-            )
-            ->getMock();
-        $objectManager = new ObjectManager($this);
-
-        $this->fixture = $objectManager->getObject(
-            QuoteGenerator::class,
-            [
-                'fixtureModel' => $this->fixtureModelMock,
-                'storeManager' => $this->storeManager,
-                'productRepository' => $this->productRepository,
-                'optionRepository' => $this->optionRepository,
-                'productCollectionFactory' => $this->productCollectionFactory,
-                'linkManagement' => $this->linkManagement,
-                'serializer' => $this->serializer,
-                'config' => $this->config,
-            ]
-        );
-    }
-
-    /**
      * Test generateQuotes method.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGenerateQuotes()
+    public function generateQuotes()
     {
         $storeId = 1;
         $websiteId = 1;
@@ -186,7 +126,7 @@ class QuoteGeneratorTest extends TestCase
         $this->config->expects($this->atLeastOnce())->method('getExistsQuoteQuantity')->willReturn(0);
         $this->config->expects($this->atLeastOnce())
             ->method('getFixtureDataFilename')
-            ->willReturn($dir . DIRECTORY_SEPARATOR . "_files" . DIRECTORY_SEPARATOR . 'orders_fixture_data.json');
+            ->willReturn($dir . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'orders_fixture_data.json');
         $this->storeManager->expects($this->atLeastOnce())->method('getStores')->willReturn([$store]);
         $this->storeManager->expects($this->atLeastOnce())
             ->method('getWebsite')->with($websiteId)->willReturn($website);
@@ -206,33 +146,47 @@ class QuoteGeneratorTest extends TestCase
         $productCollection->expects($this->atLeastOnce())->method('getSelect')->willReturn($select);
         $select->expects($this->atLeastOnce())
             ->method('where')
-            ->willReturnCallback(function ($arg) use ($select) {
-                if ($arg == 'type_id = \'simple\' ') {
+            ->willReturnCallback(function($arg) use ($select) {
+                if ($arg === 'type_id = \'simple\' ') {
                     return $select;
-                } elseif ($arg == 'sku NOT LIKE \'Big%\' ') {
+                }
+
+                if ($arg === 'sku NOT LIKE \'Big%\' ') {
                     return $select;
-                } elseif ($arg == 'type_id = \'configurable\' ') {
+                }
+
+                if ($arg === 'type_id = \'configurable\' ') {
                     return $select;
-                } elseif ($arg == 'sku LIKE \'Big%\' ') {
+                }
+
+                if ($arg === 'sku LIKE \'Big%\' ') {
                     return $select;
                 }
             });
         $productCollection->expects($this->atLeastOnce())
             ->method('getAllIds')
-            ->willReturnCallback(function ($arg) use (
+            ->willReturnCallback(function($arg) use (
                 $simpleProductIds,
                 $configurableProductId,
                 $bigConfigurableProductId
             ) {
                 static $callCount = 0;
-                if ($callCount == 0 && $arg == 2) {
+
+                if ($callCount === 0 && $arg === 2) {
                     $callCount++;
+
                     return $simpleProductIds;
-                } elseif ($callCount == 1 && $arg == 1) {
+                }
+
+                if ($callCount === 1 && $arg === 1) {
                     $callCount++;
+
                     return $configurableProductId;
-                } elseif ($callCount == 2 && $arg == 1) {
+                }
+
+                if ($callCount === 2 && $arg === 1) {
                     $callCount++;
+
                     return $bigConfigurableProductId;
                 }
             });
@@ -240,6 +194,70 @@ class QuoteGeneratorTest extends TestCase
         $this->prepareProducts();
         $this->mockConnection();
         $this->fixture->generateQuotes();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->storeManager = $this->getMockBuilder(StoreManagerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->productRepository = $this->getMockBuilder(ProductRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->optionRepository = $this->getMockBuilder(
+            OptionRepositoryInterface::class,
+        )
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->productCollectionFactory = $this->getMockBuilder(
+            CollectionFactory::class,
+        )
+            ->disableOriginalConstructor()
+            ->onlyMethods(['create'])
+            ->getMock();
+        $this->linkManagement = $this->getMockBuilder(LinkManagementInterface::class)
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->serializer = $this->getMockBuilder(SerializerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->config = $this->getMockBuilder(QuoteConfiguration::class)
+            ->disableOriginalConstructor()
+            ->addMethods(
+                [
+                    'getSimpleCountTo',
+                    'getSimpleCountFrom',
+                    'getConfigurableCountTo',
+                    'getConfigurableCountFrom',
+                    'getBigConfigurableCountTo',
+                    'getBigConfigurableCountFrom',
+                    'getRequiredQuoteQuantity',
+                    'getFixtureDataFilename',
+                    'getExistsQuoteQuantity',
+                ],
+            )
+            ->getMock();
+        $objectManager = new ObjectManager($this);
+
+        $this->fixture = $objectManager->getObject(
+            QuoteGenerator::class,
+            [
+                'fixtureModel' => $this->fixtureModelMock,
+                'storeManager' => $this->storeManager,
+                'productRepository' => $this->productRepository,
+                'optionRepository' => $this->optionRepository,
+                'productCollectionFactory' => $this->productCollectionFactory,
+                'linkManagement' => $this->linkManagement,
+                'serializer' => $this->serializer,
+                'config' => $this->config,
+            ],
+        );
     }
 
     /**
@@ -266,8 +284,8 @@ class QuoteGeneratorTest extends TestCase
             ->getMockForAbstractClass();
         $this->productRepository->expects($this->atLeastOnce())
             ->method('getById')
-            ->willReturnCallback(function ($arg) use ($product) {
-                if ($arg == 1 || $arg == 2 || $arg == 3 || $arg ==4) {
+            ->willReturnCallback(function($arg) use ($product) {
+                if ($arg === 1 || $arg === 2 || $arg === 3 || $arg === 4) {
                     return $product;
                 }
             });
@@ -280,15 +298,15 @@ class QuoteGeneratorTest extends TestCase
             ->willReturn('a:1:{i:10;i:1;}');
         $this->optionRepository->expects($this->atLeastOnce())
             ->method('getList')
-            ->willReturnCallback(function ($arg) use ($option) {
-                if ($arg == 'sku3' || $arg == 'sku4') {
+            ->willReturnCallback(function($arg) use ($option) {
+                if ($arg === 'sku3' || $arg === 'sku4') {
                     return [$option];
                 }
             });
         $this->linkManagement->expects($this->atLeastOnce())
             ->method('getChildren')
-            ->willReturnCallback(function ($arg) use ($configurableChild) {
-                if ($arg == 'sku3' || $arg == 'sku4') {
+            ->willReturnCallback(function($arg) use ($configurableChild) {
+                if ($arg === 'sku3' || $arg === 'sku4') {
                     return [$configurableChild];
                 }
             });
@@ -297,8 +315,8 @@ class QuoteGeneratorTest extends TestCase
             ->willReturnOnConsecutiveCalls('childSku3', 'childSku3', 'childSku4', 'childSku4');
         $this->productRepository->expects($this->atLeastOnce())
             ->method('get')
-            ->willReturnCallback(function ($arg) use ($childProduct) {
-                if ($arg == 'childSku3' || $arg == 'childSku4') {
+            ->willReturnCallback(function($arg) use ($childProduct) {
+                if ($arg === 'childSku3' || $arg === 'childSku4') {
                     return $childProduct;
                 }
             });

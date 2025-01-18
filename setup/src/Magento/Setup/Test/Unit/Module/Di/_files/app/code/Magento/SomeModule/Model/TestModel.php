@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,6 +8,9 @@ declare(strict_types=1);
 
 namespace Magento\SomeModule\Model;
 
+use Magento\SomeModule\Model\Element\Proxy;
+use Magento\SomeModule\ModelFactory;
+
 /**
  * @SuppressWarnings(PHPMD.ConstructorWithNameAsEnclosingClass)
  */
@@ -14,15 +18,15 @@ class TestModel
 {
     public function __construct()
     {
-        new \Magento\SomeModule\Model\Element\Proxy();
+        new Proxy;
     }
 
     /**
-     * @param \Magento\SomeModule\ModelFactory $factory
+     * @param ModelFactory $factory
      * @param array $data
      */
-    public function testModel(\Magento\SomeModule\ModelFactory $factory, array $data = [])
+    public function testModel(ModelFactory $factory, array $data = [])
     {
-        $factory->create(\Magento\SomeModule\Model\BlockFactory::class, ['data' => $data]);
+        $factory->create(BlockFactory::class, ['data' => $data]);
     }
 }

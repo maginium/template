@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,51 +15,24 @@ use PHPUnit\Framework\TestCase;
 class ComplexGeneratorTest extends TestCase
 {
     /**
-     * Pattern instance
+     * Pattern instance.
      *
      * @var Pattern
      */
     protected $_pattern;
 
     /**
-     * Get pattern instance
-     *
-     * @return Pattern
-     */
-    protected function getPattern()
-    {
-        if (!$this->_pattern instanceof Pattern) {
-            $patternData = [
-                [
-                    'id' => '%s',
-                    'name' => 'Static',
-                    'calculated' => function ($index) {
-                        return $index * 10;
-                    },
-                ],
-                [
-                    'name' => 'xxx %s'
-                ],
-                [
-                    'name' => 'yyy %s'
-                ],
-            ];
-            $this->_pattern = new Pattern();
-            $this->_pattern->setHeaders(array_keys($patternData[0]));
-            $this->_pattern->setRowsSet($patternData);
-        }
-        return $this->_pattern;
-    }
-
-    /**
-     * Test complex generator iterator interface
+     * Test complex generator iterator interface.
      *
      * @return void
+     *
+     * @test
      */
-    public function testIteratorInterface()
+    public function iteratorInterface()
     {
         $model = new Generator($this->getPattern(), 2);
         $rows = [];
+
         foreach ($model as $row) {
             $rows[] = $row;
         }
@@ -71,20 +45,52 @@ class ComplexGeneratorTest extends TestCase
                 ['id' => '', 'name' => 'xxx 2', 'calculated' => ''],
                 ['id' => '', 'name' => 'yyy 2', 'calculated' => ''],
             ],
-            $rows
+            $rows,
         );
     }
 
     /**
-     * Test generator getIndex
+     * Test generator getIndex.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGetIndex()
+    public function getIndex()
     {
         $model = new Generator($this->getPattern(), 4);
+
         for ($i = 0; $i < 32; $i++) {
             $this->assertEquals($model->getIndex($i), floor($i / $this->getPattern()->getRowsCount()) + 1);
         }
+    }
+
+    /**
+     * Get pattern instance.
+     *
+     * @return Pattern
+     */
+    protected function getPattern()
+    {
+        if (! $this->_pattern instanceof Pattern) {
+            $patternData = [
+                [
+                    'id' => '%s',
+                    'name' => 'Static',
+                    'calculated' => fn($index) => $index * 10,
+                ],
+                [
+                    'name' => 'xxx %s',
+                ],
+                [
+                    'name' => 'yyy %s',
+                ],
+            ];
+            $this->_pattern = new Pattern;
+            $this->_pattern->setHeaders(array_keys($patternData[0]));
+            $this->_pattern->setRowsSet($patternData);
+        }
+
+        return $this->_pattern;
     }
 }

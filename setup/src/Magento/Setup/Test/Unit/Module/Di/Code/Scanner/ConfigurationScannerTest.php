@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -32,27 +33,10 @@ class ConfigurationScannerTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->fileResolverMock = $this->getMockBuilder(FileResolver::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->areaListMock = $this->getMockBuilder(AreaList::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->model = $objectManagerHelper->getObject(
-            ConfigurationScanner::class,
-            [
-                'fileResolver' => $this->fileResolverMock,
-                'areaList' => $this->areaListMock,
-            ]
-        );
-    }
-
-    public function testScan()
+    /**
+     * @test
+     */
+    public function scan()
     {
         $codes = ['code1', 'code2'];
         $iteratorMock = $this->getMockBuilder(FileIterator::class)
@@ -70,5 +54,25 @@ class ConfigurationScannerTest extends TestCase
             ->method('toArray')
             ->willReturn($files);
         $this->assertEquals(array_keys($files), $this->model->scan('di.xml'));
+    }
+
+    protected function setUp(): void
+    {
+        $this->fileResolverMock = $this->getMockBuilder(FileResolver::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->areaListMock = $this->getMockBuilder(AreaList::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $objectManagerHelper = new ObjectManager($this);
+        $this->model = $objectManagerHelper->getObject(
+            ConfigurationScanner::class,
+            [
+                'fileResolver' => $this->fileResolverMock,
+                'areaList' => $this->areaListMock,
+            ],
+        );
     }
 }

@@ -1,21 +1,25 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Dictionary\Writer\Csv;
 
 use Magento\Setup\Module\I18n\Dictionary\Writer\Csv;
 
 /**
- * Stdout writer
+ * Stdout writer.
  *
  * Output csv format to stdout
  */
 class Stdo extends Csv
 {
     /**
-     * Writer construct
+     * Writer construct.
      */
     public function __construct()
     {
@@ -23,7 +27,7 @@ class Stdo extends Csv
     }
 
     /**
-     * Overriding parent as we can not close globally used resource
+     * Overriding parent as we can not close globally used resource.
      *
      * @return void
      */

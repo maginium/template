@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,19 +31,10 @@ class SearchTermDescriptionGeneratorTest extends TestCase
      */
     private $searchTermManagerMock;
 
-    protected function setUp(): void
-    {
-        $this->descriptionGeneratorMock =
-            $this->createMock(DescriptionGenerator::class);
-        $this->searchTermManagerMock = $this->createMock(SearchTermManager::class);
-
-        $this->searchTermDescriptionGenerator = new SearchTermDescriptionGenerator(
-            $this->descriptionGeneratorMock,
-            $this->searchTermManagerMock
-        );
-    }
-
-    public function testGeneratorWithCaching()
+    /**
+     * @test
+     */
+    public function generatorWithCaching()
     {
         $descriptionMock = '<o>';
         $firstProductIndex = 1;
@@ -57,16 +49,30 @@ class SearchTermDescriptionGeneratorTest extends TestCase
             ->expects($this->exactly(2))
             ->method('applySearchTermsToDescription')
             ->willReturnCallback(
-                function ($arg1, $arg2) use ($descriptionMock, $firstProductIndex, $secondProductIndex) {
+                function($arg1, $arg2) use ($descriptionMock, $firstProductIndex, $secondProductIndex) {
                     if ($arg1 === $descriptionMock && $arg2 === $firstProductIndex) {
-                        return null;
-                    } elseif ($arg1 === $descriptionMock && $arg2 === $secondProductIndex) {
-                        return null;
+                        return;
                     }
-                }
+
+                    if ($arg1 === $descriptionMock && $arg2 === $secondProductIndex) {
+                        return;
+                    }
+                },
             );
 
         $this->searchTermDescriptionGenerator->generate($firstProductIndex);
         $this->searchTermDescriptionGenerator->generate($secondProductIndex);
+    }
+
+    protected function setUp(): void
+    {
+        $this->descriptionGeneratorMock =
+            $this->createMock(DescriptionGenerator::class);
+        $this->searchTermManagerMock = $this->createMock(SearchTermManager::class);
+
+        $this->searchTermDescriptionGenerator = new SearchTermDescriptionGenerator(
+            $this->descriptionGeneratorMock,
+            $this->searchTermManagerMock,
+        );
     }
 }

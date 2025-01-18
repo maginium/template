@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,20 +15,9 @@ use PHPUnit\Framework\TestCase;
 class DependencyTest extends TestCase
 {
     /**
-     * @param string $lib
-     * @param int $count
-     * @return Dependency
+     * @test
      */
-    protected function createDependency($lib, $count)
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        return $objectManagerHelper->getObject(
-            Dependency::class,
-            ['lib' => $lib, 'count' => $count]
-        );
-    }
-
-    public function testGetLib()
+    public function getLib()
     {
         $lib = 'lib';
 
@@ -36,12 +26,31 @@ class DependencyTest extends TestCase
         $this->assertEquals($lib, $dependency->getLib());
     }
 
-    public function testGetCount()
+    /**
+     * @test
+     */
+    public function getCount()
     {
         $count = 3;
 
         $dependency = $this->createDependency('lib', $count);
 
         $this->assertEquals($count, $dependency->getCount());
+    }
+
+    /**
+     * @param string $lib
+     * @param int $count
+     *
+     * @return Dependency
+     */
+    protected function createDependency($lib, $count)
+    {
+        $objectManagerHelper = new ObjectManager($this);
+
+        return $objectManagerHelper->getObject(
+            Dependency::class,
+            ['lib' => $lib, 'count' => $count],
+        );
     }
 }

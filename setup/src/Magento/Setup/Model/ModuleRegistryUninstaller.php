@@ -1,17 +1,24 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Framework\Config\File\ConfigFilePool;
 use Magento\Framework\Module\ModuleList\Loader;
+use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Setup\Module\DataSetupFactory;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Used to uninstall registry from the database and deployment config
+ * Used to uninstall registry from the database and deployment config.
  */
 class ModuleRegistryUninstaller
 {
@@ -36,7 +43,7 @@ class ModuleRegistryUninstaller
     private $loader;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param DataSetupFactory $dataSetupFactory
      * @param DeploymentConfig $deploymentConfig
@@ -47,7 +54,7 @@ class ModuleRegistryUninstaller
         DataSetupFactory $dataSetupFactory,
         DeploymentConfig $deploymentConfig,
         DeploymentConfig\Writer $writer,
-        Loader $loader
+        Loader $loader,
     ) {
         $this->dataSetupFactory = $dataSetupFactory;
         $this->deploymentConfig = $deploymentConfig;
@@ -56,50 +63,54 @@ class ModuleRegistryUninstaller
     }
 
     /**
-     * Removes module from setup_module table
+     * Removes module from setup_module table.
      *
      * @param OutputInterface $output
      * @param string[] $modules
+     *
      * @return void
      */
     public function removeModulesFromDb(OutputInterface $output, array $modules)
     {
         $output->writeln(
-            '<info>Removing ' . implode(', ', $modules) . ' from module registry in database</info>'
+            '<info>Removing ' . implode(', ', $modules) . ' from module registry in database</info>',
         );
-        /** @var \Magento\Framework\Setup\ModuleDataSetupInterface $setup */
+
+        /** @var ModuleDataSetupInterface $setup */
         $setup = $this->dataSetupFactory->create();
+
         foreach ($modules as $module) {
             $setup->deleteTableRow('setup_module', 'module', $module);
         }
     }
 
     /**
-     * Removes module from deployment configuration
+     * Removes module from deployment configuration.
      *
      * @param OutputInterface $output
      * @param string[] $modules
+     *
      * @return void
      */
     public function removeModulesFromDeploymentConfig(OutputInterface $output, array $modules)
     {
         $output->writeln(
-            '<info>Removing ' . implode(', ', $modules) .  ' from module list in deployment configuration</info>'
+            '<info>Removing ' . implode(', ', $modules) . ' from module list in deployment configuration</info>',
         );
         $configuredModules = $this->deploymentConfig->getConfigData(
-            \Magento\Framework\Config\ConfigOptionsListConstants::KEY_MODULES
+            ConfigOptionsListConstants::KEY_MODULES,
         );
         $existingModules = $this->loader->load($modules);
         $newModules = [];
+
         foreach (array_keys($existingModules) as $module) {
-            $newModules[$module] = isset($configuredModules[$module]) ? $configuredModules[$module] : 0;
+            $newModules[$module] = $configuredModules[$module] ?? 0;
         }
         $this->writer->saveConfig(
             [
-                \Magento\Framework\Config\File\ConfigFilePool::APP_CONFIG =>
-                    [\Magento\Framework\Config\ConfigOptionsListConstants::KEY_MODULES => $newModules]
+                ConfigFilePool::APP_CONFIG => [ConfigOptionsListConstants::KEY_MODULES => $newModules],
             ],
-            true
+            true,
         );
     }
 }

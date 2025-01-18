@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -11,8 +13,9 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Cache\Manager;
 use Magento\Framework\App\Interception\Cache\CompiledConfig;
 use Magento\Framework\Interception\Config\Config as InterceptionConfig;
-use Magento\Setup\Module\Di\Code\Reader\Type;
+use Magento\Framework\Interception\Definition\Runtime;
 use Magento\Framework\ObjectManager\InterceptableValidator;
+use Magento\Setup\Module\Di\Code\Reader\Type;
 
 class InterceptionConfigurationBuilder
 {
@@ -60,7 +63,7 @@ class InterceptionConfigurationBuilder
         PluginList $pluginList,
         Type $typeReader,
         Manager $cacheManager,
-        InterceptableValidator $interceptableValidator
+        InterceptableValidator $interceptableValidator,
     ) {
         $this->interceptionConfig = $interceptionConfig;
         $this->pluginList = $pluginList;
@@ -70,9 +73,10 @@ class InterceptionConfigurationBuilder
     }
 
     /**
-     * Adds area code
+     * Adds area code.
      *
      * @param string $areaCode
+     *
      * @return void
      */
     public function addAreaCode($areaCode)
@@ -83,9 +87,10 @@ class InterceptionConfigurationBuilder
     }
 
     /**
-     * Builds interception configuration for all defined classes
+     * Builds interception configuration for all defined classes.
      *
      * @param array $definedClasses
+     *
      * @return array
      */
     public function getInterceptionConfiguration($definedClasses)
@@ -99,14 +104,16 @@ class InterceptionConfigurationBuilder
     }
 
     /**
-     * Get intercepted instances from defined class list
+     * Get intercepted instances from defined class list.
      *
      * @param array $definedClasses
+     *
      * @return array
      */
     private function getInterceptedClasses($definedClasses)
     {
         $intercepted = [];
+
         foreach ($definedClasses as $definedClass) {
             if ($this->interceptionConfig->hasPlugins($definedClass) && $this->typeReader->isConcrete($definedClass)
                 && $this->interceptableValidator->validate($definedClass)
@@ -114,6 +121,7 @@ class InterceptionConfigurationBuilder
                 $intercepted[] = $definedClass;
             }
         }
+
         return $intercepted;
     }
 
@@ -122,6 +130,7 @@ class InterceptionConfigurationBuilder
      * ['concrete class name' => ['plugin name' => [instance => 'instance name', 'order' => 'Order Number']]]
      *
      * @param array $interceptedInstances
+     *
      * @return array
      */
     private function getPluginsList($interceptedInstances)
@@ -130,34 +139,40 @@ class InterceptionConfigurationBuilder
         $this->pluginList->setInterceptedClasses($interceptedInstances);
 
         $inheritedConfig = [];
+
         foreach ($this->areaCodesList as $areaKey) {
             $scopePriority = [Area::AREA_GLOBAL];
             $pluginListCloned = clone $this->pluginList;
-            if ($areaKey != Area::AREA_GLOBAL) {
+
+            if ($areaKey !== Area::AREA_GLOBAL) {
                 $scopePriority[] = $areaKey;
                 $pluginListCloned->setScopePriorityScheme($scopePriority);
             }
             $key = implode('', $scopePriority);
             $inheritedConfig[$key] = $this->filterNullInheritance($pluginListCloned->getPluginsConfig());
         }
+
         return $inheritedConfig;
     }
 
     /**
-     * Filters plugin inheritance list for instances without plugins, and abstract/interface
+     * Filters plugin inheritance list for instances without plugins, and abstract/interface.
      *
      * @param array $pluginInheritance
+     *
      * @return array
      */
     private function filterNullInheritance($pluginInheritance)
     {
         $filteredData = [];
+
         foreach ($pluginInheritance as $instance => $plugins) {
-            if ($plugins === null || !$this->typeReader->isConcrete($instance)) {
+            if ($plugins === null || ! $this->typeReader->isConcrete($instance)) {
                 continue;
             }
 
             $pluginInstances = [];
+
             foreach ($plugins as $plugin) {
                 if (in_array($plugin['instance'], $pluginInstances)) {
                     continue;
@@ -171,17 +186,20 @@ class InterceptionConfigurationBuilder
     }
 
     /**
-     * Merge plugins in areas
+     * Merge plugins in areas.
      *
      * @param array $inheritedConfig
+     *
      * @return array
      */
     private function mergeAreaPlugins($inheritedConfig)
     {
         $mergedConfig = [];
+
         foreach ($inheritedConfig as $configuration) {
             $mergedConfig = array_merge_recursive($mergedConfig, $configuration);
         }
+
         foreach ($mergedConfig as &$plugins) {
             $plugins = array_unique($plugins);
         }
@@ -190,23 +208,27 @@ class InterceptionConfigurationBuilder
     }
 
     /**
-     * Returns interception configuration with plugin methods
+     * Returns interception configuration with plugin methods.
      *
      * @param array $interceptionConfiguration
+     *
      * @return array
      */
     private function getInterceptedMethods($interceptionConfiguration)
     {
-        $pluginDefinitionList = new \Magento\Framework\Interception\Definition\Runtime();
+        $pluginDefinitionList = new Runtime;
+
         foreach ($interceptionConfiguration as &$plugins) {
             $pluginsMethods = [];
+
             foreach ($plugins as $plugin) {
                 $pluginsMethods = array_unique(
-                    array_merge($pluginsMethods, array_keys($pluginDefinitionList->getMethodList($plugin)))
+                    array_merge($pluginsMethods, array_keys($pluginDefinitionList->getMethodList($plugin))),
                 );
             }
             $plugins = $pluginsMethods;
         }
+
         return $interceptionConfiguration;
     }
 }

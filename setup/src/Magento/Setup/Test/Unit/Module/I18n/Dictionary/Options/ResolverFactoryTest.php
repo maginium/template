@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,29 +14,37 @@ use PHPUnit\Framework\TestCase;
 
 class ResolverFactoryTest extends TestCase
 {
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var ResolverFactory $resolverFactory */
         $resolverFactory = $objectManagerHelper
             ->getObject(ResolverFactory::class);
         $this->assertInstanceOf(
             ResolverFactory::DEFAULT_RESOLVER,
-            $resolverFactory->create('some_dir', true)
+            $resolverFactory->create('some_dir', true),
         );
     }
 
-    public function testCreateException()
+    /**
+     * @test
+     */
+    public function createException()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('stdClass doesn\'t implement ResolverInterface');
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var ResolverFactory $resolverFactory */
         $resolverFactory = $objectManagerHelper->getObject(
             ResolverFactory::class,
             [
-                'resolverClass' => 'stdClass'
-            ]
+                'resolverClass' => 'stdClass',
+            ],
         );
         $resolverFactory->create('some_dir', true);
     }

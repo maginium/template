@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,28 +31,21 @@ class DescriptionParagraphGeneratorTest extends TestCase
     private $paragraphConfig = [
         'sentences' => [
             'count-min' => 4,
-            'count-max' => 4
-        ]
+            'count-max' => 4,
+        ],
     ];
 
-    protected function setUp(): void
-    {
-        $this->sentenceGeneratorMock =
-            $this->createMock(DescriptionSentenceGenerator::class);
-        $this->paragraphGenerator = new DescriptionParagraphGenerator(
-            $this->sentenceGeneratorMock,
-            $this->paragraphConfig
-        );
-    }
-
-    public function testParagraphGeneration()
+    /**
+     * @test
+     */
+    public function paragraphGeneration()
     {
         // @codingStandardsIgnoreStart
         $consecutiveSentences = [
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
             'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
             'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+            'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
         ];
         // @codingStandardsIgnoreEnd
 
@@ -62,12 +56,22 @@ class DescriptionParagraphGeneratorTest extends TestCase
                 $consecutiveSentences[0],
                 $consecutiveSentences[1],
                 $consecutiveSentences[2],
-                $consecutiveSentences[3]
+                $consecutiveSentences[3],
             ));
 
         $this->assertEquals(
             implode(' ', $consecutiveSentences),
-            $this->paragraphGenerator->generate()
+            $this->paragraphGenerator->generate(),
+        );
+    }
+
+    protected function setUp(): void
+    {
+        $this->sentenceGeneratorMock =
+            $this->createMock(DescriptionSentenceGenerator::class);
+        $this->paragraphGenerator = new DescriptionParagraphGenerator(
+            $this->sentenceGeneratorMock,
+            $this->paragraphConfig,
         );
     }
 }

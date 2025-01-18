@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,6 +12,8 @@ namespace Magento\Setup\Fixtures;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Magento\Framework\DB\Adapter\DuplicateException;
+use Magento\Framework\Exception\AlreadyExistsException;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManager;
 
@@ -16,13 +21,18 @@ use Magento\Store\Model\StoreManager;
  * Generate categories.
  * Support the following format:
  * <categories>{amount of categories}</categories>
- * <categories_nesting_level>{Nesting level of categories}</categories_nesting_level>
+ * <categories_nesting_level>{Nesting level of categories}</categories_nesting_level>.
  *
  * If config "assign_entities_to_all_websites" set to "0" then all categories will be
  * uniformly distributed per root categories, else all categories assigned to one root category
  */
 class CategoriesFixture extends Fixture
 {
+    /**
+     * @var int
+     */
+    protected $priority = 20;
+
     /**
      * @var StoreManager
      */
@@ -60,6 +70,7 @@ class CategoriesFixture extends Fixture
 
     /**
      * CategoriesFixture constructor.
+     *
      * @param FixtureModel $fixtureModel
      * @param StoreManager $storeManager
      * @param CategoryFactory $categoryFactory
@@ -69,7 +80,7 @@ class CategoriesFixture extends Fixture
         FixtureModel $fixtureModel,
         StoreManager $storeManager,
         CategoryFactory $categoryFactory,
-        CollectionFactory $collectionFactory
+        CollectionFactory $collectionFactory,
     ) {
         parent::__construct($fixtureModel);
         $this->storeManager = $storeManager;
@@ -78,22 +89,19 @@ class CategoriesFixture extends Fixture
     }
 
     /**
-     * @var int
-     */
-    protected $priority = 20;
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function execute()
     {
         $this->categoriesNumber = $this->getCategoriesAmount();
-        if (!$this->categoriesNumber) {
+
+        if (! $this->categoriesNumber) {
             return;
         }
         $this->maxNestingLevel = $this->fixtureModel->getValue('categories_nesting_level', 3);
 
         $categoriesNumberOnLevel = abs(ceil(pow($this->categoriesNumber, 1 / $this->maxNestingLevel) - 2));
+
         foreach ($this->getRootCategoriesIds() as $parentCategoryId) {
             $category = $this->categoryFactory->create();
             $category->load($parentCategoryId);
@@ -104,27 +112,47 @@ class CategoriesFixture extends Fixture
                 $category,
                 $categoriesNumberOnLevel,
                 1,
-                $categoryIndex
+                $categoryIndex,
             );
         }
     }
 
     /**
-     * Generate categories
+     * {@inheritdoc}
+     */
+    public function getActionTitle()
+    {
+        return 'Generating categories';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function introduceParamLabels()
+    {
+        return [
+            'categories' => 'Categories',
+        ];
+    }
+
+    /**
+     * Generate categories.
      *
      * @param Category $parentCategory
      * @param int $categoriesNumberOnLevel
      * @param int $nestingLevel
      * @param int $categoryIndex
+     *
      * @return void
      */
     private function generateCategories(
         Category $parentCategory,
         $categoriesNumberOnLevel,
         $nestingLevel,
-        &$categoryIndex
+        &$categoryIndex,
     ) {
         $maxCategoriesNumberOnLevel = $nestingLevel === 1 ? $this->categoriesNumber : $categoriesNumberOnLevel;
+
         for ($i = 0; $i < $maxCategoriesNumberOnLevel && $categoryIndex <= $this->categoriesNumber; $i++) {
             try {
                 $category = clone $parentCategory;
@@ -142,50 +170,57 @@ class CategoriesFixture extends Fixture
                     ->setIsActive(true);
                 $category->save();
                 $categoryIndex++;
+
                 if ($nestingLevel < $this->maxNestingLevel) {
                     $this->generateCategories(
                         $category,
                         $categoriesNumberOnLevel,
                         $nestingLevel + 1,
-                        $categoryIndex
+                        $categoryIndex,
                     );
                 }
-            } catch (\Magento\Framework\Exception\AlreadyExistsException $e) {
+            } catch (AlreadyExistsException $e) {
                 $categoryIndex++;
+
                 continue;
-            } catch (\Magento\Framework\DB\Adapter\DuplicateException $e) {
+            } catch (DuplicateException $e) {
                 $categoryIndex++;
+
                 continue;
             }
         }
     }
 
     /**
-     * Get category name based on parent category and current level
+     * Get category name based on parent category and current level.
      *
      * @param Category $parentCategory
      * @param int $nestingLevel
      * @param int $index
+     *
      * @return string
      */
     private function getCategoryName($parentCategory, $nestingLevel, $index)
     {
         $categoryNameSuffix = $nestingLevel === 1 ? $this->getFirstLevelCategoryIndex() + $index : $index + 1;
+
         return ($nestingLevel === 1 ? $this->getCategoryPrefix() . ' ' : $parentCategory->getName() . '.')
             . $categoryNameSuffix;
     }
 
     /**
-     * Get ids of root categories
+     * Get ids of root categories.
      *
      * @return int[]
      */
     private function getRootCategoriesIds()
     {
-        if (null === $this->rootCategoriesIds) {
+        if ($this->rootCategoriesIds === null) {
             $this->rootCategoriesIds = [];
+
             foreach ($this->storeManager->getGroups() as $storeGroup) {
                 $this->rootCategoriesIds[] = $storeGroup->getRootCategoryId();
+
                 // in this case root category will be the same for all store groups
                 if ((bool)$this->fixtureModel->getValue('assign_entities_to_all_websites', false)) {
                     break;
@@ -197,7 +232,7 @@ class CategoriesFixture extends Fixture
     }
 
     /**
-     * Get categories amount for generation
+     * Get categories amount for generation.
      *
      * @return int
      */
@@ -209,51 +244,33 @@ class CategoriesFixture extends Fixture
 
         return max(
             0,
-            ceil($categoriesNumber / $rootCategories)
+            ceil($categoriesNumber / $rootCategories),
         );
     }
 
     /**
-     * Get next category index, which will be used as index of first-level category
+     * Get next category index, which will be used as index of first-level category.
      *
      * @return int
      */
     private function getFirstLevelCategoryIndex()
     {
-        if (null === $this->firstLevelCategoryIndex) {
+        if ($this->firstLevelCategoryIndex === null) {
             $this->firstLevelCategoryIndex = $this->collectionFactory->create()
-                    ->addFieldToFilter('level', 2)
-                    ->getSize() + 1;
+                ->addFieldToFilter('level', 2)
+                ->getSize() + 1;
         }
 
         return $this->firstLevelCategoryIndex;
     }
 
     /**
-     * Get Category name prefix
+     * Get Category name prefix.
      *
      * @return string
      */
     private function getCategoryPrefix()
     {
         return 'Category';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionTitle()
-    {
-        return 'Generating categories';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function introduceParamLabels()
-    {
-        return [
-            'categories' => 'Categories'
-        ];
     }
 }

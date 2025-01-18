@@ -1,15 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Parser\Composer;
 
+use InvalidArgumentException;
 use Magento\Framework\Config\Composer\Package;
 use Magento\Setup\Module\Dependency\ParserInterface;
 
 /**
- * Composer Json parser
+ * Composer Json parser.
  */
 class Json implements ParserInterface
 {
@@ -21,6 +26,7 @@ class Json implements ParserInterface
         $this->checkOptions($options);
 
         $modules = [];
+
         foreach ($options['files_for_parse'] as $file) {
             $package = $this->getModuleComposerPackage($file);
             $modules[] = [
@@ -28,32 +34,36 @@ class Json implements ParserInterface
                 'dependencies' => $this->extractDependencies($package),
             ];
         }
+
         return $modules;
     }
 
     /**
-     * Template method. Check passed options step
+     * Template method. Check passed options step.
      *
      * @param array $options
+     *
+     * @throws InvalidArgumentException
+     *
      * @return void
-     * @throws \InvalidArgumentException
      */
     protected function checkOptions($options)
     {
-        if (!isset(
-            $options['files_for_parse']
-        ) || !is_array(
-            $options['files_for_parse']
-        ) || !$options['files_for_parse']
+        if (! isset(
+            $options['files_for_parse'],
+        ) || ! is_array(
+            $options['files_for_parse'],
+        ) || ! $options['files_for_parse']
         ) {
-            throw new \InvalidArgumentException('Parse error: Option "files_for_parse" is wrong.');
+            throw new InvalidArgumentException('Parse error: Option "files_for_parse" is wrong.');
         }
     }
 
     /**
-     * Template method. Extract module step
+     * Template method. Extract module step.
      *
      * @param Package $package
+     *
      * @return string
      */
     protected function extractModuleName($package)
@@ -62,15 +72,17 @@ class Json implements ParserInterface
     }
 
     /**
-     * Template method. Extract dependencies step
+     * Template method. Extract dependencies step.
      *
      * @param Package $package
+     *
      * @return array
      */
     protected function extractDependencies($package)
     {
         $dependencies = [];
         $requires = $package->get('require', '/.+\/module-/');
+
         if ($requires) {
             foreach ($requires as $key => $value) {
                 $dependencies[] = [
@@ -81,6 +93,7 @@ class Json implements ParserInterface
         }
 
         $suggests = $package->get('suggest', '/.+\/module-/');
+
         if ($suggests) {
             foreach ($suggests as $key => $value) {
                 $dependencies[] = [
@@ -94,9 +107,10 @@ class Json implements ParserInterface
     }
 
     /**
-     * Template method. Load module config step
+     * Template method. Load module config step.
      *
      * @param string $file
+     *
      * @return Package
      */
     protected function getModuleComposerPackage($file)
@@ -105,9 +119,10 @@ class Json implements ParserInterface
     }
 
     /**
-     * Prepare module name
+     * Prepare module name.
      *
      * @param string $name
+     *
      * @return string
      */
     protected function prepareModuleName($name)

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,12 +19,10 @@ class CompositeScannerTest extends TestCase
      */
     protected $_model;
 
-    protected function setUp(): void
-    {
-        $this->_model = new CompositeScanner();
-    }
-
-    public function testScan()
+    /**
+     * @test
+     */
+    public function scan()
     {
         $phpFiles = ['one/file/php', 'two/file/php'];
         $configFiles = ['one/file/config', 'two/file/config'];
@@ -35,23 +34,23 @@ class CompositeScannerTest extends TestCase
         $scannerPhpExpected = ['Model_OneProxy', 'Model_TwoFactory'];
         $scannerXmlExpected = ['Model_OneProxy', 'Model_ThreeFactory'];
         $scannerPhp->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'collectEntities'
+            'collectEntities',
         )->with(
-            $phpFiles
+            $phpFiles,
         )->willReturn(
-            $scannerPhpExpected
+            $scannerPhpExpected,
         );
 
         $scannerXml->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'collectEntities'
+            'collectEntities',
         )->with(
-            $configFiles
+            $configFiles,
         )->willReturn(
-            $scannerXmlExpected
+            $scannerXmlExpected,
         );
 
         $this->_model->addChild($scannerPhp, 'php');
@@ -61,5 +60,10 @@ class CompositeScannerTest extends TestCase
         $expected = [$scannerPhpExpected, $scannerXmlExpected];
 
         $this->assertEquals($expected, array_values($actual));
+    }
+
+    protected function setUp(): void
+    {
+        $this->_model = new CompositeScanner;
     }
 }

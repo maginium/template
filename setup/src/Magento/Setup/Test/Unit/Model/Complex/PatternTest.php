@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,22 +14,7 @@ use PHPUnit\Framework\TestCase;
 class PatternTest extends TestCase
 {
     /**
-     * Get pattern object
-     *
-     * @param array $patternData
-     *
-     * @return Pattern
-     */
-    protected function getPattern($patternData)
-    {
-        $pattern = new Pattern();
-        $pattern->setHeaders(array_keys($patternData[0]));
-        $pattern->setRowsSet($patternData);
-        return $pattern;
-    }
-
-    /**
-     * Data source for pattern
+     * Data source for pattern.
      *
      * @return array
      */
@@ -40,18 +26,16 @@ class PatternTest extends TestCase
                     [
                         'id' => '%s',
                         'name' => 'Static',
-                        'calculated' => function ($index, $generatedKey) {
-                            return $index * 10 + $generatedKey;
-                        },
+                        'calculated' => fn($index, $generatedKey) => $index * 10 + $generatedKey,
                     ],
                     [
-                        'name' => 'xxx %s'
+                        'name' => 'xxx %s',
                     ],
                     [
-                        'name' => 'yyy %s'
+                        'name' => 'yyy %s',
                     ],
                 ],
-                'expectedCount'      => 3,
+                'expectedCount' => 3,
                 'expectedRowsResult' => [
                     ['id' => '1', 'name' => 'Static', 'calculated' => 10],
                     ['id' => '',  'name' => 'xxx 1',  'calculated' => ''],
@@ -72,17 +56,19 @@ class PatternTest extends TestCase
                 ],
             ],
         ];
+
         return $result;
     }
 
     /**
-     * Test pattern object
+     * Test pattern object.
      *
      * @param array $patternData
      * @param int $expectedRowsCount
      * @param array $expectedRowsResult
      *
      * @dataProvider patternDataProvider
+     *
      * @test
      *
      * @return void
@@ -91,8 +77,25 @@ class PatternTest extends TestCase
     {
         $pattern = $this->getPattern($patternData);
         $this->assertEquals($pattern->getRowsCount(), $expectedRowsCount);
+
         foreach ($expectedRowsResult as $key => $expectedRow) {
             $this->assertEquals($expectedRow, $pattern->getRow(floor($key / $pattern->getRowsCount()) + 1, $key));
         }
+    }
+
+    /**
+     * Get pattern object.
+     *
+     * @param array $patternData
+     *
+     * @return Pattern
+     */
+    protected function getPattern($patternData)
+    {
+        $pattern = new Pattern;
+        $pattern->setHeaders(array_keys($patternData[0]));
+        $pattern->setRowsSet($patternData);
+
+        return $pattern;
     }
 }

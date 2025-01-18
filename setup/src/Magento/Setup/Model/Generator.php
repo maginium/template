@@ -1,12 +1,15 @@
 <?php
+
+declare(strict_types=1);
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 
 /**
- * A custom "Import" adapter for Magento_ImportExport module that allows generating arbitrary data rows
+ * A custom "Import" adapter for Magento_ImportExport module that allows generating arbitrary data rows.
  */
+
 namespace Magento\Setup\Model;
 
 use Magento\ImportExport\Model\Import\AbstractSource;
@@ -14,14 +17,14 @@ use Magento\ImportExport\Model\Import\AbstractSource;
 class Generator extends AbstractSource
 {
     /**
-     * Data row pattern
+     * Data row pattern.
      *
      * @var array
      */
     protected $_pattern = [];
 
     /**
-     * Which columns are determined as dynamic
+     * Which columns are determined as dynamic.
      *
      * @var array
      */
@@ -33,7 +36,7 @@ class Generator extends AbstractSource
     protected $_limit = 0;
 
     /**
-     * Read the row pattern to determine which columns are dynamic, set the collection size
+     * Read the row pattern to determine which columns are dynamic, set the collection size.
      *
      * @param array $rowPattern
      * @param int $limit how many records to generate
@@ -41,7 +44,7 @@ class Generator extends AbstractSource
     public function __construct(array $rowPattern, $limit)
     {
         foreach ($rowPattern as $key => $value) {
-            if (is_callable($value) || is_string($value) && (false !== strpos($value, '%s'))) {
+            if (is_callable($value) || is_string($value) && str_contains($value, '%s')) {
                 $this->_dynamicColumns[$key] = $value;
             }
         }
@@ -51,7 +54,7 @@ class Generator extends AbstractSource
     }
 
     /**
-     * Whether limit of generated elements is reached (according to "Iterator" interface)
+     * Whether limit of generated elements is reached (according to "Iterator" interface).
      *
      * @return bool
      */
@@ -61,7 +64,7 @@ class Generator extends AbstractSource
     }
 
     /**
-     * Render next row
+     * Render next row.
      *
      * Return array or false on error
      *
@@ -70,14 +73,17 @@ class Generator extends AbstractSource
     protected function _getNextRow()
     {
         $row = $this->_pattern;
+
         foreach ($this->_dynamicColumns as $key => $dynamicValue) {
             $index = $this->_key + 1;
+
             if (is_callable($dynamicValue)) {
                 $row[$key] = call_user_func($dynamicValue, $index);
             } else {
                 $row[$key] = str_replace('%s', $index, $dynamicValue);
             }
         }
+
         return $row;
     }
 }

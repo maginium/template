@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,8 +10,9 @@
 namespace Magento\Setup\Console\Command;
 
 use Magento\Framework\App\DeploymentConfig;
-use Magento\Setup\Model\InstallerFactory;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Setup\ConsoleLogger;
+use Magento\Setup\Model\InstallerFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -46,6 +50,23 @@ class DbSchemaUpgradeCommand extends AbstractSetupCommand
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        if (! $this->deploymentConfig->isAvailable()) {
+            $output->writeln('<info>No information is available: the Magento application is not installed.</info>');
+
+            // we must have an exit code higher than zero to indicate something was wrong
+            return Cli::RETURN_FAILURE;
+        }
+        $installer = $this->installFactory->create(new ConsoleLogger($output));
+        $installer->installSchema($input->getOptions());
+
+        return Cli::RETURN_SUCCESS;
+    }
+
+    /**
      * Initialization of the command.
      *
      * @return void
@@ -61,26 +82,11 @@ class DbSchemaUpgradeCommand extends AbstractSetupCommand
                         null,
                         InputOption::VALUE_OPTIONAL,
                         'Allows to convert old scripts (InstallSchema, UpgradeSchema) to db_schema.xml format',
-                        false
-                    )
-                ]
+                        false,
+                    ),
+                ],
             )
             ->setDescription('Installs and upgrades the DB schema');
         parent::configure();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
-        if (!$this->deploymentConfig->isAvailable()) {
-            $output->writeln("<info>No information is available: the Magento application is not installed.</info>");
-            // we must have an exit code higher than zero to indicate something was wrong
-            return \Magento\Framework\Console\Cli::RETURN_FAILURE;
-        }
-        $installer = $this->installFactory->create(new ConsoleLogger($output));
-        $installer->installSchema($input->getOptions());
-        return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
     }
 }

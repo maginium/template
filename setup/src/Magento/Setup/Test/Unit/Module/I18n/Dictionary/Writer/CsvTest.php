@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,97 +31,89 @@ class CsvTest extends TestCase
      */
     protected $_phraseSecondMock;
 
-    protected function setUp(): void
-    {
-        $this->_testFile = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/test.csv';
-
-        $this->_phraseFirstMock = $this->createMock(Phrase::class);
-        $this->_phraseSecondMock = $this->createMock(Phrase::class);
-    }
-
-    protected function tearDown(): void
-    {
-        if (file_exists($this->_testFile)) {
-            unlink($this->_testFile);
-        }
-    }
-
-    public function testWrongOutputFile()
+    /**
+     * @test
+     */
+    public function wrongOutputFile()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Cannot open file for write dictionary: "wrong/path"');
         $objectManagerHelper = new ObjectManager($this);
         $objectManagerHelper->getObject(
             Csv::class,
-            ['outputFilename' => 'wrong/path']
+            ['outputFilename' => 'wrong/path'],
         );
     }
 
-    public function testWrite()
+    /**
+     * @test
+     */
+    public function write()
     {
         $this->_phraseFirstMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getCompiledPhrase'
+            'getCompiledPhrase',
         )->willReturn(
-            "phrase1_quote'"
+            "phrase1_quote'",
         );
         $this->_phraseFirstMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getCompiledTranslation'
+            'getCompiledTranslation',
         )->willReturn(
-            "translation1_quote'"
+            "translation1_quote'",
         );
         $this->_phraseFirstMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getContextType'
+            'getContextType',
         )->willReturn(
-            "context_type1_quote\\'"
+            "context_type1_quote\\'",
         );
         $this->_phraseFirstMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getContextValueAsString'
+            'getContextValueAsString',
         )->willReturn(
-            "content_value1_quote\\'"
+            "content_value1_quote\\'",
         );
 
         $this->_phraseSecondMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getCompiledPhrase'
+            'getCompiledPhrase',
         )->willReturn(
-            "phrase2_quote'"
+            "phrase2_quote'",
         );
         $this->_phraseSecondMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getCompiledTranslation'
+            'getCompiledTranslation',
         )->willReturn(
-            "translation2_quote'"
+            "translation2_quote'",
         );
         $this->_phraseSecondMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getContextType'
+            'getContextType',
         )->willReturn(
-            "context_type2_quote\\'"
+            "context_type2_quote\\'",
         );
         $this->_phraseSecondMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'getContextValueAsString'
+            'getContextValueAsString',
         )->willReturn(
-            "content_value2_quote\\'"
+            "content_value2_quote\\'",
         );
 
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var Csv $writer */
         $writer = $objectManagerHelper->getObject(
             Csv::class,
-            ['outputFilename' => $this->_testFile]
+            ['outputFilename' => $this->_testFile],
         );
         $writer->write($this->_phraseFirstMock);
         $writer->write($this->_phraseSecondMock);
@@ -134,7 +127,10 @@ EXPECTED;
         $this->assertEquals($expected, file_get_contents($this->_testFile));
     }
 
-    public function testWriteWithoutContext()
+    /**
+     * @test
+     */
+    public function writeWithoutContext()
     {
         $this->_phraseFirstMock->expects($this->once())
             ->method('getCompiledPhrase')
@@ -158,15 +154,31 @@ EXPECTED;
             ->willReturn('');
 
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var Csv $writer */
         $writer = $objectManagerHelper->getObject(
             Csv::class,
-            ['outputFilename' => $this->_testFile]
+            ['outputFilename' => $this->_testFile],
         );
         $writer->write($this->_phraseFirstMock);
         $writer->write($this->_phraseSecondMock);
 
         $expected = "phrase1,translation1\nphrase2,translation2\n";
         $this->assertEquals($expected, file_get_contents($this->_testFile));
+    }
+
+    protected function setUp(): void
+    {
+        $this->_testFile = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/test.csv';
+
+        $this->_phraseFirstMock = $this->createMock(Phrase::class);
+        $this->_phraseSecondMock = $this->createMock(Phrase::class);
+    }
+
+    protected function tearDown(): void
+    {
+        if (file_exists($this->_testFile)) {
+            unlink($this->_testFile);
+        }
     }
 }

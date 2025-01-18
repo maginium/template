@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -15,6 +16,8 @@ use Magento\Setup\Validator\RedisConnectionValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
+use function hash;
+
 class BackpressureLoggerTest extends TestCase
 {
     /**
@@ -26,23 +29,18 @@ class BackpressureLoggerTest extends TestCase
      * @var RedisConnectionValidator|MockObject
      */
     private $validatorMock;
+
     /**
      * @var DeploymentConfig|mixed|MockObject
      */
     private $deploymentConfigMock;
 
-    protected function setUp(): void
-    {
-        $this->validatorMock = $this->createMock(RedisConnectionValidator::class);
-        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
-
-        $this->configList = new BackpressureLogger($this->validatorMock);
-    }
-
     /**
-     * testGetOptions
+     * testGetOptions.
+     *
+     * @test
      */
-    public function testGetOptions()
+    public function getOptions()
     {
         $options = $this->configList->getOptions();
         $this->assertCount(9, $options);
@@ -84,13 +82,16 @@ class BackpressureLoggerTest extends TestCase
     }
 
     /**
-     * testCreateConfigCacheRedis
+     * testCreateConfigCacheRedis.
+     *
      * @dataProvider dataProviderCreateConfigCacheRedis
+     *
+     * @test
      */
-    public function testCreateConfigCacheRedis(
+    public function createConfigCacheRedis(
         array $options,
         array $deploymentConfigReturnMap,
-        array $expectedConfigData
+        array $expectedConfigData,
     ) {
         $this->deploymentConfigMock->method('get')->willReturnMap($deploymentConfigReturnMap);
         $configData = $this->configList->createConfig($options, $this->deploymentConfigMock);
@@ -99,6 +100,7 @@ class BackpressureLoggerTest extends TestCase
 
     /**
      * @return array[]
+     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function dataProviderCreateConfigCacheRedis(): array
@@ -127,11 +129,11 @@ class BackpressureLoggerTest extends TestCase
                                 'password' => null,
                                 'timeout' => null,
                                 'persistent' => '',
-                                'user' => null
+                                'user' => null,
                             ],
-                            'id-prefix' => $this->expectedIdPrefix()
-                        ]
-                    ]
+                            'id-prefix' => $this->expectedIdPrefix(),
+                        ],
+                    ],
                 ],
             ],
             'maximum options' => [
@@ -170,9 +172,9 @@ class BackpressureLoggerTest extends TestCase
                                 'persistent' => '<persistent>',
                                 'user' => '<some-user>',
                             ],
-                            'id-prefix' => '<some-prefix>'
-                        ]
-                    ]
+                            'id-prefix' => '<some-prefix>',
+                        ],
+                    ],
                 ],
             ],
             'update options' => [
@@ -211,9 +213,9 @@ class BackpressureLoggerTest extends TestCase
                                 'persistent' => '<tnetsisrep>',
                                 'user' => '<new-user>',
                             ],
-                            'id-prefix' => '<new-prefix>'
-                        ]
-                    ]
+                            'id-prefix' => '<new-prefix>',
+                        ],
+                    ],
                 ],
             ],
             'update-part-of-configuration' => [
@@ -248,21 +250,29 @@ class BackpressureLoggerTest extends TestCase
                                 'persistent' => '<persistent>',
                                 'user' => '<new-user>',
                             ],
-                            'id-prefix' => '<new-prefix>'
-                        ]
-                    ]
+                            'id-prefix' => '<new-prefix>',
+                        ],
+                    ],
                 ],
-            ]
+            ],
         ];
     }
 
+    protected function setUp(): void
+    {
+        $this->validatorMock = $this->createMock(RedisConnectionValidator::class);
+        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
+
+        $this->configList = new BackpressureLogger($this->validatorMock);
+    }
+
     /**
-     * The default ID prefix, based on installation directory
+     * The default ID prefix, based on installation directory.
      *
      * @return string
      */
     private function expectedIdPrefix(): string
     {
-        return substr(\hash('sha256', dirname(__DIR__, 8)), 0, 3) . '_';
+        return mb_substr(hash('sha256', dirname(__DIR__, 8)), 0, 3) . '_';
     }
 }

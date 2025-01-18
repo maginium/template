@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -46,25 +47,9 @@ class CategoriesFixtureTest extends TestCase
     private $categoryFactoryMock;
 
     /**
-     * @inhertidoc
+     * @test
      */
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-        $this->collectionFactoryMock = $this->createPartialMock(CollectionFactory::class, ['create']);
-        $this->collectionMock = $this->createMock(Collection::class);
-        $this->categoryFactoryMock = $this->createPartialMock(CategoryFactory::class, ['create']);
-
-        $this->model = (new ObjectManager($this))->getObject(CategoriesFixture::class, [
-            'fixtureModel' => $this->fixtureModelMock,
-            'collectionFactory' => $this->collectionFactoryMock,
-            'rootCategoriesIds' => [2],
-            'categoryFactory' => $this->categoryFactoryMock,
-            'firstLevelCategoryIndex' => 1,
-        ]);
-    }
-
-    public function testDoNoExecuteIfCategoriesAlreadyGenerated()
+    public function doNoExecuteIfCategoriesAlreadyGenerated()
     {
         $this->collectionFactoryMock->expects($this->once())->method('create')->willReturn($this->collectionMock);
         $this->collectionMock->expects($this->once())->method('getSize')->willReturn(32);
@@ -77,11 +62,14 @@ class CategoriesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $valueMap = [
             ['categories', 0, 1],
-            ['categories_nesting_level', 3, 3]
+            ['categories_nesting_level', 3, 3],
         ];
 
         $this->fixtureModelMock
@@ -108,8 +96,8 @@ class CategoriesFixtureTest extends TestCase
                     'setIsActive',
                     'save',
                     'setStoreId',
-                    'load'
-                ]
+                    'load',
+                ],
             )
             ->disableOriginalConstructor()
             ->getMock();
@@ -166,15 +154,40 @@ class CategoriesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating categories', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([
-            'categories' => 'Categories'
+            'categories' => 'Categories',
         ], $this->model->introduceParamLabels());
+    }
+
+    /**
+     * @inhertidoc
+     */
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+        $this->collectionFactoryMock = $this->createPartialMock(CollectionFactory::class, ['create']);
+        $this->collectionMock = $this->createMock(Collection::class);
+        $this->categoryFactoryMock = $this->createPartialMock(CategoryFactory::class, ['create']);
+
+        $this->model = (new ObjectManager($this))->getObject(CategoriesFixture::class, [
+            'fixtureModel' => $this->fixtureModelMock,
+            'collectionFactory' => $this->collectionFactoryMock,
+            'rootCategoriesIds' => [2],
+            'categoryFactory' => $this->categoryFactoryMock,
+            'firstLevelCategoryIndex' => 1,
+        ]);
     }
 }

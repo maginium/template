@@ -1,35 +1,40 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n;
 
 use Magento\Setup\Module\I18n\Dictionary\Phrase;
 
 /**
- *  Dictionary
+ *  Dictionary.
  */
 class Dictionary
 {
     /**
-     * Phrases
+     * Phrases.
      *
      * @var array
      */
     private $_phrases = [];
 
     /**
-     * List of phrases where array key is vo key
+     * List of phrases where array key is vo key.
      *
      * @var array
      */
     private $_phrasesByKey = [];
 
     /**
-     * Add phrase to pack container
+     * Add phrase to pack container.
      *
      * @param Phrase $phrase
+     *
      * @return void
      */
     public function addPhrase(Phrase $phrase)
@@ -39,7 +44,7 @@ class Dictionary
     }
 
     /**
-     * Get phrases
+     * Get phrases.
      *
      * @return Phrase[]
      */
@@ -49,7 +54,7 @@ class Dictionary
     }
 
     /**
-     * Get duplicates in container
+     * Get duplicates in container.
      *
      * @return array
      */
@@ -58,10 +63,8 @@ class Dictionary
         return array_values(
             array_filter(
                 $this->_phrasesByKey,
-                function ($phrases) {
-                    return count($phrases) > 1;
-                }
-            )
+                fn($phrases) => count($phrases) > 1,
+            ),
         );
     }
 }

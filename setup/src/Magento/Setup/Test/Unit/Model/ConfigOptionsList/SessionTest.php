@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,13 +12,14 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Config\Data\ConfigData;
 use Magento\Framework\Setup\Option\SelectConfigOption;
 use Magento\Framework\Setup\Option\TextConfigOption;
+use Magento\Setup\Model\ConfigOptionsList\Session;
 use Magento\Setup\Model\ConfigOptionsList\Session as SessionConfigOptionsList;
 use PHPUnit\Framework\TestCase;
 
 class SessionTest extends TestCase
 {
     /**
-     * @var \Magento\Setup\Model\ConfigOptionsList\Session
+     * @var Session
      */
     private $configList;
 
@@ -26,14 +28,10 @@ class SessionTest extends TestCase
      */
     private $deploymentConfigMock;
 
-    protected function setUp(): void
-    {
-        $this->configList = new SessionConfigOptionsList();
-
-        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
-    }
-
-    public function testGetOptions()
+    /**
+     * @test
+     */
+    public function getOptions()
     {
         $options = $this->configList->getOptions();
         $this->assertCount(24, $options);
@@ -119,18 +117,24 @@ class SessionTest extends TestCase
         $this->assertEquals('session-save-redis-max-lifetime', $options[19]->getName());
     }
 
-    public function testCreateConfig()
+    /**
+     * @test
+     */
+    public function createConfig()
     {
         $configData = $this->configList->createConfig([], $this->deploymentConfigMock);
         $this->assertInstanceOf(ConfigData::class, $configData);
     }
 
-    public function testCreateConfigWithSessionSaveFiles()
+    /**
+     * @test
+     */
+    public function createConfigWithSessionSaveFiles()
     {
         $expectedConfigData = [
             'session' => [
-                'save' => 'files'
-            ]
+                'save' => 'files',
+            ],
         ];
 
         $options = ['session-save' => 'files'];
@@ -139,7 +143,10 @@ class SessionTest extends TestCase
         $this->assertEquals($expectedConfigData, $configData->getData());
     }
 
-    public function testCreateConfigWithSessionSaveRedis()
+    /**
+     * @test
+     */
+    public function createConfigWithSessionSaveRedis()
     {
         $this->deploymentConfigMock->expects($this->any())->method('get')->willReturn('');
 
@@ -170,9 +177,8 @@ class SessionTest extends TestCase
                     'sentinel_servers' => '',
                     'sentinel_connect_retries' => '',
                     'sentinel_verify_master' => '',
-                ]
-
-            ]
+                ],
+            ],
         ];
 
         $options = ['session-save' => 'redis'];
@@ -181,7 +187,10 @@ class SessionTest extends TestCase
         $this->assertEquals($expectedConfigData, $configData->getData());
     }
 
-    public function testEmptyCreateConfig()
+    /**
+     * @test
+     */
+    public function emptyCreateConfig()
     {
         $expectedConfigData = [];
 
@@ -189,7 +198,10 @@ class SessionTest extends TestCase
         $this->assertEquals($expectedConfigData, $config->getData());
     }
 
-    public function testCreateConfigWithRedisInput()
+    /**
+     * @test
+     */
+    public function createConfigWithRedisInput()
     {
         $this->deploymentConfigMock->expects($this->any())->method('get')->willReturn('');
 
@@ -228,9 +240,8 @@ class SessionTest extends TestCase
                     'sentinel_servers' => '',
                     'sentinel_connect_retries' => '',
                     'sentinel_verify_master' => '',
-                ]
+                ],
             ],
-
         ];
 
         $config = $this->configList->createConfig($options, $this->deploymentConfigMock);
@@ -243,9 +254,12 @@ class SessionTest extends TestCase
      * @param string $option
      * @param string $configArrayKey
      * @param string $optionValue
+     *
      * @dataProvider redisOptionProvider
+     *
+     * @test
      */
-    public function testIndividualOptionsAreSetProperly($option, $configArrayKey, $optionValue)
+    public function individualOptionsAreSetProperly($option, $configArrayKey, $optionValue)
     {
         $configData = $this->configList->createConfig([$option => $optionValue], $this->deploymentConfigMock);
         $redisConfigData = $configData->getData()['session']['redis'];
@@ -253,12 +267,15 @@ class SessionTest extends TestCase
         $this->assertEquals($redisConfigData[$configArrayKey], $optionValue);
     }
 
-    public function testValidationWithValidOptions()
+    /**
+     * @test
+     */
+    public function validationWithValidOptions()
     {
         $options = [
             'session-save' => 'files',
             'session-save-redis-host' => 'localhost',
-            'session-save-redis-compression-library' => 'gzip'
+            'session-save-redis-compression-library' => 'gzip',
         ];
 
         $errors = $this->configList->validate($options, $this->deploymentConfigMock);
@@ -270,9 +287,12 @@ class SessionTest extends TestCase
      * @param string $option
      * @param string $invalidInput
      * @param string $errorMessage
+     *
      * @dataProvider invalidOptionsProvider
+     *
+     * @test
      */
-    public function testValidationWithInvalidOptions($option, $invalidInput, $errorMessage)
+    public function validationWithInvalidOptions($option, $invalidInput, $errorMessage)
     {
         $errors = $this->configList->validate([$option => $invalidInput], $this->deploymentConfigMock);
 
@@ -317,5 +337,12 @@ class SessionTest extends TestCase
             ['session-save-redis-log-level', '10', 'Invalid Redis log level \'10\'. Valid range is 0-7, inclusive.'],
             ['session-save-redis-compression-lib', 'foobar', 'Invalid Redis compression library \'foobar\''],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->configList = new SessionConfigOptionsList;
+
+        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
     }
 }

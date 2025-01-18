@@ -1,42 +1,47 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency;
 
 use Magento\Framework\Data\Graph;
 
 /**
- * Build circular dependencies by modules map
+ * Build circular dependencies by modules map.
  */
 class Circular
 {
     /**
-     * Map where the key is the vertex and the value are the adjacent vertices(dependencies) of this vertex
+     * Map where the key is the vertex and the value are the adjacent vertices(dependencies) of this vertex.
      *
      * @var array
      */
     protected $dependencies = [];
 
     /**
-     * Modules circular dependencies map
+     * Modules circular dependencies map.
      *
      * @var array
      */
     protected $circularDependencies = [];
 
     /**
-     * Graph object
+     * Graph object.
      *
-     * @var \Magento\Framework\Data\Graph
+     * @var Graph
      */
     protected $graph;
 
     /**
-     * Build modules dependencies
+     * Build modules dependencies.
      *
      * @param array $dependencies Key is the vertex and the value are the adjacent vertices(dependencies) of this vertex
+     *
      * @return array
      */
     public function buildCircularDependencies($dependencies)
@@ -48,6 +53,7 @@ class Circular
         }
 
         $circulars = $this->graph->findCycle(null, false);
+
         foreach ($circulars as $circular) {
             array_shift($circular);
             $this->buildCircular($circular);
@@ -57,9 +63,10 @@ class Circular
     }
 
     /**
-     * Init data before building
+     * Init data before building.
      *
      * @param array $dependencies
+     *
      * @return void
      */
     protected function init($dependencies)
@@ -70,25 +77,28 @@ class Circular
     }
 
     /**
-     * Expand modules dependencies from chain
+     * Expand modules dependencies from chain.
      *
      * @param string $vertex
      * @param array $path nesting path
+     *
      * @return void
      */
     protected function expandDependencies($vertex, $path = [])
     {
-        if (!$this->dependencies[$vertex]) {
+        if (! $this->dependencies[$vertex]) {
             return;
         }
 
         $path[] = $vertex;
+
         foreach ($this->dependencies[$vertex] as $dependency) {
-            if (!isset($this->dependencies[$dependency])) {
+            if (! isset($this->dependencies[$dependency])) {
                 // dependency vertex is not described in basic definition
                 continue;
             }
             $relations = $this->graph->getRelations();
+
             if (isset($relations[$vertex][$dependency])) {
                 continue;
             }
@@ -96,24 +106,26 @@ class Circular
 
             $searchResult = array_search($dependency, $path);
 
-            if (false !== $searchResult) {
+            if ($searchResult !== false) {
                 $this->buildCircular(array_slice($path, $searchResult));
+
                 break;
-            } else {
-                $this->expandDependencies($dependency, $path);
             }
+            $this->expandDependencies($dependency, $path);
         }
     }
 
     /**
-     * Build all circular dependencies based on chain
+     * Build all circular dependencies based on chain.
      *
      * @param array $modules
+     *
      * @return void
      */
     protected function buildCircular($modules)
     {
         $path = '/' . implode('/', $modules);
+
         if (isset($this->circularDependencies[$path])) {
             return;
         }
@@ -123,14 +135,16 @@ class Circular
     }
 
     /**
-     * Divide dependencies by modules
+     * Divide dependencies by modules.
      *
      * @param array $circularDependencies
+     *
      * @return array
      */
     protected function divideByModules($circularDependencies)
     {
         $dependenciesByModule = [];
+
         foreach ($circularDependencies as $circularDependency) {
             $module = $circularDependency[0];
             $circularDependency[] = $module;

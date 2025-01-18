@@ -1,24 +1,28 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Data;
 
 /**
- * Config
+ * Config.
  */
 interface ConfigInterface
 {
     /**
-     * Get modules
+     * Get modules.
      *
      * @return array
      */
     public function getModules();
 
     /**
-     * Get total dependencies count
+     * Get total dependencies count.
      *
      * @return int
      */

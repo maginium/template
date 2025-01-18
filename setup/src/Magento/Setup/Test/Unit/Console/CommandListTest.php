@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -24,17 +25,20 @@ class CommandListTest extends TestCase
      */
     private $serviceManager;
 
-    protected function setUp(): void
-    {
-        $this->serviceManager = $this->createMock(ServiceManager::class);
-        $this->commandList = new CommandList($this->serviceManager);
-    }
-
-    public function testGetCommands()
+    /**
+     * @test
+     */
+    public function getCommands()
     {
         $this->serviceManager->expects($this->atLeastOnce())
             ->method('get');
 
         $this->commandList->getCommands();
+    }
+
+    protected function setUp(): void
+    {
+        $this->serviceManager = $this->createMock(ServiceManager::class);
+        $this->commandList = new CommandList($this->serviceManager);
     }
 }

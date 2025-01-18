@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -23,24 +24,30 @@ class FilesCollectorTest extends TestCase
      */
     protected $_filesCollector;
 
-    protected function setUp(): void
-    {
-        $this->_testDir = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/files_collector/';
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->_filesCollector = $objectManagerHelper->getObject(FilesCollector::class);
-    }
-
-    public function testGetFilesWithoutMask()
+    /**
+     * @test
+     */
+    public function getFilesWithoutMask()
     {
         $expectedResult = [$this->_testDir . 'default.xml', $this->_testDir . 'file.js'];
         $files = $this->_filesCollector->getFiles([$this->_testDir]);
         $this->assertEquals($expectedResult, $files);
     }
 
-    public function testGetFilesWithMask()
+    /**
+     * @test
+     */
+    public function getFilesWithMask()
     {
         $expectedResult = [$this->_testDir . 'file.js'];
         $this->assertEquals($expectedResult, $this->_filesCollector->getFiles([$this->_testDir], '/\.js$/'));
+    }
+
+    protected function setUp(): void
+    {
+        $this->_testDir = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/files_collector/';
+
+        $objectManagerHelper = new ObjectManager($this);
+        $this->_filesCollector = $objectManagerHelper->getObject(FilesCollector::class);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,11 +8,12 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Fixtures;
 
+use Exception;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 
 /**
- * Website and category provider
+ * Website and category provider.
  */
 class WebsiteCategoryProvider
 {
@@ -51,65 +53,70 @@ class WebsiteCategoryProvider
      */
     public function __construct(
         FixtureConfig $fixtureConfig,
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
     ) {
         $this->fixtureConfig = $fixtureConfig;
         $this->resourceConnection = $resourceConnection;
     }
 
     /**
-     * Get websites for $productIndex product
+     * Get websites for $productIndex product.
      *
      * @param int $productIndex Index of generated product
+     *
+     * @throws Exception
+     *
      * @return array
-     * @throws \Exception
      */
     public function getWebsiteIds($productIndex)
     {
         if ($this->isAssignToAllWebsites()) {
             return $this->getAllWebsites();
-        } else {
-            $categoriesPerWebsite = $this->getCategoriesAndWebsites();
-            if (!count($categoriesPerWebsite)) {
-                throw new \Exception('Cannot find categories. Please, be sure that you have generated categories');
-            }
-            return [$categoriesPerWebsite[$productIndex % count($categoriesPerWebsite)]['website']];
         }
+        $categoriesPerWebsite = $this->getCategoriesAndWebsites();
+
+        if (! count($categoriesPerWebsite)) {
+            throw new Exception('Cannot find categories. Please, be sure that you have generated categories');
+        }
+
+        return [$categoriesPerWebsite[$productIndex % count($categoriesPerWebsite)]['website']];
     }
 
     /**
-     * Get product if for $productIndex product
+     * Get product if for $productIndex product.
      *
      * @param int $productIndex
+     *
      * @return int
      */
     public function getCategoryId($productIndex)
     {
         if ($this->isAssignToAllWebsites()) {
             $categories = $this->getAllCategories();
+
             return $categories[$productIndex % count($categories)];
-        } else {
-            $categoriesPerWebsite = $this->getCategoriesAndWebsites();
-            return $categoriesPerWebsite[$productIndex % count($categoriesPerWebsite)]['category'];
         }
+        $categoriesPerWebsite = $this->getCategoriesAndWebsites();
+
+        return $categoriesPerWebsite[$productIndex % count($categoriesPerWebsite)]['category'];
     }
 
     /**
-     * Get categories and websites
+     * Get categories and websites.
      *
      * @return array
      */
     private function getCategoriesAndWebsites()
     {
-        if (null === $this->categoriesPerWebsite) {
+        if ($this->categoriesPerWebsite === null) {
             $select = $this->getConnection()->select()
                 ->from(
                     ['c' => $this->resourceConnection->getTableName('catalog_category_entity')],
-                    ['category' => 'entity_id']
+                    ['category' => 'entity_id'],
                 )->join(
                     ['sg' => $this->resourceConnection->getTableName('store_group')],
                     "c.path like concat('1/', sg.root_category_id, '/%')",
-                    ['website' => 'website_id']
+                    ['website' => 'website_id'],
                 )->order('category ASC');
             $this->categoriesPerWebsite = $this->getConnection()->fetchAll($select);
         }
@@ -118,7 +125,7 @@ class WebsiteCategoryProvider
     }
 
     /**
-     * Checks is assign_entities_to_all_websites flag set
+     * Checks is assign_entities_to_all_websites flag set.
      *
      * @return bool
      */
@@ -128,13 +135,13 @@ class WebsiteCategoryProvider
     }
 
     /**
-     * Provides all websites
+     * Provides all websites.
      *
      * @return array
      */
     private function getAllWebsites()
     {
-        if (null === $this->websites) {
+        if ($this->websites === null) {
             $this->websites = array_unique(array_column($this->getCategoriesAndWebsites(), 'website'));
         }
 
@@ -142,13 +149,13 @@ class WebsiteCategoryProvider
     }
 
     /**
-     * Provides all categories
+     * Provides all categories.
      *
      * @return array
      */
     private function getAllCategories()
     {
-        if (null === $this->categories) {
+        if ($this->categories === null) {
             $this->categories = array_values(array_unique(array_column($this->getCategoriesAndWebsites(), 'category')));
         }
 
@@ -156,13 +163,13 @@ class WebsiteCategoryProvider
     }
 
     /**
-     * Provides connection
+     * Provides connection.
      *
      * @return AdapterInterface
      */
     private function getConnection()
     {
-        if (null === $this->connection) {
+        if ($this->connection === null) {
             $this->connection = $this->resourceConnection->getConnection();
         }
 

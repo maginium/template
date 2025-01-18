@@ -1,172 +1,184 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency;
 
 use Magento\Framework\File\Csv;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Setup\Module\Dependency\Circular as CircularTool;
+use Magento\Setup\Module\Dependency\Report\BuilderInterface;
 use Magento\Setup\Module\Dependency\Report\Circular as CircularReport;
 use Magento\Setup\Module\Dependency\Report\Dependency;
 use Magento\Setup\Module\Dependency\Report\Framework;
 
 /**
- * Service Locator (instead DI container)
+ * Service Locator (instead DI container).
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class ServiceLocator
 {
     /**
-     * Xml config dependencies parser
+     * Xml config dependencies parser.
      *
-     * @var \Magento\Setup\Module\Dependency\ParserInterface
+     * @var ParserInterface
      */
     private static $xmlConfigParser;
 
     /**
-     * Composer Json parser
+     * Composer Json parser.
      *
-     * @var \Magento\Setup\Module\Dependency\ParserInterface
+     * @var ParserInterface
      */
     private static $composerJsonParser;
 
     /**
-     * Framework dependencies parser
+     * Framework dependencies parser.
      *
-     * @var \Magento\Setup\Module\Dependency\ParserInterface
+     * @var ParserInterface
      */
     private static $frameworkDependenciesParser;
 
     /**
-     * Modules dependencies report builder
+     * Modules dependencies report builder.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\BuilderInterface
+     * @var BuilderInterface
      */
     private static $dependenciesReportBuilder;
 
     /**
-     * Modules circular dependencies report builder
+     * Modules circular dependencies report builder.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\BuilderInterface
+     * @var BuilderInterface
      */
     private static $circularDependenciesReportBuilder;
 
     /**
-     * Framework dependencies report builder
+     * Framework dependencies report builder.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\BuilderInterface
+     * @var BuilderInterface
      */
     private static $frameworkDependenciesReportBuilder;
 
     /**
-     * Csv file writer
+     * Csv file writer.
      *
-     * @var \Magento\Framework\File\Csv
+     * @var Csv
      */
     private static $csvWriter;
 
     /**
-     * Get modules dependencies report builder
+     * Get modules dependencies report builder.
      *
      * @return \Magento\Setup\Module\Dependency\Report\BuilderInterface
      */
     public static function getDependenciesReportBuilder()
     {
-        if (null === self::$dependenciesReportBuilder) {
+        if (self::$dependenciesReportBuilder === null) {
             self::$dependenciesReportBuilder = new Dependency\Builder(
                 self::getComposerJsonParser(),
-                new Dependency\Writer(self::getCsvWriter())
+                new Dependency\Writer(self::getCsvWriter()),
             );
         }
+
         return self::$dependenciesReportBuilder;
     }
 
     /**
-     * Get modules circular dependencies report builder
+     * Get modules circular dependencies report builder.
      *
      * @return \Magento\Setup\Module\Dependency\Report\BuilderInterface
      */
     public static function getCircularDependenciesReportBuilder()
     {
-        if (null === self::$circularDependenciesReportBuilder) {
+        if (self::$circularDependenciesReportBuilder === null) {
             self::$circularDependenciesReportBuilder = new CircularReport\Builder(
                 self::getComposerJsonParser(),
                 new CircularReport\Writer(self::getCsvWriter()),
-                new CircularTool()
+                new CircularTool,
             );
         }
+
         return self::$circularDependenciesReportBuilder;
     }
 
     /**
-     * Get framework dependencies report builder
+     * Get framework dependencies report builder.
      *
      * @return \Magento\Setup\Module\Dependency\Report\BuilderInterface
      */
     public static function getFrameworkDependenciesReportBuilder()
     {
-        if (null === self::$frameworkDependenciesReportBuilder) {
+        if (self::$frameworkDependenciesReportBuilder === null) {
             self::$frameworkDependenciesReportBuilder = new Framework\Builder(
                 self::getFrameworkDependenciesParser(),
                 new Framework\Writer(self::getCsvWriter()),
-                self::getXmlConfigParser()
+                self::getXmlConfigParser(),
             );
         }
+
         return self::$frameworkDependenciesReportBuilder;
     }
 
     /**
-     * Get modules dependencies parser
+     * Get modules dependencies parser.
      *
      * @return \Magento\Setup\Module\Dependency\ParserInterface
      */
     private static function getXmlConfigParser()
     {
-        if (null === self::$xmlConfigParser) {
-            self::$xmlConfigParser = new Parser\Config\Xml();
+        if (self::$xmlConfigParser === null) {
+            self::$xmlConfigParser = new Parser\Config\Xml;
         }
+
         return self::$xmlConfigParser;
     }
 
     /**
-     * Get modules dependencies from composer.json parser
+     * Get modules dependencies from composer.json parser.
      *
      * @return \Magento\Setup\Module\Dependency\ParserInterface
      */
     private static function getComposerJsonParser()
     {
-        if (null === self::$composerJsonParser) {
-            self::$composerJsonParser = new Parser\Composer\Json();
+        if (self::$composerJsonParser === null) {
+            self::$composerJsonParser = new Parser\Composer\Json;
         }
+
         return self::$composerJsonParser;
     }
 
     /**
-     * Get framework dependencies parser
+     * Get framework dependencies parser.
      *
      * @return \Magento\Setup\Module\Dependency\ParserInterface
      */
     private static function getFrameworkDependenciesParser()
     {
-        if (null === self::$frameworkDependenciesParser) {
-            self::$frameworkDependenciesParser = new Parser\Code();
+        if (self::$frameworkDependenciesParser === null) {
+            self::$frameworkDependenciesParser = new Parser\Code;
         }
+
         return self::$frameworkDependenciesParser;
     }
 
     /**
-     * Get csv file writer
+     * Get csv file writer.
      *
      * @return \Magento\Framework\File\Csv
      */
     private static function getCsvWriter()
     {
-        if (null === self::$csvWriter) {
-            self::$csvWriter = new Csv(new File());
+        if (self::$csvWriter === null) {
+            self::$csvWriter = new Csv(new File);
         }
+
         return self::$csvWriter;
     }
 }

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,36 +9,36 @@
 
 namespace Magento\Setup\Model\Complex;
 
+use Exception;
+
 /**
- * Complex pattern class for complex generator (used for creating configurable products)
- *
- *
+ * Complex pattern class for complex generator (used for creating configurable products).
  */
 class Pattern
 {
     /**
-     * Pattern headers set
+     * Pattern headers set.
      *
      * @var array
      */
     protected $_headers;
 
     /**
-     * Rows set - array of rows pattern, can contain as many rows as you need
+     * Rows set - array of rows pattern, can contain as many rows as you need.
      *
      * @var array(array)
      */
     protected $_rowsSet;
 
     /**
-     * Position
+     * Position.
      *
      * @var int
      */
     protected $_position = 0;
 
     /**
-     * Set headers
+     * Set headers.
      *
      * @param array $headers
      *
@@ -44,11 +47,12 @@ class Pattern
     public function setHeaders(array $headers)
     {
         $this->_headers = $headers;
+
         return $this;
     }
 
     /**
-     * Get headers array
+     * Get headers array.
      *
      * @return array
      */
@@ -58,27 +62,30 @@ class Pattern
     }
 
     /**
-     * Set combined rows set
+     * Set combined rows set.
      *
      * @param array $rowsSet
      *
+     * @throws Exception
+     *
      * @return Pattern
-     * @throws \Exception
      */
     public function setRowsSet(array $rowsSet)
     {
-        if (!count($rowsSet)) {
-            throw new \Exception("Rows set must contain at least 1 array representing a row pattern");
+        if (! count($rowsSet)) {
+            throw new Exception('Rows set must contain at least 1 array representing a row pattern');
         }
         $this->_rowsSet = $rowsSet;
-        if (!isset($this->_headers)) {
+
+        if (! isset($this->_headers)) {
             $this->_headers = array_keys($rowsSet[0]);
         }
+
         return $this;
     }
 
     /**
-     * Add row
+     * Add row.
      *
      * @param array $row
      *
@@ -87,11 +94,12 @@ class Pattern
     public function addRow(array $row)
     {
         $this->_rowsSet[] = $row;
+
         return $this;
     }
 
     /**
-     * Get row
+     * Get row.
      *
      * @param int $index
      * @param int $generatorKey
@@ -101,6 +109,7 @@ class Pattern
     public function getRow($index, $generatorKey)
     {
         $row = $this->_rowsSet[$generatorKey % count($this->_rowsSet)];
+
         foreach ($this->getHeaders() as $key) {
             if (isset($row[$key])) {
                 if (is_callable($row[$key])) {
@@ -112,11 +121,12 @@ class Pattern
                 $row[$key] = '';
             }
         }
+
         return $row;
     }
 
     /**
-     * Get rows count
+     * Get rows count.
      *
      * @return int
      */

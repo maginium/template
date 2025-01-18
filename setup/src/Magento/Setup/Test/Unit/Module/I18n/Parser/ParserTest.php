@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -33,14 +34,6 @@ class ParserTest extends TestCase
      */
     protected $factory;
 
-    protected function setUp(): void
-    {
-        $this->filesCollector = $this->createMock(FilesCollector::class);
-        $this->factory = $this->createMock(Factory::class);
-
-        $this->parser = new Parser\Parser($this->filesCollector, $this->factory);
-    }
-
     /**
      * @param array $options
      * @param array $phpFiles
@@ -49,13 +42,16 @@ class ParserTest extends TestCase
      * @param array $jsMap
      * @param array $phraseFactoryMap
      * @param array $expectedResult
+     *
      * @dataProvider addPhraseDataProvider
+     *
+     * @test
      */
-    public function testAddPhrase($options, $phpFiles, $jsFiles, $phpMap, $jsMap, $phraseFactoryMap, $expectedResult)
+    public function addPhrase($options, $phpFiles, $jsFiles, $phpMap, $jsMap, $phraseFactoryMap, $expectedResult)
     {
         // 1. Create mocks
-        $phpAdapter = new AdapterStub();
-        $jsAdapter = new AdapterStub();
+        $phpAdapter = new AdapterStub;
+        $jsAdapter = new AdapterStub;
 
         // 2. Set mocks
         $this->parser->addAdapter('php', $phpAdapter);
@@ -117,43 +113,43 @@ class ParserTest extends TestCase
                     'php/path1/file11' => [
                         [
                             'phrase' => 'php phrase111',
-                            'quote' => "'"
+                            'quote' => "'",
                         ],
-                        [   'phrase' => 'php phrase112',
-                            'quote' => '"'
-                        ]
+                        ['phrase' => 'php phrase112',
+                            'quote' => '"',
+                        ],
                     ],
                     'php/path1/file12' => [
                         [
                             'phrase' => 'php phrase121',
-                            'quote' => "'"
+                            'quote' => "'",
                         ],
-                        [   'phrase' => 'php phrase122',
-                            'quote' => '"'
-                        ]
+                        ['phrase' => 'php phrase122',
+                            'quote' => '"',
+                        ],
                     ],
-                    'php/path2/file21' => []
+                    'php/path2/file21' => [],
                 ],
                 'jsMap' => [
                     'js/path1/file11' => [
                         [
                             'phrase' => 'js phrase111',
-                            'quote' => "'"
+                            'quote' => "'",
                         ],
-                        [   'phrase' => 'js phrase112',
-                            'quote' => '"'
-                        ]
+                        ['phrase' => 'js phrase112',
+                            'quote' => '"',
+                        ],
                     ],
                     'js/path1/file12' => [
                         [
                             'phrase' => 'js phrase121',
-                            'quote' => "'"
+                            'quote' => "'",
                         ],
-                        [   'phrase' => 'js phrase122',
-                            'quote' => '"'
-                        ]
+                        ['phrase' => 'js phrase122',
+                            'quote' => '"',
+                        ],
                     ],
-                    'js/path2/file21' => []
+                    'js/path2/file21' => [],
                 ],
                 'phraseFactoryMap' => [
                     [['phrase' => 'php phrase111', 'translation' => 'php phrase111', 'quote' => "'"], $phraseMock1],
@@ -175,8 +171,16 @@ class ParserTest extends TestCase
                     'js phrase121' => $phraseMock7,
                     'js phrase122' => $phraseMock8,
                 ],
-            ]
+            ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->filesCollector = $this->createMock(FilesCollector::class);
+        $this->factory = $this->createMock(Factory::class);
+
+        $this->parser = new Parser\Parser($this->filesCollector, $this->factory);
     }
 }
 

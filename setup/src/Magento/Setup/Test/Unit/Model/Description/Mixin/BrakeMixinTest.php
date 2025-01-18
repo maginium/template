@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,15 +18,12 @@ class BrakeMixinTest extends TestCase
      */
     private $mixin;
 
-    protected function setUp(): void
-    {
-        $this->mixin = new BrakeMixin();
-    }
-
     /**
      * @dataProvider getTestData
+     *
+     * @test
      */
-    public function testApply($subject, $expectedResult)
+    public function apply($subject, $expectedResult)
     {
         $this->assertEquals($expectedResult, $this->mixin->apply($subject));
     }
@@ -46,8 +44,13 @@ class BrakeMixinTest extends TestCase
                 . '</br>' . PHP_EOL
                 . 'Consectetur adipiscing elit.' . PHP_EOL
                 . '</br>' . PHP_EOL
-                . 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-            ]
+                . 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+            ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->mixin = new BrakeMixin;
     }
 }

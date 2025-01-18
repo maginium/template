@@ -1,41 +1,49 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model\Description\Mixin;
 
+use Magento\Setup\Model\Description\Mixin\Helper\RandomWordSelector;
+use Magento\Setup\Model\Description\Mixin\Helper\WordWrapper;
+
 /**
- * Add italic html tag to description
+ * Add italic html tag to description.
  */
 class ItalicMixin implements DescriptionMixinInterface
 {
     /**
-     * @var \Magento\Setup\Model\Description\Mixin\Helper\RandomWordSelector
+     * @var RandomWordSelector
      */
     private $randomWordSelector;
 
     /**
-     * @var \Magento\Setup\Model\Description\Mixin\Helper\WordWrapper
+     * @var WordWrapper
      */
     private $wordWrapper;
 
     /**
-     * @param \Magento\Setup\Model\Description\Mixin\Helper\RandomWordSelector $randomWordSelector
-     * @param \Magento\Setup\Model\Description\Mixin\Helper\WordWrapper $wordWrapper
+     * @param RandomWordSelector $randomWordSelector
+     * @param WordWrapper $wordWrapper
      */
     public function __construct(
-        \Magento\Setup\Model\Description\Mixin\Helper\RandomWordSelector $randomWordSelector,
-        \Magento\Setup\Model\Description\Mixin\Helper\WordWrapper $wordWrapper
+        RandomWordSelector $randomWordSelector,
+        WordWrapper $wordWrapper,
     ) {
         $this->randomWordSelector = $randomWordSelector;
         $this->wordWrapper = $wordWrapper;
     }
 
     /**
-     * Add <i></i> tag to text at random positions
+     * Add <i></i> tag to text at random positions.
      *
      * @param string $text
+     *
      * @return string
      */
     public function apply($text)
@@ -51,7 +59,7 @@ class ItalicMixin implements DescriptionMixinInterface
             // mt_rand() here is not for cryptographic use.
             // phpcs:ignore Magento2.Security.InsecureFunction
             $this->randomWordSelector->getRandomWords($rawText, mt_rand(5, 8)),
-            '<i>%s</i>'
+            '<i>%s</i>',
         );
     }
 }

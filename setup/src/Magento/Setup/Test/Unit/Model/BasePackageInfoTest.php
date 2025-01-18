@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,70 +8,70 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Test\Unit\Model;
 
+use Magento\Framework\FileSystem\Directory\ReadFactory;
+use Magento\Framework\FileSystem\Directory\ReadInterface;
+use Magento\Setup\Exception;
 use Magento\Setup\Model\BasePackageInfo;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Tests BasePackageInfo
- *
+ * Tests BasePackageInfo.
  */
-class BasePackageInfoTest extends \PHPUnit\Framework\TestCase
+class BasePackageInfoTest extends TestCase
 {
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|\Magento\Framework\FileSystem\Directory\ReadFactory
+     * @var MockObject|ReadFactory
      */
     private $readFactoryMock;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|\Magento\Framework\FileSystem\Directory\ReadInterface
+     * @var MockObject|ReadInterface
      */
     private $readerMock;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|\Magento\Setup\Model\BasePackageInfo
+     * @var MockObject|BasePackageInfo
      */
     private $basePackageInfo;
 
-    protected function setup(): void
-    {
-        $this->readFactoryMock = $this->createMock(\Magento\Framework\Filesystem\Directory\ReadFactory::class);
-        $this->readerMock = $this->getMockForAbstractClass(
-            \Magento\Framework\Filesystem\Directory\ReadInterface::class,
-            [],
-            '',
-            false
-        );
-        $this->readFactoryMock->expects($this->once())->method('create')->willReturn($this->readerMock);
-        $this->basePackageInfo = new BasePackageInfo($this->readFactoryMock);
-    }
-
     // Error scenario: magento/magento2-base/composer.json not found
-    public function testBaseComposerJsonFileNotFound()
+    /**
+     * @test
+     */
+    public function baseComposerJsonFileNotFound()
     {
         $this->readerMock->expects($this->once())->method('isExist')->willReturn(false);
         $this->readerMock->expects($this->never())->method('isReadable');
         $this->readerMock->expects($this->never())->method('readFile');
-        $this->expectException(\Magento\Setup\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage(
-            sprintf('Could not locate %s file.', BasePackageInfo::MAGENTO_BASE_PACKAGE_COMPOSER_JSON_FILE)
+            sprintf('Could not locate %s file.', BasePackageInfo::MAGENTO_BASE_PACKAGE_COMPOSER_JSON_FILE),
         );
         $this->basePackageInfo->getPaths();
     }
 
     // Error scenario: magento/magento2-base/composer.json file could not be read
-    public function testBaseComposerJsonFileNotReadable()
+    /**
+     * @test
+     */
+    public function baseComposerJsonFileNotReadable()
     {
         $this->readerMock->expects($this->once())->method('isExist')->willReturn(true);
         $this->readerMock->expects($this->once())->method('isReadable')->willReturn(false);
         $this->readerMock->expects($this->never())->method('readFile');
-        $this->expectException(\Magento\Setup\Exception::class);
+        $this->expectException(Exception::class);
         $this->expectExceptionMessage(
-            sprintf('Could not read %s file.', BasePackageInfo::MAGENTO_BASE_PACKAGE_COMPOSER_JSON_FILE)
+            sprintf('Could not read %s file.', BasePackageInfo::MAGENTO_BASE_PACKAGE_COMPOSER_JSON_FILE),
         );
         $this->basePackageInfo->getPaths();
     }
 
     // Scenario: ["extra"]["map"] is absent within magento/magento2-base/composer.json file
-    public function testBaseNoExtraMapSectionInComposerJsonFile()
+    /**
+     * @test
+     */
+    public function baseNoExtraMapSectionInComposerJsonFile()
     {
         $this->readerMock->expects($this->once())->method('isExist')->willReturn(true);
         $this->readerMock->expects($this->once())->method('isReadable')->willReturn(true);
@@ -78,9 +79,9 @@ class BasePackageInfoTest extends \PHPUnit\Framework\TestCase
             [
                 BasePackageInfo::COMPOSER_KEY_EXTRA => [
                     __FILE__,
-                    __FILE__
-                ]
-            ]
+                    __FILE__,
+                ],
+            ],
         );
         $this->readerMock->expects($this->once())->method('readFile')->willReturn($jsonData);
         $expectedList = [];
@@ -89,7 +90,10 @@ class BasePackageInfoTest extends \PHPUnit\Framework\TestCase
     }
 
     // Success scenario
-    public function testBasePackageInfo()
+    /**
+     * @test
+     */
+    public function basePackageInfo()
     {
         $this->readerMock->expects($this->once())->method('isExist')->willReturn(true);
         $this->readerMock->expects($this->once())->method('isReadable')->willReturn(true);
@@ -99,19 +103,32 @@ class BasePackageInfoTest extends \PHPUnit\Framework\TestCase
                     BasePackageInfo::COMPOSER_KEY_MAP => [
                         [
                             __FILE__,
-                            __FILE__
+                            __FILE__,
                         ],
                         [
                             __DIR__,
-                            __DIR__
-                        ]
-                    ]
-                ]
-            ]
+                            __DIR__,
+                        ],
+                    ],
+                ],
+            ],
         );
         $this->readerMock->expects($this->once())->method('readFile')->willReturn($jsonData);
         $expectedList = [__FILE__, __DIR__];
         $actualList = $this->basePackageInfo->getPaths();
         $this->assertEquals($expectedList, $actualList);
+    }
+
+    protected function setup(): void
+    {
+        $this->readFactoryMock = $this->createMock(ReadFactory::class);
+        $this->readerMock = $this->getMockForAbstractClass(
+            ReadInterface::class,
+            [],
+            '',
+            false,
+        );
+        $this->readFactoryMock->expects($this->once())->method('create')->willReturn($this->readerMock);
+        $this->basePackageInfo = new BasePackageInfo($this->readFactoryMock);
     }
 }

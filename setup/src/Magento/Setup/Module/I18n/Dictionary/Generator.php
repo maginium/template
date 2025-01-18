@@ -1,41 +1,46 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Dictionary;
 
 use Magento\Setup\Module\I18n\Factory;
 use Magento\Setup\Module\I18n\ParserInterface;
+use UnexpectedValueException;
 
 /**
- * Dictionary generator
+ * Dictionary generator.
  */
 class Generator
 {
     /**
-     * Parser
+     * Parser.
      *
-     * @var \Magento\Setup\Module\I18n\ParserInterface
+     * @var ParserInterface
      */
     protected $parser;
 
     /**
-     * Contextual parser
+     * Contextual parser.
      *
-     * @var \Magento\Setup\Module\I18n\ParserInterface
+     * @var ParserInterface
      */
     protected $contextualParser;
 
     /**
-     * Domain abstract factory
+     * Domain abstract factory.
      *
-     * @var \Magento\Setup\Module\I18n\Factory
+     * @var Factory
      */
     protected $factory;
 
     /**
-     * Generator options resolver
+     * Generator options resolver.
      *
      * @var Options\ResolverFactory
      */
@@ -47,7 +52,7 @@ class Generator
     protected $writer;
 
     /**
-     * Generator construct
+     * Generator construct.
      *
      * @param ParserInterface $parser
      * @param ParserInterface $contextualParser
@@ -58,7 +63,7 @@ class Generator
         ParserInterface $parser,
         ParserInterface $contextualParser,
         Factory $factory,
-        Options\ResolverFactory $optionsResolver
+        Options\ResolverFactory $optionsResolver,
     ) {
         $this->parser = $parser;
         $this->contextualParser = $contextualParser;
@@ -67,12 +72,14 @@ class Generator
     }
 
     /**
-     * Generate dictionary
+     * Generate dictionary.
      *
      * @param string $directory
      * @param string $outputFilename
      * @param bool $withContext
-     * @throws \UnexpectedValueException
+     *
+     * @throws UnexpectedValueException
+     *
      * @return void
      */
     public function generate($directory, $outputFilename, $withContext = false)
@@ -83,9 +90,11 @@ class Generator
         $parser->parse($optionResolver->getOptions());
 
         $phraseList = $parser->getPhrases();
-        if (!count($phraseList)) {
-            throw new \UnexpectedValueException('No phrases found in the specified dictionary file.');
+
+        if (! count($phraseList)) {
+            throw new UnexpectedValueException('No phrases found in the specified dictionary file.');
         }
+
         foreach ($phraseList as $phrase) {
             $this->getDictionaryWriter($outputFilename)->write($phrase);
         }
@@ -94,20 +103,23 @@ class Generator
 
     /**
      * @param string $outputFilename
+     *
      * @return WriterInterface
      */
     protected function getDictionaryWriter($outputFilename)
     {
-        if (null === $this->writer) {
+        if ($this->writer === null) {
             $this->writer = $this->factory->createDictionaryWriter($outputFilename);
         }
+
         return $this->writer;
     }
 
     /**
-     * Get actual parser
+     * Get actual parser.
      *
      * @param bool $withContext
+     *
      * @return \Magento\Setup\Module\I18n\ParserInterface
      */
     protected function getActualParser($withContext)

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,17 +19,14 @@ class CodeTest extends TestCase
      */
     protected $parser;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->parser = $objectManagerHelper->getObject(Code::class);
-    }
-
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongOptionFilesForParse
+     *
+     * @test
      */
-    public function testParseWithWrongOptionFilesForParse($options)
+    public function parseWithWrongOptionFilesForParse($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Parse error: Option "files_for_parse" is wrong.');
@@ -43,15 +41,18 @@ class CodeTest extends TestCase
         return [
             [['files_for_parse' => [], 'declared_namespaces' => [1, 2]]],
             [['files_for_parse' => 'sting', 'declared_namespaces' => [1, 2]]],
-            [['there_are_no_files_for_parse' => [1, 3], 'declared_namespaces' => [1, 2]]]
+            [['there_are_no_files_for_parse' => [1, 3], 'declared_namespaces' => [1, 2]]],
         ];
     }
 
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongOptionDeclaredNamespace
+     *
+     * @test
      */
-    public function testParseWithWrongOptionDeclaredNamespace($options)
+    public function parseWithWrongOptionDeclaredNamespace($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Parse error: Option "declared_namespaces" is wrong.');
@@ -66,7 +67,13 @@ class CodeTest extends TestCase
         return [
             [['declared_namespaces' => [], 'files_for_parse' => [1, 2]]],
             [['declared_namespaces' => 'sting', 'files_for_parse' => [1, 2]]],
-            [['there_are_no_declared_namespaces' => [1, 3], 'files_for_parse' => [1, 2]]]
+            [['there_are_no_declared_namespaces' => [1, 3], 'files_for_parse' => [1, 2]]],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->parser = $objectManagerHelper->getObject(Code::class);
     }
 }

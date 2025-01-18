@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,19 +19,14 @@ class BuilderTest extends TestCase
      */
     protected $builder;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->builder = $objectManagerHelper->getObject(
-            Builder::class
-        );
-    }
-
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongOptionConfigFiles
+     *
+     * @test
      */
-    public function testBuildWithWrongOptionConfigFiles($options)
+    public function buildWithWrongOptionConfigFiles($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Parse error. Passed option "config_files" is wrong.');
@@ -49,7 +45,15 @@ class BuilderTest extends TestCase
                     'write' => [1, 2],
                 ],
             ],
-            [['parse' => ['files_for_parse' => [1, 2]], 'write' => [1, 2]]]
+            [['parse' => ['files_for_parse' => [1, 2]], 'write' => [1, 2]]],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->builder = $objectManagerHelper->getObject(
+            Builder::class,
+        );
     }
 }

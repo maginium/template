@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,14 +12,14 @@ namespace Magento\Setup\Module\Di\Definition;
 class Collection
 {
     /**
-     * List of definitions
+     * List of definitions.
      *
      * @var array
      */
     private $definitions = [];
 
     /**
-     * Returns definitions as [instance => list of arguments]
+     * Returns definitions as [instance => list of arguments].
      *
      * @return array
      */
@@ -26,7 +29,7 @@ class Collection
     }
 
     /**
-     * Initializes collection with array of definitions
+     * Initializes collection with array of definitions.
      *
      * @param array $definitions
      *
@@ -38,19 +41,19 @@ class Collection
     }
 
     /**
-     * Adds collection to current collection
+     * Adds collection to current collection.
      *
      * @param Collection $collection
      *
      * @return void
      */
-    public function addCollection(Collection $collection)
+    public function addCollection(self $collection)
     {
         $this->initialize(array_merge($this->getCollection(), $collection->getCollection()));
     }
 
     /**
-     * Add new definition for instance
+     * Add new definition for instance.
      *
      * @param string $instance
      * @param array|null $arguments
@@ -63,18 +66,19 @@ class Collection
     }
 
     /**
-     * Returns instance arguments
+     * Returns instance arguments.
      *
      * @param string $instanceName
+     *
      * @return null|array
      */
     public function getInstanceArguments($instanceName)
     {
-        return isset($this->definitions[$instanceName]) ? $this->definitions[$instanceName] : null;
+        return $this->definitions[$instanceName] ?? null;
     }
 
     /**
-     * Returns instances names list
+     * Returns instances names list.
      *
      * @return array
      */
@@ -84,9 +88,10 @@ class Collection
     }
 
     /**
-     * Whether instance defined
+     * Whether instance defined.
      *
      * @param string $instanceName
+     *
      * @return bool
      */
     public function hasInstance($instanceName)

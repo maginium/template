@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Compiler\Config\Chain;
 
 use Magento\Setup\Module\Di\Compiler\Config\ModificationInterface;
@@ -10,9 +14,10 @@ use Magento\Setup\Module\Di\Compiler\Config\ModificationInterface;
 class InterceptorSubstitution implements ModificationInterface
 {
     /**
-     * Modifies input config
+     * Modifies input config.
      *
      * @param array $config
+     *
      * @return array
      */
     public function modify(array $config)
@@ -20,9 +25,10 @@ class InterceptorSubstitution implements ModificationInterface
         $configKeys = [
             'arguments',
             'preferences',
-            'instanceTypes'
+            'instanceTypes',
         ];
-        if ($configKeys != array_keys($config)) {
+
+        if ($configKeys !== array_keys($config)) {
             return $config;
         }
 
@@ -45,9 +51,10 @@ class InterceptorSubstitution implements ModificationInterface
     }
 
     /**
-     * Returns list of intercepted types and their interceptors
+     * Returns list of intercepted types and their interceptors.
      *
      * @param array $arguments
+     *
      * @return array
      */
     private function getInterceptorsList(array $arguments)
@@ -55,8 +62,8 @@ class InterceptorSubstitution implements ModificationInterface
         $interceptors = [];
 
         foreach (array_keys($arguments) as $instanceName) {
-            if (substr($instanceName, -12) === '\Interceptor') {
-                $originalName = substr($instanceName, 0, strlen($instanceName) - 12);
+            if (mb_substr($instanceName, -12) === '\Interceptor') {
+                $originalName = mb_substr($instanceName, 0, mb_strlen($instanceName) - 12);
                 $interceptors[$originalName] = $instanceName;
             }
         }
@@ -65,10 +72,11 @@ class InterceptorSubstitution implements ModificationInterface
     }
 
     /**
-     * Resolves config preferences
+     * Resolves config preferences.
      *
      * @param array $preferences
      * @param array $interceptors
+     *
      * @return array
      */
     private function resolvePreferences(array $preferences, array $interceptors)
@@ -78,6 +86,7 @@ class InterceptorSubstitution implements ModificationInterface
                 $preference = $interceptors[$preference];
             }
         }
+
         return $preferences;
     }
 }

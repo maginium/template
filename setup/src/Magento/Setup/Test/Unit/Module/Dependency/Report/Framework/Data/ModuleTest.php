@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,20 +15,9 @@ use PHPUnit\Framework\TestCase;
 class ModuleTest extends TestCase
 {
     /**
-     * @param string $name
-     * @param array $dependencies
-     * @return Module
+     * @test
      */
-    protected function createModule($name, $dependencies = [])
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        return $objectManagerHelper->getObject(
-            Module::class,
-            ['name' => $name, 'dependencies' => $dependencies]
-        );
-    }
-
-    public function testGetName()
+    public function getName()
     {
         $name = 'name';
         $module = $this->createModule($name, []);
@@ -35,7 +25,10 @@ class ModuleTest extends TestCase
         $this->assertEquals($name, $module->getName());
     }
 
-    public function testGetDependencies()
+    /**
+     * @test
+     */
+    public function getDependencies()
     {
         $dependencies = ['foo', 'baz', 'bar'];
         $module = $this->createModule('name', $dependencies);
@@ -43,10 +36,29 @@ class ModuleTest extends TestCase
         $this->assertEquals($dependencies, $module->getDependencies());
     }
 
-    public function testGetDependenciesCount()
+    /**
+     * @test
+     */
+    public function getDependenciesCount()
     {
         $module = $this->createModule('name', ['foo', 'baz', 'bar']);
 
         $this->assertEquals(3, $module->getDependenciesCount());
+    }
+
+    /**
+     * @param string $name
+     * @param array $dependencies
+     *
+     * @return Module
+     */
+    protected function createModule($name, $dependencies = [])
+    {
+        $objectManagerHelper = new ObjectManager($this);
+
+        return $objectManagerHelper->getObject(
+            Module::class,
+            ['name' => $name, 'dependencies' => $dependencies],
+        );
     }
 }

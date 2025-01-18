@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,7 +13,10 @@ use PHPUnit\Framework\TestCase;
 
 class ModuleContextTest extends TestCase
 {
-    public function testGetVersion()
+    /**
+     * @test
+     */
+    public function getVersion()
     {
         $version = '1.0.1';
         $object = new ModuleContext($version);

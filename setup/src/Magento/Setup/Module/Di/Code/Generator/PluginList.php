@@ -1,14 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Code\Generator;
 
 use Magento\Framework\Interception;
 
 /**
- * Provides plugin list configuration
+ * Provides plugin list configuration.
  */
 class PluginList extends Interception\PluginList\PluginList
 {
@@ -18,7 +22,7 @@ class PluginList extends Interception\PluginList\PluginList
     private $interceptedClasses;
 
     /**
-     * Returns plugins config
+     * Returns plugins config.
      *
      * @return array
      */
@@ -30,9 +34,10 @@ class PluginList extends Interception\PluginList\PluginList
     }
 
     /**
-     * Sets scope priority scheme
+     * Sets scope priority scheme.
      *
      * @param array $areaCodes
+     *
      * @return void
      */
     public function setScopePriorityScheme($areaCodes)
@@ -41,20 +46,8 @@ class PluginList extends Interception\PluginList\PluginList
     }
 
     /**
-     * Whether scope code is current scope code
-     *
-     * @param string $scopeCode
-     *
-     * @return bool
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    protected function isCurrentScope($scopeCode)
-    {
-        return false;
-    }
-
-    /**
      * @param array $interceptedClasses
+     *
      * @return void
      */
     public function setInterceptedClasses($interceptedClasses)
@@ -63,7 +56,21 @@ class PluginList extends Interception\PluginList\PluginList
     }
 
     /**
-     * Returns class definitions
+     * Whether scope code is current scope code.
+     *
+     * @param string $scopeCode
+     *
+     * @return bool
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function isCurrentScope($scopeCode)
+    {
+        return false;
+    }
+
+    /**
+     * Returns class definitions.
      *
      * @return array
      */

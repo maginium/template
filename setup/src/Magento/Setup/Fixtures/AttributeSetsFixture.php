@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,10 @@
 
 namespace Magento\Setup\Fixtures;
 
+use Magento\Setup\Fixtures\AttributeSet\Pattern;
+
 /**
- * Fixture for Attribute Sets and Attributes based on the configuration
+ * Fixture for Attribute Sets and Attributes based on the configuration.
  *
  * Support the following format:
  * <!-- Number of product attribute sets -->
@@ -24,7 +29,7 @@ namespace Magento\Setup\Fixtures;
 class AttributeSetsFixture extends Fixture
 {
     /** Name of generated attribute set */
-    const PRODUCT_SET_NAME = 'Product Set ';
+    public const PRODUCT_SET_NAME = 'Product Set ';
 
     /**
      * @var int
@@ -37,19 +42,19 @@ class AttributeSetsFixture extends Fixture
     private $attributeSetsFixture;
 
     /**
-     * @var AttributeSet\Pattern
+     * @var Pattern
      */
     private $pattern;
 
     /**
      * @param FixtureModel $fixtureModel
      * @param AttributeSet\AttributeSetFixture $attributeSetsFixture
-     * @param AttributeSet\Pattern $pattern
+     * @param Pattern $pattern
      */
     public function __construct(
         FixtureModel $fixtureModel,
         AttributeSet\AttributeSetFixture $attributeSetsFixture,
-        \Magento\Setup\Fixtures\AttributeSet\Pattern $pattern
+        Pattern $pattern,
     ) {
         parent::__construct($fixtureModel);
         $this->attributeSetsFixture = $attributeSetsFixture;
@@ -62,6 +67,7 @@ class AttributeSetsFixture extends Fixture
     public function execute()
     {
         $attributeSets = $this->fixtureModel->getValue('attribute_sets', null);
+
         if ($attributeSets !== null) {
             foreach ($attributeSets['attribute_set'] as $attributeSetData) {
                 $this->attributeSetsFixture->createAttributeSet($attributeSetData);
@@ -69,6 +75,7 @@ class AttributeSetsFixture extends Fixture
         }
 
         $attributeSetsCount = $this->fixtureModel->getValue('product_attribute_sets', null);
+
         if ($attributeSetsCount !== null) {
             for ($index = 1; $index <= $attributeSetsCount; $index++) {
                 $this->attributeSetsFixture->createAttributeSet(
@@ -76,15 +83,13 @@ class AttributeSetsFixture extends Fixture
                         self::PRODUCT_SET_NAME . $index,
                         $this->fixtureModel->getValue('product_attribute_sets_attributes', 3),
                         $this->fixtureModel->getValue('product_attribute_sets_attributes_values', 3),
-                        function ($attributeIndex, $attribute) use ($index) {
-                            return array_replace_recursive(
-                                $attribute,
-                                [
-                                    'attribute_code' => "attribute_set{$index}_" . $attributeIndex,
-                                ]
-                            );
-                        }
-                    )
+                        fn($attributeIndex, $attribute) => array_replace_recursive(
+                            $attribute,
+                            [
+                                'attribute_code' => "attribute_set{$index}_" . $attributeIndex,
+                            ],
+                        ),
+                    ),
                 );
             }
         }
@@ -105,7 +110,7 @@ class AttributeSetsFixture extends Fixture
     {
         return [
             'attribute_sets' => 'Attribute Sets (Default)',
-            'product_attribute_sets' => 'Attribute Sets (Extra)'
+            'product_attribute_sets' => 'Attribute Sets (Extra)',
         ];
     }
 }

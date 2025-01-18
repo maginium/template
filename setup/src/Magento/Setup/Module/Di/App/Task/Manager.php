@@ -1,9 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task;
+
+use Closure;
 
 class Manager
 {
@@ -21,16 +27,17 @@ class Manager
      * @param OperationFactory $operationFactory
      */
     public function __construct(
-        OperationFactory $operationFactory
+        OperationFactory $operationFactory,
     ) {
         $this->operationFactory = $operationFactory;
     }
 
     /**
-     * Adds operations to task
+     * Adds operations to task.
      *
      * @param string $operationCode
      * @param mixed $arguments
+     *
      * @return void
      */
     public function addOperation($operationCode, $arguments = null)
@@ -39,13 +46,14 @@ class Manager
     }
 
     /**
-     * Processes list of operations
+     * Processes list of operations.
      *
      * @param callable $beforeCallback
      * @param callable $afterCallback
+     *
      * @return void
      */
-    public function process(\Closure $beforeCallback = null, \Closure $afterCallback = null)
+    public function process(?Closure $beforeCallback = null, ?Closure $afterCallback = null)
     {
         /** @var OperationInterface $operation */
         foreach ($this->operationsList as $operation) {

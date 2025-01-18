@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,10 @@
 
 namespace Magento\Setup\Console\Command;
 
+use InvalidArgumentException;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Module\ModuleList;
 use Magento\Setup\Model\ConfigModel;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,28 +27,28 @@ class ConfigSetCommand extends AbstractSetupCommand
     protected $configModel;
 
     /**
-     * Enabled module list
+     * Enabled module list.
      *
      * @var ModuleList
      */
     private $moduleList;
 
     /**
-     * Existing deployment config
+     * Existing deployment config.
      */
     private $deploymentConfig;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param \Magento\Setup\Model\ConfigModel $configModel
+     * @param ConfigModel $configModel
      * @param ModuleList $moduleList
      * @param DeploymentConfig $deploymentConfig
      */
     public function __construct(
         ConfigModel $configModel,
         ModuleList $moduleList,
-        DeploymentConfig $deploymentConfig
+        DeploymentConfig $deploymentConfig,
     ) {
         $this->configModel = $configModel;
         $this->moduleList = $moduleList;
@@ -52,23 +57,8 @@ class ConfigSetCommand extends AbstractSetupCommand
     }
 
     /**
-     * Initialization of the command
+     * {@inheritdoc}
      *
-     * @return void
-     */
-    protected function configure()
-    {
-        $options = $this->configModel->getAvailableOptions();
-
-        $this->setName('setup:config:set')
-            ->setDescription('Creates or modifies the deployment configuration')
-            ->setDefinition($options);
-
-        parent::configure();
-    }
-
-    /**
-     * @inheritdoc
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -85,13 +75,15 @@ class ConfigSetCommand extends AbstractSetupCommand
             $needOverwrite = ($currentValue !== null) &&
                 ($inputOptions[$option->getName()] !== null) &&
                 ($inputOptions[$option->getName()] !== $currentValue);
+
             if ($needOverwrite) {
                 $dialog = $this->getHelperSet()->get('question');
                 $question = new Question(
                     '<question>Overwrite the existing configuration for ' . $option->getName() . '?[Y/n]</question>',
-                    'y'
+                    'y',
                 );
-                if (strtolower($dialog->ask($input, $output, $question)) !== 'y') {
+
+                if (mb_strtolower($dialog->ask($input, $output, $question)) !== 'y') {
                     $inputOptions[$option->getName()] = null;
                 }
             }
@@ -105,9 +97,7 @@ class ConfigSetCommand extends AbstractSetupCommand
 
         $inputOptions = array_filter(
             $inputOptions,
-            function ($value) {
-                return $value !== null;
-            }
+            fn($value) => $value !== null,
         );
 
         $optionsToChange = array_intersect(array_keys($inputOptions), array_keys($commandOptions));
@@ -117,13 +107,13 @@ class ConfigSetCommand extends AbstractSetupCommand
 
         $optionsWithDefaultValues = array_diff(
             $optionsWithDefaultValues,
-            [ConfigOptionsListConstants::INPUT_KEY_SKIP_DB_VALIDATION]
+            [ConfigOptionsListConstants::INPUT_KEY_SKIP_DB_VALIDATION],
         );
 
         if (count($optionsWithDefaultValues) > 0) {
             $defaultValuesMessage = implode(', ', $optionsWithDefaultValues);
             $output->writeln(
-                '<info>We saved default values for these options: ' . $defaultValuesMessage . '.</info>'
+                '<info>We saved default values for these options: ' . $defaultValuesMessage . '.</info>',
             );
         } else {
             if (count($optionsToChange) > 0) {
@@ -132,11 +122,28 @@ class ConfigSetCommand extends AbstractSetupCommand
                 $output->writeln('<info>You made no changes to the configuration.</info>');
             }
         }
-        return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
+
+        return Cli::RETURN_SUCCESS;
     }
 
     /**
-     * @inheritdoc
+     * Initialization of the command.
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $options = $this->configModel->getAvailableOptions();
+
+        $this->setName('setup:config:set')
+            ->setDescription('Creates or modifies the deployment configuration')
+            ->setDefinition($options);
+
+        parent::configure();
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
@@ -144,11 +151,12 @@ class ConfigSetCommand extends AbstractSetupCommand
 
         $errors = $this->configModel->validate($inputOptions);
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             foreach ($errors as $error) {
-                $output->writeln("<error>$error</error>");
+                $output->writeln("<error>{$error}</error>");
             }
-            throw new \InvalidArgumentException('Parameter validation failed');
+
+            throw new InvalidArgumentException('Parameter validation failed');
         }
     }
 }

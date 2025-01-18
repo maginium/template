@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,12 +15,12 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Setup\Module\Setup\ResourceConfig;
 
 /**
- * Factory for Magento\Framework\App\ResourceConnection
+ * Factory for Magento\Framework\App\ResourceConnection.
  */
 class ResourceFactory
 {
     /**
-     * Laminas Framework's service locator
+     * Laminas Framework's service locator.
      *
      * @var ServiceLocatorInterface
      */
@@ -32,18 +35,19 @@ class ResourceFactory
     }
 
     /**
-     * Create object
+     * Create object.
      *
      * @param DeploymentConfig $deploymentConfig
+     *
      * @return ResourceConnection
      */
     public function create(DeploymentConfig $deploymentConfig)
     {
         $connectionFactory = $this->serviceLocator->get(ConnectionFactory::class);
         $resource = new ResourceConnection(
-            new ResourceConfig(),
+            new ResourceConfig,
             $connectionFactory,
-            $deploymentConfig
+            $deploymentConfig,
         );
 
         return $resource;

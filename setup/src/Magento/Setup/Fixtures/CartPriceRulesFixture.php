@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,16 @@
 
 namespace Magento\Setup\Fixtures;
 
+use Magento\Catalog\Model\Category;
+use Magento\SalesRule\Model\Rule\Condition\Address;
+use Magento\SalesRule\Model\Rule\Condition\Combine;
+use Magento\SalesRule\Model\Rule\Condition\Product;
+use Magento\SalesRule\Model\Rule\Condition\Product\Found;
+use Magento\SalesRule\Model\RuleFactory;
+use Magento\Store\Model\StoreManager;
+
 /**
- * Fixture for generating cart price rules
+ * Fixture for generating cart price rules.
  *
  * Support the following format:
  * <!-- Number of cart price rules -->
@@ -41,62 +52,69 @@ class CartPriceRulesFixture extends Fixture
     protected $cartRulesAdvancedType = false;
 
     /**
-     * @var \Magento\SalesRule\Model\RuleFactory
+     * @var RuleFactory
      */
     private $ruleFactory;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param FixtureModel $fixtureModel
-     * @param \Magento\SalesRule\Model\RuleFactory|null $ruleFactory
+     * @param RuleFactory|null $ruleFactory
      */
     public function __construct(
         FixtureModel $fixtureModel,
-        \Magento\SalesRule\Model\RuleFactory $ruleFactory = null
+        ?RuleFactory $ruleFactory = null,
     ) {
         parent::__construct($fixtureModel);
         $this->ruleFactory = $ruleFactory ?: $this->fixtureModel->getObjectManager()
-            ->get(\Magento\SalesRule\Model\RuleFactory::class);
+            ->get(RuleFactory::class);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @SuppressWarnings(PHPMD)
      */
     public function execute()
     {
         $this->cartPriceRulesCount = $this->fixtureModel->getValue('cart_price_rules', 0);
-        if (!$this->cartPriceRulesCount) {
+
+        if (! $this->cartPriceRulesCount) {
             return;
         }
 
         $this->cartRulesAdvancedType = $this->fixtureModel->getValue('cart_price_rules_advanced_type', false);
         $this->cartPriceRulesProductsFloor = $this->fixtureModel->getValue(
             'cart_price_rules_floor',
-            3
+            3,
         );
 
-        /** @var \Magento\Store\Model\StoreManager $storeManager */
-        $storeManager = $this->fixtureModel->getObjectManager()->create(\Magento\Store\Model\StoreManager::class);
+        /** @var StoreManager $storeManager */
+        $storeManager = $this->fixtureModel->getObjectManager()->create(StoreManager::class);
+
         /** @var $category \Magento\Catalog\Model\Category */
-        $category = $this->fixtureModel->getObjectManager()->get(\Magento\Catalog\Model\Category::class);
+        $category = $this->fixtureModel->getObjectManager()->get(Category::class);
 
         //Get all websites
         $categoriesArray = [];
         $websites = $storeManager->getWebsites();
+
         foreach ($websites as $website) {
             //Get all groups
             $websiteGroups = $website->getGroups();
+
             foreach ($websiteGroups as $websiteGroup) {
                 $websiteGroupRootCategory = $websiteGroup->getRootCategoryId();
                 $category->load($websiteGroupRootCategory);
                 $categoryResource = $category->getResource();
                 //Get all categories
                 $resultsCategories = $categoryResource->getAllChildren($category);
+
                 foreach ($resultsCategories as $resultsCategory) {
                     $category->load($resultsCategory);
                     $structure = explode('/', $category->getPath());
+
                     if (count($structure) > 2) {
                         $categoriesArray[] = [$category->getId(), $website->getId()];
                     }
@@ -106,7 +124,7 @@ class CartPriceRulesFixture extends Fixture
         asort($categoriesArray);
         $categoriesArray = array_values($categoriesArray);
 
-        if ($this->cartRulesAdvancedType == false) {
+        if ($this->cartRulesAdvancedType === false) {
             $this->generateRules($this->ruleFactory, $categoriesArray);
         } else {
             $this->generateAdvancedRules($this->ruleFactory, $categoriesArray);
@@ -118,6 +136,7 @@ class CartPriceRulesFixture extends Fixture
      *
      * @param int $ruleId
      * @param array $categoriesArray
+     *
      * @return array
      */
     public function generateCondition($ruleId, $categoriesArray)
@@ -125,25 +144,25 @@ class CartPriceRulesFixture extends Fixture
         return [
             'conditions' => [
                 1 => [
-                    'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+                    'type' => Combine::class,
                     'aggregator' => 'all',
                     'value' => '1',
                     'new_child' => '',
                 ],
                 '1--1' => [
-                    'type' => \Magento\SalesRule\Model\Rule\Condition\Address::class,
+                    'type' => Address::class,
                     'attribute' => 'total_qty',
                     'operator' => '>=',
                     'value' => $this->cartPriceRulesProductsFloor + $ruleId,
                 ],
                 '1--2' => [
-                    'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Found::class,
+                    'type' => Found::class,
                     'value' => '1',
                     'aggregator' => 'all',
                     'new_child' => '',
                 ],
                 '1--2--1' => [
-                    'type' => \Magento\SalesRule\Model\Rule\Condition\Product::class,
+                    'type' => Product::class,
                     'attribute' => 'category_ids',
                     'operator' => '==',
                     'value' => $categoriesArray[$ruleId % count($categoriesArray)][0],
@@ -151,7 +170,7 @@ class CartPriceRulesFixture extends Fixture
             ],
             'actions' => [
                 1 => [
-                    'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Combine::class,
+                    'type' => Product\Combine::class,
                     'aggregator' => 'all',
                     'value' => '1',
                     'new_child' => '',
@@ -163,8 +182,9 @@ class CartPriceRulesFixture extends Fixture
     /**
      * Generate rules.
      *
-     * @param \Magento\SalesRule\Model\RuleFactory $ruleFactory
+     * @param RuleFactory $ruleFactory
      * @param array $categoriesArray
+     *
      * @return void
      */
     public function generateRules($ruleFactory, $categoriesArray)
@@ -172,35 +192,35 @@ class CartPriceRulesFixture extends Fixture
         for ($i = 0; $i < $this->cartPriceRulesCount; $i++) {
             $ruleName = sprintf('Cart Price Rule %1$d', $i);
             $data = [
-                'rule_id'               => null,
-                'product_ids'           => '',
-                'name'                  => $ruleName,
-                'description'           => '',
-                'is_active'             => '1',
-                'website_ids'           => $categoriesArray[$i % count($categoriesArray)][1],
-                'customer_group_ids'    => [
+                'rule_id' => null,
+                'product_ids' => '',
+                'name' => $ruleName,
+                'description' => '',
+                'is_active' => '1',
+                'website_ids' => $categoriesArray[$i % count($categoriesArray)][1],
+                'customer_group_ids' => [
                     0 => '0',
                     1 => '1',
                     2 => '2',
                     3 => '3',
                 ],
-                'coupon_type'           => '1',
-                'coupon_code'           => '',
-                'uses_per_customer'     => '',
-                'from_date'             => '',
-                'to_date'               => '',
-                'sort_order'            => '100',
-                'is_rss'                => '1',
-                'rule'                  => $this->generateCondition($i, $categoriesArray),
-                'simple_action'             => 'by_percent',
-                'discount_amount'           => '10',
-                'discount_qty'              => '0',
-                'discount_step'             => '',
-                'apply_to_shipping'         => '0',
-                'simple_free_shipping'      => '0',
-                'stop_rules_processing'     => '1',
-                'reward_points_delta'       => '',
-                'store_labels'              => [
+                'coupon_type' => '1',
+                'coupon_code' => '',
+                'uses_per_customer' => '',
+                'from_date' => '',
+                'to_date' => '',
+                'sort_order' => '100',
+                'is_rss' => '1',
+                'rule' => $this->generateCondition($i, $categoriesArray),
+                'simple_action' => 'by_percent',
+                'discount_amount' => '10',
+                'discount_qty' => '0',
+                'discount_step' => '',
+                'apply_to_shipping' => '0',
+                'simple_free_shipping' => '0',
+                'stop_rules_processing' => '1',
+                'reward_points_delta' => '',
+                'store_labels' => [
                     0 => '',
                     1 => '',
                     2 => '',
@@ -214,26 +234,29 @@ class CartPriceRulesFixture extends Fixture
                     10 => '',
                     11 => '',
                 ],
-                'page'                      => '1',
-                'limit'                     => '20',
-                'in_banners'                => '',
-                'banner_id'                 => [
-                    'from'  => '',
-                    'to'    => '',
+                'page' => '1',
+                'limit' => '20',
+                'in_banners' => '',
+                'banner_id' => [
+                    'from' => '',
+                    'to' => '',
                 ],
-                'banner_name'               => '',
-                'visible_in'                => '',
-                'banner_is_enabled'         => '',
-                'related_banners'           => [],
+                'banner_name' => '',
+                'visible_in' => '',
+                'banner_is_enabled' => '',
+                'related_banners' => [],
             ];
-            if (isset($data['simple_action']) && $data['simple_action'] == 'by_percent'
+
+            if (isset($data['simple_action']) && $data['simple_action'] === 'by_percent'
                 && isset($data['discount_amount'])
             ) {
                 $data['discount_amount'] = min(100, $data['discount_amount']);
             }
+
             if (isset($data['rule']['conditions'])) {
                 $data['conditions'] = $data['rule']['conditions'];
             }
+
             if (isset($data['rule']['actions'])) {
                 $data['actions'] = $data['rule']['actions'];
             }
@@ -241,7 +264,7 @@ class CartPriceRulesFixture extends Fixture
 
             $model = $ruleFactory->create();
             $model->loadPost($data);
-            $useAutoGeneration = (int)!empty($data['use_auto_generation']);
+            $useAutoGeneration = (int)! empty($data['use_auto_generation']);
             $model->setUseAutoGeneration($useAutoGeneration);
             $model->save();
         }
@@ -252,6 +275,7 @@ class CartPriceRulesFixture extends Fixture
      *
      * @param int $ruleId
      * @param array $categoriesArray
+     *
      * @return array
      */
     public function generateAdvancedCondition($ruleId, $categoriesArray)
@@ -260,105 +284,107 @@ class CartPriceRulesFixture extends Fixture
         if ($ruleId < ($this->cartPriceRulesCount - 200)) {
             // Category
             $firstCondition = [
-                'type'      => \Magento\SalesRule\Model\Rule\Condition\Product::class,
+                'type' => Product::class,
                 'attribute' => 'category_ids',
-                'operator'  => '==',
-                'value'     => $categoriesArray[intdiv($ruleId, 4) % count($categoriesArray)][0],
+                'operator' => '==',
+                'value' => $categoriesArray[intdiv($ruleId, 4) % count($categoriesArray)][0],
             ];
 
             $subtotal = [0, 5, 10, 15];
             // Subtotal
             $secondCondition = [
-                'type'      => \Magento\SalesRule\Model\Rule\Condition\Address::class,
+                'type' => Address::class,
                 'attribute' => 'base_subtotal',
-                'operator'  => '>=',
-                'value'     => $subtotal[$ruleId % 4],
+                'operator' => '>=',
+                'value' => $subtotal[$ruleId % 4],
             ];
 
             return [
                 'conditions' => [
                     1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
+                        'type' => Combine::class,
                         'aggregator' => 'all',
                         'value' => '1',
                         'new_child' => '',
                     ],
-                    '1--1'=> [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Found::class,
+                    '1--1' => [
+                        'type' => Found::class,
                         'aggregator' => 'all',
                         'value' => '1',
                         'new_child' => '',
                     ],
                     '1--1--1' => $firstCondition,
-                    '1--2' => $secondCondition
+                    '1--2' => $secondCondition,
                 ],
                 'actions' => [
                     1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Combine::class,
+                        'type' => Product\Combine::class,
                         'aggregator' => 'all',
                         'value' => '1',
                         'new_child' => '',
                     ],
-                ]
-            ];
-        } else {
-            // Shipping Region
-            $regions = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
-                'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois',
-                'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts',
-                'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
-                'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
-                'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
-                'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
-                'Wisconsin', 'Wyoming'];
-            $firstCondition = [
-                'type'      => \Magento\SalesRule\Model\Rule\Condition\Address::class,
-                'attribute' => 'region',
-                'operator'  => '==',
-                'value'     => $regions[intdiv($ruleId, 4) % 50],
-            ];
-
-            $subtotals = [0, 5, 10, 15];
-            // Subtotal
-            $secondCondition = [
-                'type'      => \Magento\SalesRule\Model\Rule\Condition\Address::class,
-                'attribute' => 'base_subtotal',
-                'operator'  => '>=',
-                'value'     => $subtotals[$ruleId % 4],
-            ];
-            return [
-                'conditions' => [
-                    1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Combine::class,
-                        'aggregator' => 'all',
-                        'value' => '1',
-                        'new_child' => '',
-                    ],
-                    '1--1' => $firstCondition,
-                    '1--2' => $secondCondition
                 ],
-                'actions' => [
-                    1 => [
-                        'type' => \Magento\SalesRule\Model\Rule\Condition\Product\Combine::class,
-                        'aggregator' => 'all',
-                        'value' => '1',
-                        'new_child' => '',
-                    ],
-                ]
             ];
         }
+        // Shipping Region
+        $regions = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut',
+            'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois',
+            'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts',
+            'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada',
+            'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
+            'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota',
+            'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia',
+            'Wisconsin', 'Wyoming'];
+        $firstCondition = [
+            'type' => Address::class,
+            'attribute' => 'region',
+            'operator' => '==',
+            'value' => $regions[intdiv($ruleId, 4) % 50],
+        ];
+
+        $subtotals = [0, 5, 10, 15];
+        // Subtotal
+        $secondCondition = [
+            'type' => Address::class,
+            'attribute' => 'base_subtotal',
+            'operator' => '>=',
+            'value' => $subtotals[$ruleId % 4],
+        ];
+
+        return [
+            'conditions' => [
+                1 => [
+                    'type' => Combine::class,
+                    'aggregator' => 'all',
+                    'value' => '1',
+                    'new_child' => '',
+                ],
+                '1--1' => $firstCondition,
+                '1--2' => $secondCondition,
+            ],
+            'actions' => [
+                1 => [
+                    'type' => Product\Combine::class,
+                    'aggregator' => 'all',
+                    'value' => '1',
+                    'new_child' => '',
+                ],
+            ],
+        ];
     }
 
     /**
      * Generate advanced rules.
      *
-     * @param \Magento\SalesRule\Model\RuleFactory $ruleFactory
+     * @param RuleFactory $ruleFactory
      * @param array $categoriesArray
+     *
      * @return void
      */
     public function generateAdvancedRules($ruleFactory, $categoriesArray)
     {
         $j = 0;
+
         for ($i = 0; $i < $this->cartPriceRulesCount; $i++) {
             if ($i < ($this->cartPriceRulesCount - 200)) {
                 $ruleName = sprintf('Cart Price Advanced Catalog Rule %1$d', $j);
@@ -367,35 +393,35 @@ class CartPriceRulesFixture extends Fixture
             }
             $j++;
             $data = [
-                'rule_id'               => null,
-                'product_ids'           => '',
-                'name'                  => $ruleName,
-                'description'           => '',
-                'is_active'             => '1',
-                'website_ids'           => $categoriesArray[$i % count($categoriesArray)][1],
-                'customer_group_ids'    => [
+                'rule_id' => null,
+                'product_ids' => '',
+                'name' => $ruleName,
+                'description' => '',
+                'is_active' => '1',
+                'website_ids' => $categoriesArray[$i % count($categoriesArray)][1],
+                'customer_group_ids' => [
                     0 => '0',
                     1 => '1',
                     2 => '2',
                     3 => '3',
                 ],
-                'coupon_type'           => '1',
-                'coupon_code'           => '',
-                'uses_per_customer'     => '',
-                'from_date'             => '',
-                'to_date'               => '',
-                'sort_order'            => '50',
-                'is_rss'                => '1',
-                'rule'                  => $this->generateAdvancedCondition($i, $categoriesArray),
-                'simple_action'             => 'cart_fixed',
-                'discount_amount'           => '1',
-                'discount_qty'              => '0',
-                'discount_step'             => '',
-                'apply_to_shipping'         => '0',
-                'simple_free_shipping'      => '0',
-                'stop_rules_processing'     => '0',
-                'reward_points_delta'       => '',
-                'store_labels'              => [
+                'coupon_type' => '1',
+                'coupon_code' => '',
+                'uses_per_customer' => '',
+                'from_date' => '',
+                'to_date' => '',
+                'sort_order' => '50',
+                'is_rss' => '1',
+                'rule' => $this->generateAdvancedCondition($i, $categoriesArray),
+                'simple_action' => 'cart_fixed',
+                'discount_amount' => '1',
+                'discount_qty' => '0',
+                'discount_step' => '',
+                'apply_to_shipping' => '0',
+                'simple_free_shipping' => '0',
+                'stop_rules_processing' => '0',
+                'reward_points_delta' => '',
+                'store_labels' => [
                     0 => '',
                     1 => '',
                     2 => '',
@@ -409,26 +435,29 @@ class CartPriceRulesFixture extends Fixture
                     10 => '',
                     11 => '',
                 ],
-                'page'                      => '1',
-                'limit'                     => '20',
-                'in_banners'                => '',
-                'banner_id'                 => [
-                    'from'  => '',
-                    'to'    => '',
+                'page' => '1',
+                'limit' => '20',
+                'in_banners' => '',
+                'banner_id' => [
+                    'from' => '',
+                    'to' => '',
                 ],
-                'banner_name'               => '',
-                'visible_in'                => '',
-                'banner_is_enabled'         => '',
-                'related_banners'           => [],
+                'banner_name' => '',
+                'visible_in' => '',
+                'banner_is_enabled' => '',
+                'related_banners' => [],
             ];
-            if (isset($data['simple_action']) && $data['simple_action'] == 'cart_fixed'
+
+            if (isset($data['simple_action']) && $data['simple_action'] === 'cart_fixed'
                 && isset($data['discount_amount'])
             ) {
                 $data['discount_amount'] = min(1, $data['discount_amount']);
             }
+
             if (isset($data['rule']['conditions'])) {
                 $data['conditions'] = $data['rule']['conditions'];
             }
+
             if (isset($data['rule']['actions'])) {
                 $data['actions'] = $data['rule']['actions'];
             }
@@ -436,14 +465,14 @@ class CartPriceRulesFixture extends Fixture
 
             $model = $ruleFactory->create();
             $model->loadPost($data);
-            $useAutoGeneration = (int)!empty($data['use_auto_generation']);
+            $useAutoGeneration = (int)! empty($data['use_auto_generation']);
             $model->setUseAutoGeneration($useAutoGeneration);
             $model->save();
         }
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getActionTitle()
     {
@@ -451,12 +480,12 @@ class CartPriceRulesFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function introduceParamLabels()
     {
         return [
-            'cart_price_rules' => 'Cart Price Rules'
+            'cart_price_rules' => 'Cart Price Rules',
         ];
     }
 }

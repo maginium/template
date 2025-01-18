@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,14 +9,15 @@
 
 namespace Magento\Setup\Model;
 
-use Symfony\Component\Console\Application;
+use Laminas\ServiceManager\ServiceLocatorInterface;
 use Magento\Framework\Console\CommandListInterface;
 use Magento\Framework\ObjectManagerInterface;
-use Laminas\ServiceManager\ServiceLocatorInterface;
+use Magento\Setup\Exception;
 use Magento\Setup\Mvc\Bootstrap\InitParamListener;
+use Symfony\Component\Console\Application;
 
 /**
- * Object manager provider
+ * Object manager provider.
  *
  * Links Laminas Framework's service locator and Magento object manager.
  * Guaranties single object manager per application run.
@@ -42,7 +46,7 @@ class ObjectManagerProvider
      */
     public function __construct(
         ServiceLocatorInterface $serviceLocator,
-        Bootstrap $bootstrap
+        Bootstrap $bootstrap,
     ) {
         $this->serviceLocator = $serviceLocator;
         $this->bootstrap = $bootstrap;
@@ -51,35 +55,23 @@ class ObjectManagerProvider
     /**
      * Retrieve object manager.
      *
+     * @throws Exception
+     *
      * @return ObjectManagerInterface
-     * @throws \Magento\Setup\Exception
      */
     public function get()
     {
-        if (null === $this->objectManager) {
+        if ($this->objectManager === null) {
             $initParams = $this->serviceLocator->get(InitParamListener::BOOTSTRAP_PARAM);
             $factory = $this->getObjectManagerFactory($initParams);
             $this->objectManager = $factory->create($initParams);
-            if (PHP_SAPI == 'cli') {
+
+            if (PHP_SAPI === 'cli') {
                 $this->createCliCommands();
             }
         }
-        return $this->objectManager;
-    }
 
-    /**
-     * Creates cli commands and initialize them with application instance
-     *
-     * @return void
-     */
-    private function createCliCommands()
-    {
-        /** @var CommandListInterface $commandList */
-        $commandList = $this->objectManager->create(CommandListInterface::class);
-        $application = $this->serviceLocator->get(Application::class);
-        foreach ($commandList->getCommands() as $command) {
-            $application->add($command);
-        }
+        return $this->objectManager;
     }
 
     /**
@@ -93,9 +85,10 @@ class ObjectManagerProvider
     }
 
     /**
-     * Sets object manager
+     * Sets object manager.
      *
      * @param ObjectManagerInterface $objectManager
+     *
      * @return void
      */
     public function setObjectManager(ObjectManagerInterface $objectManager)
@@ -104,16 +97,33 @@ class ObjectManagerProvider
     }
 
     /**
-     * Returns ObjectManagerFactory
+     * Returns ObjectManagerFactory.
      *
      * @param array $initParams
+     *
      * @return \Magento\Framework\App\ObjectManagerFactory
      */
     public function getObjectManagerFactory($initParams = [])
     {
         return $this->bootstrap->createObjectManagerFactory(
             BP,
-            $initParams
+            $initParams,
         );
+    }
+
+    /**
+     * Creates cli commands and initialize them with application instance.
+     *
+     * @return void
+     */
+    private function createCliCommands()
+    {
+        /** @var CommandListInterface $commandList */
+        $commandList = $this->objectManager->create(CommandListInterface::class);
+        $application = $this->serviceLocator->get(Application::class);
+
+        foreach ($commandList->getCommands() as $command) {
+            $application->add($command);
+        }
     }
 }

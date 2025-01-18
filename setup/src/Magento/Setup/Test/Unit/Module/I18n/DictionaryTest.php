@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -19,13 +20,10 @@ class DictionaryTest extends TestCase
      */
     protected $_dictionary;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->_dictionary = $objectManagerHelper->getObject(Dictionary::class);
-    }
-
-    public function testPhraseCollecting()
+    /**
+     * @test
+     */
+    public function phraseCollecting()
     {
         $phraseFirstMock = $this->createMock(Phrase::class);
         $phraseSecondMock = $this->createMock(Phrase::class);
@@ -36,7 +34,10 @@ class DictionaryTest extends TestCase
         $this->assertEquals([$phraseFirstMock, $phraseSecondMock], $this->_dictionary->getPhrases());
     }
 
-    public function testGetDuplicates()
+    /**
+     * @test
+     */
+    public function getDuplicates()
     {
         $phraseFirstMock = $this->createMock(Phrase::class);
         $phraseFirstMock->expects($this->once())->method('getKey')->willReturn('key_1');
@@ -50,5 +51,11 @@ class DictionaryTest extends TestCase
         $this->_dictionary->addPhrase($phraseThirdMock);
 
         $this->assertEquals([[$phraseFirstMock, $phraseSecondMock]], $this->_dictionary->getDuplicates());
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->_dictionary = $objectManagerHelper->getObject(Dictionary::class);
     }
 }

@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -9,16 +11,17 @@ namespace Magento\Setup\Module\Di\Code;
 
 use Magento\Framework\Code\Generator as FrameworkGenerator;
 use Magento\Framework\Code\Generator\DefinedClasses;
+use Magento\Framework\Code\Generator\Io;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\ObjectManagerInterface;
 
 /**
- * Class Generator
- * @package Magento\Setup\Module\Di\Code
+ * Class Generator.
  */
 class Generator extends FrameworkGenerator
 {
     /**
-     * List of class methods
+     * List of class methods.
      *
      * @var array
      */
@@ -26,40 +29,27 @@ class Generator extends FrameworkGenerator
 
     /**
      * @param ObjectManagerInterface $objectManagerInterface
-     * @param FrameworkGenerator\Io $ioObject
+     * @param Io $ioObject
      * @param array $generatedEntities
      * @param DefinedClasses $definedClasses
      */
     public function __construct(
         ObjectManagerInterface $objectManagerInterface,
-        \Magento\Framework\Code\Generator\Io $ioObject = null,
+        ?Io $ioObject = null,
         array $generatedEntities = [],
-        DefinedClasses $definedClasses = null
+        ?DefinedClasses $definedClasses = null,
     ) {
         parent::__construct($ioObject, $generatedEntities, $definedClasses);
         $this->setObjectManager($objectManagerInterface);
     }
 
     /**
-     * Create entity generator
-     *
-     * @param string $generatorClass
-     * @param string $entityName
-     * @param string $className
-     * @return \Magento\Framework\Code\Generator\EntityAbstract
-     */
-    protected function createGeneratorInstance($generatorClass, $entityName, $className)
-    {
-        $generatorClass = parent::createGeneratorInstance($generatorClass, $entityName, $className);
-        $generatorClass->setInterceptedMethods($this->classMethods);
-        return $generatorClass;
-    }
-
-    /**
-     * Generates list of classes
+     * Generates list of classes.
      *
      * @param array $classesToGenerate
-     * @throws \Magento\Framework\Exception\LocalizedException
+     *
+     * @throws LocalizedException
+     *
      * @return void
      */
     public function generateList($classesToGenerate)
@@ -72,9 +62,27 @@ class Generator extends FrameworkGenerator
     }
 
     /**
-     * Sets class methods
+     * Create entity generator.
+     *
+     * @param string $generatorClass
+     * @param string $entityName
+     * @param string $className
+     *
+     * @return \Magento\Framework\Code\Generator\EntityAbstract
+     */
+    protected function createGeneratorInstance($generatorClass, $entityName, $className)
+    {
+        $generatorClass = parent::createGeneratorInstance($generatorClass, $entityName, $className);
+        $generatorClass->setInterceptedMethods($this->classMethods);
+
+        return $generatorClass;
+    }
+
+    /**
+     * Sets class methods.
      *
      * @param array $methods
+     *
      * @return void
      */
     private function setClassMethods($methods)
@@ -83,7 +91,8 @@ class Generator extends FrameworkGenerator
     }
 
     /**
-     * Clear class methods
+     * Clear class methods.
+     *
      * @return void
      */
     private function clearClassMethods()

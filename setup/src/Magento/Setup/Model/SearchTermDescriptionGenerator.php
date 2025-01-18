@@ -1,12 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
+use Magento\Setup\Model\Description\DescriptionGenerator;
+
 /**
- * Class SearchTermDescriptionGenerator
+ * Class SearchTermDescriptionGenerator.
  *
  * Class responsible for generation description
  * and applying search terms to it
@@ -14,12 +20,12 @@ namespace Magento\Setup\Model;
 class SearchTermDescriptionGenerator implements DescriptionGeneratorInterface
 {
     /**
-     * @var \Magento\Setup\Model\Description\DescriptionGenerator
+     * @var DescriptionGenerator
      */
     private $descriptionGenerator;
 
     /**
-     * @var \Magento\Setup\Model\SearchTermManager
+     * @var SearchTermManager
      */
     private $searchTermManager;
 
@@ -29,35 +35,37 @@ class SearchTermDescriptionGenerator implements DescriptionGeneratorInterface
     private $cachedDescription;
 
     /**
-     * @param \Magento\Setup\Model\Description\DescriptionGenerator $descriptionGenerator
-     * @param \Magento\Setup\Model\SearchTermManager $searchTermManager
+     * @param DescriptionGenerator $descriptionGenerator
+     * @param SearchTermManager $searchTermManager
      */
     public function __construct(
-        \Magento\Setup\Model\Description\DescriptionGenerator $descriptionGenerator,
-        \Magento\Setup\Model\SearchTermManager $searchTermManager
+        DescriptionGenerator $descriptionGenerator,
+        SearchTermManager $searchTermManager,
     ) {
         $this->descriptionGenerator = $descriptionGenerator;
         $this->searchTermManager = $searchTermManager;
     }
 
     /**
-     * Generate description with search terms
+     * Generate description with search terms.
      *
      * @param int $currentProductIndex
+     *
      * @return string
      */
     public function generate($currentProductIndex)
     {
         $description = $this->getDescription();
-        $this->searchTermManager->applySearchTermsToDescription($description, (int) $currentProductIndex);
+        $this->searchTermManager->applySearchTermsToDescription($description, (int)$currentProductIndex);
 
         return $description;
     }
 
     /**
-     * Generate new description or use cached one
+     * Generate new description or use cached one.
      *
      * @param bool $useCachedDescription
+     *
      * @return string
      */
     private function getDescription($useCachedDescription = true)

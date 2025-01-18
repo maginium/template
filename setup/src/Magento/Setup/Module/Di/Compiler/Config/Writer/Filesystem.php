@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -11,7 +13,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Setup\Module\Di\Compiler\Config\WriterInterface;
 
 /**
- * Class for writing DI Compiler Configuration
+ * Class for writing DI Compiler Configuration.
  *
  * @deprecated Moved to Framework to allow broader reuse
  * @see \Magento\Framework\App\ObjectManager\ConfigWriter\Filesystem
@@ -24,7 +26,7 @@ class Filesystem implements WriterInterface
     private $directoryList;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param DirectoryList $directoryList
      */
@@ -34,10 +36,11 @@ class Filesystem implements WriterInterface
     }
 
     /**
-     * Writes config in storage
+     * Writes config in storage.
      *
      * @param string $key
      * @param array $config
+     *
      * @return void
      */
     public function write($key, array $config)
@@ -45,19 +48,19 @@ class Filesystem implements WriterInterface
         $this->initialize();
         $configuration = sprintf('<?php return %s;', var_export($config, true));
         file_put_contents(
-            $this->directoryList->getPath(DirectoryList::GENERATED_METADATA) . '/' . $key  . '.php',
-            $configuration
+            $this->directoryList->getPath(DirectoryList::GENERATED_METADATA) . '/' . $key . '.php',
+            $configuration,
         );
     }
 
     /**
-     * Initializes writer
+     * Initializes writer.
      *
      * @return void
      */
     private function initialize()
     {
-        if (!file_exists($this->directoryList->getPath(DirectoryList::GENERATED_METADATA))) {
+        if (! file_exists($this->directoryList->getPath(DirectoryList::GENERATED_METADATA))) {
             mkdir($this->directoryList->getPath(DirectoryList::GENERATED_METADATA));
         }
     }

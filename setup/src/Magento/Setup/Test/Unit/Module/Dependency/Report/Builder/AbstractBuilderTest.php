@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -31,22 +32,14 @@ class AbstractBuilderTest extends TestCase
      */
     protected $builder;
 
-    protected function setUp(): void
-    {
-        $this->dependenciesParserMock = $this->getMockForAbstractClass(ParserInterface::class);
-        $this->reportWriterMock = $this->getMockForAbstractClass(WriterInterface::class);
-
-        $this->builder = $this->getMockForAbstractClass(
-            AbstractBuilder::class,
-            ['dependenciesParser' => $this->dependenciesParserMock, 'reportWriter' => $this->reportWriterMock]
-        );
-    }
-
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongParseOptions
+     *
+     * @test
      */
-    public function testBuildWithWrongParseOptions($options)
+    public function buildWithWrongParseOptions($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Passed option section "parse" is wrong.');
@@ -63,9 +56,12 @@ class AbstractBuilderTest extends TestCase
 
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongWriteOptions
+     *
+     * @test
      */
-    public function testBuildWithWrongWriteOptions($options)
+    public function buildWithWrongWriteOptions($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Passed option section "write" is wrong.');
@@ -80,7 +76,10 @@ class AbstractBuilderTest extends TestCase
         return [[['parse' => [1, 2]]], [['parse' => [1, 2], 'write' => []]]];
     }
 
-    public function testBuild()
+    /**
+     * @test
+     */
+    public function build()
     {
         $options = [
             'parse' => ['files_for_parse' => [1, 2, 3]],
@@ -91,25 +90,36 @@ class AbstractBuilderTest extends TestCase
         $configMock = $this->getMockForAbstractClass(ConfigInterface::class);
 
         $this->dependenciesParserMock->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'parse'
+            'parse',
         )->with(
-            $options['parse']
+            $options['parse'],
         )->willReturn(
-            $parseResult
+            $parseResult,
         );
         $this->builder->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'buildData'
+            'buildData',
         )->with(
-            $parseResult
+            $parseResult,
         )->willReturn(
-            $configMock
+            $configMock,
         );
         $this->reportWriterMock->expects($this->once())->method('write')->with($options['write'], $configMock);
 
         $this->builder->build($options);
+    }
+
+    protected function setUp(): void
+    {
+        $this->dependenciesParserMock = $this->getMockForAbstractClass(ParserInterface::class);
+        $this->reportWriterMock = $this->getMockForAbstractClass(WriterInterface::class);
+
+        $this->builder = $this->getMockForAbstractClass(
+            AbstractBuilder::class,
+            ['dependenciesParser' => $this->dependenciesParserMock, 'reportWriter' => $this->reportWriterMock],
+        );
     }
 }

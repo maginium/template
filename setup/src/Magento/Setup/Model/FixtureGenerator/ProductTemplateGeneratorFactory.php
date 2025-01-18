@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,13 +9,14 @@
 
 namespace Magento\Setup\Model\FixtureGenerator;
 
+use InvalidArgumentException;
 use Magento\Bundle\Model\Product\Type as BundleType;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\ObjectManagerInterface;
 
 /**
- * Provide product template generator based on specified product type from fixture
+ * Provide product template generator based on specified product type from fixture.
  */
 class ProductTemplateGeneratorFactory
 {
@@ -40,16 +44,19 @@ class ProductTemplateGeneratorFactory
 
     /**
      * @param array $fixture
+     *
+     * @throws InvalidArgumentException
+     *
      * @return TemplateEntityGeneratorInterface
-     * @throws \InvalidArgumentException
      */
     public function create(array $fixture)
     {
-        $type = isset($fixture['type_id']) ? $fixture['type_id'] : Type::TYPE_SIMPLE;
-        if (!isset($this->templateEntityMap[$type])) {
-            throw new \InvalidArgumentException(sprintf(
+        $type = $fixture['type_id'] ?? Type::TYPE_SIMPLE;
+
+        if (! isset($this->templateEntityMap[$type])) {
+            throw new InvalidArgumentException(sprintf(
                 'Cannot instantiate product template generator. Wrong type_id "%s" passed',
-                $type
+                $type,
             ));
         }
 

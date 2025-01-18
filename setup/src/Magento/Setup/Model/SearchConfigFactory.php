@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,8 +8,10 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Model;
 
+use Magento\Setup\Exception;
+
 /**
- * Creates instance of Magento\Setup\Model\SearchConfig class
+ * Creates instance of Magento\Setup\Model\SearchConfig class.
  */
 class SearchConfigFactory
 {
@@ -26,10 +29,11 @@ class SearchConfigFactory
     }
 
     /**
-     * Create SearchConfig instance
+     * Create SearchConfig instance.
+     *
+     * @throws Exception
      *
      * @return SearchConfig
-     * @throws \Magento\Setup\Exception
      */
     public function create(): SearchConfig
     {

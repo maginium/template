@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -56,6 +57,59 @@ class ReaderTest extends TestCase
      */
     protected $typeReader;
 
+    /**
+     * @test
+     */
+    public function generateCachePerScopeGlobal()
+    {
+        $definitionCollection = $this->getDefinitionsCollection();
+        $this->diContainerConfig->expects($this->any())
+            ->method('getVirtualTypes')
+            ->willReturn($this->getVirtualTypes());
+        $this->diContainerConfig->expects($this->any())
+            ->method('getPreferences')
+            ->willReturn($this->getPreferences());
+
+        $getResolvedConstructorArgumentsMap = $this->getResolvedVirtualConstructorArgumentsMap(
+            $definitionCollection,
+            $this->getVirtualTypes(),
+        );
+
+        $this->diContainerConfig->expects($this->any())
+            ->method('getInstanceType')
+            ->willReturnMap($this->getInstanceTypeMap($this->getVirtualTypes()));
+
+        $this->diContainerConfig->expects($this->any())
+            ->method('getPreference')
+            ->willReturnMap($this->getPreferencesMap());
+
+        $isConcreteMap = [];
+
+        foreach ($definitionCollection->getInstancesNamesList() as $instanceType) {
+            $isConcreteMap[] = [$instanceType, ! str_contains($instanceType, 'Interface')];
+
+            $getResolvedConstructorArgumentsMap[] = [
+                $instanceType,
+                $definitionCollection->getInstanceArguments($instanceType),
+                $this->getResolvedArguments(
+                    $definitionCollection->getInstanceArguments($instanceType),
+                ),
+            ];
+        }
+
+        $this->typeReader->expects($this->any())
+            ->method('isConcrete')
+            ->willReturnMap($isConcreteMap);
+        $this->argumentsResolver->expects($this->any())
+            ->method('getResolvedConstructorArguments')
+            ->willReturnMap($getResolvedConstructorArgumentsMap);
+
+        $this->assertEquals(
+            $this->getExpectedGlobalConfig(),
+            $this->model->generateCachePerScope($definitionCollection, Area::AREA_GLOBAL),
+        );
+    }
+
     protected function setUp(): void
     {
         $this->diContainerConfig =
@@ -78,56 +132,7 @@ class ReaderTest extends TestCase
             $this->configLoader,
             $this->argumentsResolverFactory,
             $this->classReaderDecorator,
-            $this->typeReader
-        );
-    }
-
-    public function testGenerateCachePerScopeGlobal()
-    {
-        $definitionCollection = $this->getDefinitionsCollection();
-        $this->diContainerConfig->expects($this->any())
-            ->method('getVirtualTypes')
-            ->willReturn($this->getVirtualTypes());
-        $this->diContainerConfig->expects($this->any())
-            ->method('getPreferences')
-            ->willReturn($this->getPreferences());
-
-        $getResolvedConstructorArgumentsMap = $this->getResolvedVirtualConstructorArgumentsMap(
-            $definitionCollection,
-            $this->getVirtualTypes()
-        );
-
-        $this->diContainerConfig->expects($this->any())
-            ->method('getInstanceType')
-            ->willReturnMap($this->getInstanceTypeMap($this->getVirtualTypes()));
-
-        $this->diContainerConfig->expects($this->any())
-            ->method('getPreference')
-            ->willReturnMap($this->getPreferencesMap());
-
-        $isConcreteMap = [];
-        foreach ($definitionCollection->getInstancesNamesList() as $instanceType) {
-            $isConcreteMap[] = [$instanceType, strpos($instanceType, 'Interface') === false];
-
-            $getResolvedConstructorArgumentsMap[] = [
-                $instanceType,
-                $definitionCollection->getInstanceArguments($instanceType),
-                $this->getResolvedArguments(
-                    $definitionCollection->getInstanceArguments($instanceType)
-                )
-            ];
-        }
-
-        $this->typeReader->expects($this->any())
-            ->method('isConcrete')
-            ->willReturnMap($isConcreteMap);
-        $this->argumentsResolver->expects($this->any())
-            ->method('getResolvedConstructorArguments')
-            ->willReturnMap($getResolvedConstructorArgumentsMap);
-
-        $this->assertEquals(
-            $this->getExpectedGlobalConfig(),
-            $this->model->generateCachePerScope($definitionCollection, Area::AREA_GLOBAL)
+            $this->typeReader,
         );
     }
 
@@ -140,7 +145,7 @@ class ReaderTest extends TestCase
             'arguments' => [
                 'ConcreteType1' => ['resolved_argument1', 'resolved_argument2'],
                 'ConcreteType2' => ['resolved_argument1', 'resolved_argument2'],
-                'virtualType1' => ['resolved_argument1', 'resolved_argument2']
+                'virtualType1' => ['resolved_argument1', 'resolved_argument2'],
             ],
             'preferences' => $this->getPreferences(),
             'instanceTypes' => $this->getVirtualTypes(),
@@ -152,7 +157,7 @@ class ReaderTest extends TestCase
      */
     private function getDefinitionsCollection()
     {
-        $definitionCollection = new Collection();
+        $definitionCollection = new Collection;
         $definitionCollection->addDefinition('ConcreteType1', ['argument1', 'argument2']);
         $definitionCollection->addDefinition('ConcreteType2', ['argument1', 'argument2']);
         $definitionCollection->addDefinition('Interface1', [null]);
@@ -175,7 +180,7 @@ class ReaderTest extends TestCase
     {
         return [
             'Interface1' => 'ConcreteType1',
-            'ThirdPartyInterface' => 'ConcreteType2'
+            'ThirdPartyInterface' => 'ConcreteType2',
         ];
     }
 
@@ -188,31 +193,32 @@ class ReaderTest extends TestCase
             ['ConcreteType1', 'ConcreteType1'],
             ['ConcreteType2', 'ConcreteType2'],
             ['Interface1', 'ConcreteType1'],
-            ['ThirdPartyInterface', 'ConcreteType2']
+            ['ThirdPartyInterface', 'ConcreteType2'],
         ];
     }
 
     /**
      * @param array $arguments
+     *
      * @return array|null
      */
     private function getResolvedArguments($arguments)
     {
         return empty($arguments) ? null : array_map(
-            function ($argument) {
-                return 'resolved_' . $argument;
-            },
-            $arguments
+            fn($argument) => 'resolved_' . $argument,
+            $arguments,
         );
     }
 
     /**
      * @param array $virtualTypes
+     *
      * @return array
      */
     private function getInstanceTypeMap($virtualTypes)
     {
         $getInstanceTypeMap = [];
+
         foreach ($virtualTypes as $virtualType => $concreteType) {
             $getInstanceTypeMap[] = [$virtualType, $concreteType];
         }
@@ -223,20 +229,23 @@ class ReaderTest extends TestCase
     /**
      * @param Collection $definitionCollection
      * @param array $virtualTypes
+     *
      * @return array
      */
     private function getResolvedVirtualConstructorArgumentsMap(Collection $definitionCollection, array $virtualTypes)
     {
         $getResolvedConstructorArgumentsMap = [];
+
         foreach ($virtualTypes as $virtualType => $concreteType) {
             $getResolvedConstructorArgumentsMap[] = [
                 $virtualType,
                 $definitionCollection->getInstanceArguments($concreteType),
                 $this->getResolvedArguments(
-                    $definitionCollection->getInstanceArguments($concreteType)
-                )
+                    $definitionCollection->getInstanceArguments($concreteType),
+                ),
             ];
         }
+
         return $getResolvedConstructorArgumentsMap;
     }
 }

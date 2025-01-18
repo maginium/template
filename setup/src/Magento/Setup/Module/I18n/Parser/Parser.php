@@ -1,19 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Parser;
 
+use DomainException;
+
 /**
- * Parser
+ * Parser.
  */
 class Parser extends AbstractParser
 {
     /**
-     * Parse one type
+     * Parse one type.
      *
      * @param array $options
+     *
      * @return void
      */
     protected function _parseByTypeOptions($options)
@@ -29,9 +36,10 @@ class Parser extends AbstractParser
     }
 
     /**
-     * Add phrase
+     * Add phrase.
      *
      * @param array $phraseData
+     *
      * @return void
      */
     protected function _addPhrase($phraseData)
@@ -43,11 +51,11 @@ class Parser extends AbstractParser
                 'quote' => $phraseData['quote'],
             ]);
             $this->_phrases[$phrase->getCompiledPhrase()] = $phrase;
-        } catch (\DomainException $e) {
-            throw new \DomainException(
+        } catch (DomainException $e) {
+            throw new DomainException(
                 "{$e->getMessage()} in {$phraseData['file']}:{$phraseData['line']}",
                 $e->getCode(),
-                $e
+                $e,
             );
         }
     }

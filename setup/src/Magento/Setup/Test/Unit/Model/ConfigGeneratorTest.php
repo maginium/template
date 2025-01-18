@@ -1,4 +1,5 @@
 <?php
+
 /***
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -43,6 +44,104 @@ class ConfigGeneratorTest extends TestCase
      */
     private $driverOptionsMock;
 
+    /**
+     * @test
+     */
+    public function createXFrameConfig()
+    {
+        $this->deploymentConfigMock->expects($this->atLeastOnce())
+            ->method('get')
+            ->with(ConfigOptionsListConstants::CONFIG_PATH_X_FRAME_OPT)
+            ->willReturn(null);
+
+        $this->configDataMock
+            ->expects($this->once())
+            ->method('set')
+            ->with(ConfigOptionsListConstants::CONFIG_PATH_X_FRAME_OPT, 'SAMEORIGIN');
+
+        $this->model->createXFrameConfig();
+    }
+
+    /**
+     * @test
+     */
+    public function createCacheHostsConfig()
+    {
+        $data = [ConfigOptionsListConstants::INPUT_KEY_CACHE_HOSTS => 'localhost:8080, website.com, 120.0.0.1:90'];
+        $expectedData = [
+            0 => [
+                'host' => 'localhost',
+                'port' => '8080',
+            ],
+            1 => [
+                'host' => 'website.com',
+            ],
+            2 => [
+                'host' => '120.0.0.1',
+                'port' => '90',
+            ],
+        ];
+
+        $this->configDataMock
+            ->expects($this->once())
+            ->method('set')
+            ->with(ConfigOptionsListConstants::CONFIG_PATH_CACHE_HOSTS, $expectedData);
+
+        $this->model->createCacheHostsConfig($data);
+    }
+
+    /**
+     * @test
+     */
+    public function createModeConfig()
+    {
+        $this->deploymentConfigMock->expects($this->once())
+            ->method('get')
+            ->with(State::PARAM_MODE)
+            ->willReturn(null);
+
+        $this->configDataMock
+            ->expects($this->once())
+            ->method('set')
+            ->with(State::PARAM_MODE, State::MODE_DEFAULT);
+
+        $this->model->createModeConfig();
+    }
+
+    /**
+     * @test
+     */
+    public function createModeConfigIfAlreadySet()
+    {
+        $this->deploymentConfigMock->expects($this->once())
+            ->method('get')
+            ->with(State::PARAM_MODE)
+            ->willReturn(State::MODE_PRODUCTION);
+        $configData = $this->model->createModeConfig();
+        $this->assertSame([], $configData->getData());
+    }
+
+    /**
+     * @test
+     */
+    public function createCryptKeyConfig()
+    {
+        $key = 'my-new-key';
+        $data = [ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => $key];
+
+        $this->deploymentConfigMock
+            ->method('get')
+            ->with(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY)
+            ->willReturn(null);
+
+        $this->configDataMock
+            ->expects($this->once())
+            ->method('set')
+            ->with(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, $key);
+
+        $this->model->createCryptConfig($data);
+    }
+
     protected function setUp(): void
     {
         $objectManager = new ObjectManager($this);
@@ -72,93 +171,10 @@ class ConfigGeneratorTest extends TestCase
         $this->model = $objectManager->getObject(
             ConfigGenerator::class,
             [
-                'deploymentConfig'  => $this->deploymentConfigMock,
+                'deploymentConfig' => $this->deploymentConfigMock,
                 'configDataFactory' => $configDataFactoryMock,
-                'driverOptions'     => $this->driverOptionsMock,
-            ]
+                'driverOptions' => $this->driverOptionsMock,
+            ],
         );
-    }
-
-    public function testCreateXFrameConfig()
-    {
-        $this->deploymentConfigMock->expects($this->atLeastOnce())
-            ->method('get')
-            ->with(ConfigOptionsListConstants::CONFIG_PATH_X_FRAME_OPT)
-            ->willReturn(null);
-
-        $this->configDataMock
-            ->expects($this->once())
-            ->method('set')
-            ->with(ConfigOptionsListConstants::CONFIG_PATH_X_FRAME_OPT, 'SAMEORIGIN');
-
-        $this->model->createXFrameConfig();
-    }
-
-    public function testCreateCacheHostsConfig()
-    {
-        $data = [ConfigOptionsListConstants::INPUT_KEY_CACHE_HOSTS => 'localhost:8080, website.com, 120.0.0.1:90'];
-        $expectedData = [
-            0 => [
-                'host' => 'localhost',
-                'port' => '8080',
-            ],
-            1 => [
-                'host' => 'website.com',
-            ],
-            2 => [
-                'host' => '120.0.0.1',
-                'port' => '90',
-            ],
-        ];
-
-        $this->configDataMock
-            ->expects($this->once())
-            ->method('set')
-            ->with(ConfigOptionsListConstants::CONFIG_PATH_CACHE_HOSTS, $expectedData);
-
-        $this->model->createCacheHostsConfig($data);
-    }
-
-    public function testCreateModeConfig()
-    {
-        $this->deploymentConfigMock->expects($this->once())
-            ->method('get')
-            ->with(State::PARAM_MODE)
-            ->willReturn(null);
-
-        $this->configDataMock
-            ->expects($this->once())
-            ->method('set')
-            ->with(State::PARAM_MODE, State::MODE_DEFAULT);
-
-        $this->model->createModeConfig();
-    }
-
-    public function testCreateModeConfigIfAlreadySet()
-    {
-        $this->deploymentConfigMock->expects($this->once())
-            ->method('get')
-            ->with(State::PARAM_MODE)
-            ->willReturn(State::MODE_PRODUCTION);
-        $configData = $this->model->createModeConfig();
-        $this->assertSame([], $configData->getData());
-    }
-
-    public function testCreateCryptKeyConfig()
-    {
-        $key = 'my-new-key';
-        $data = [ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => $key];
-
-        $this->deploymentConfigMock
-            ->method('get')
-            ->with(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY)
-            ->willReturn(null);
-
-        $this->configDataMock
-            ->expects($this->once())
-            ->method('set')
-            ->with(ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, $key);
-
-        $this->model->createCryptConfig($data);
     }
 }

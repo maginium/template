@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -26,7 +29,7 @@ class DataGenerator
     private $dictionaryData;
 
     /**
-     * Map of generated values
+     * Map of generated values.
      *
      * @var array
      */
@@ -45,24 +48,12 @@ class DataGenerator
     }
 
     /**
-     * Read data from file.
-     *
-     * @return void
-     */
-    protected function readData()
-    {
-        $f = fopen($this->dictionaryFile, 'r');
-        while (!feof($f) && is_array($line = fgetcsv($f))) {
-            $this->dictionaryData[] = $line[0];
-        }
-    }
-
-    /**
      * Generate string of random word data.
      *
      * @param int $minAmountOfWords
      * @param int $maxAmountOfWords
      * @param string|null $key
+     *
      * @return string
      */
     public function generate($minAmountOfWords, $maxAmountOfWords, $key = null)
@@ -72,7 +63,7 @@ class DataGenerator
         $numberOfWords = mt_rand($minAmountOfWords, $maxAmountOfWords);
         $result = '';
 
-        if ($key === null || !array_key_exists($key, $this->generatedValues)) {
+        if ($key === null || ! array_key_exists($key, $this->generatedValues)) {
             for ($i = 0; $i < $numberOfWords; $i++) {
                 // mt_rand() here is not for cryptographic use.
                 // phpcs:ignore Magento2.Security.InsecureFunction
@@ -86,6 +77,21 @@ class DataGenerator
         } else {
             $result = $this->generatedValues[$key];
         }
+
         return $result;
+    }
+
+    /**
+     * Read data from file.
+     *
+     * @return void
+     */
+    protected function readData()
+    {
+        $f = fopen($this->dictionaryFile, 'r');
+
+        while (! feof($f) && is_array($line = fgetcsv($f))) {
+            $this->dictionaryData[] = $line[0];
+        }
     }
 }

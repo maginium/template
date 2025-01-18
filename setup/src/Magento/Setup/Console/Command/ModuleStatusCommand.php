@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Command for displaying status of modules
+ * Command for displaying status of modules.
  */
 class ModuleStatusCommand extends AbstractSetupCommand
 {
@@ -36,41 +37,28 @@ class ModuleStatusCommand extends AbstractSetupCommand
     }
 
     /**
-     * @inheritdoc
-     */
-    protected function configure()
-    {
-        $this->setName('module:status')
-            ->setDescription('Displays status of modules')
-            ->addArgument(
-                'module-names',
-                InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
-                'Optional module name'
-            )
-            ->addOption('enabled', null, null, 'Print only enabled modules')
-            ->addOption('disabled', null, null, 'Print only disabled modules');
-        parent::configure();
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $moduleNames = $input->getArgument('module-names');
-        if (!empty($moduleNames)) {
+
+        if (! empty($moduleNames)) {
             foreach ($moduleNames as $moduleName) {
                 $this->showSpecificModule($moduleName, $output);
             }
+
             return Cli::RETURN_SUCCESS;
         }
 
         $onlyEnabled = $input->getOption('enabled');
+
         if ($onlyEnabled) {
             return $this->showEnabledModules($output);
         }
 
         $onlyDisabled = $input->getOption('disabled');
+
         if ($onlyDisabled) {
             return $this->showDisabledModules($output);
         }
@@ -79,7 +67,7 @@ class ModuleStatusCommand extends AbstractSetupCommand
         $this->showEnabledModules($output);
         $output->writeln('');
 
-        $output->writeln("<info>List of disabled modules:</info>");
+        $output->writeln('<info>List of disabled modules:</info>');
         $this->showDisabledModules($output);
         $output->writeln('');
 
@@ -87,71 +75,100 @@ class ModuleStatusCommand extends AbstractSetupCommand
     }
 
     /**
-     * Specific module show
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->setName('module:status')
+            ->setDescription('Displays status of modules')
+            ->addArgument(
+                'module-names',
+                InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
+                'Optional module name',
+            )
+            ->addOption('enabled', null, null, 'Print only enabled modules')
+            ->addOption('disabled', null, null, 'Print only disabled modules');
+        parent::configure();
+    }
+
+    /**
+     * Specific module show.
      *
      * @param string $moduleName
      * @param OutputInterface $output
+     *
      * @return int
      */
     private function showSpecificModule(string $moduleName, OutputInterface $output): int
     {
         $allModules = $this->getAllModules();
-        if (!in_array($moduleName, $allModules->getNames(), true)) {
+
+        if (! in_array($moduleName, $allModules->getNames(), true)) {
             $output->writeln($moduleName . ' : <error>Module does not exist</error>');
+
             return Cli::RETURN_FAILURE;
         }
 
         $enabledModules = $this->getEnabledModules();
+
         if (in_array($moduleName, $enabledModules->getNames(), true)) {
             $output->writeln($moduleName . ' : <info>Module is enabled</info>');
+
             return Cli::RETURN_FAILURE;
         }
 
         $output->writeln($moduleName . ' : <info> Module is disabled</info>');
+
         return Cli::RETURN_SUCCESS;
     }
 
     /**
-     * Enable modules show
+     * Enable modules show.
      *
      * @param OutputInterface $output
+     *
      * @return int
      */
     private function showEnabledModules(OutputInterface $output): int
     {
         $enabledModules = $this->getEnabledModules();
         $enabledModuleNames = $enabledModules->getNames();
+
         if (count($enabledModuleNames) === 0) {
             $output->writeln('None');
+
             return Cli::RETURN_FAILURE;
         }
 
-        $output->writeln(join("\n", $enabledModuleNames));
+        $output->writeln(implode("\n", $enabledModuleNames));
 
         return Cli::RETURN_SUCCESS;
     }
 
     /**
-     * Disabled modules show
+     * Disabled modules show.
      *
      * @param OutputInterface $output
+     *
      * @return int
      */
     private function showDisabledModules(OutputInterface $output): int
     {
         $disabledModuleNames = $this->getDisabledModuleNames();
+
         if (count($disabledModuleNames) === 0) {
             $output->writeln('None');
+
             return Cli::RETURN_FAILURE;
         }
 
-        $output->writeln(join("\n", $disabledModuleNames));
+        $output->writeln(implode("\n", $disabledModuleNames));
 
         return Cli::RETURN_SUCCESS;
     }
 
     /**
-     * Returns all modules
+     * Returns all modules.
      *
      * @return FullModuleList
      */
@@ -162,7 +179,7 @@ class ModuleStatusCommand extends AbstractSetupCommand
     }
 
     /**
-     * Returns enabled modules
+     * Returns enabled modules.
      *
      * @return ModuleList
      */
@@ -173,7 +190,7 @@ class ModuleStatusCommand extends AbstractSetupCommand
     }
 
     /**
-     * Returns disabled module names
+     * Returns disabled module names.
      *
      * @return array
      */

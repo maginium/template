@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,10 +14,10 @@ use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\CatalogUrlRewrite\Model\ProductUrlPathGenerator;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\ResourceModel\Store\CollectionFactory as StoreCollectionFactory;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory;
 
@@ -39,7 +42,7 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewriteFactory;
  *      'type_id' => value or callback in format function ($entityId, $entityIndex) {return type_id}
  *      'meta_keyword' => value or callback in format function ($entityId, $entityIndex) {return meta_keyword}
  *      'meta_title' => value or callback in format function ($entityId, $entityIndex) {return meta_title}
- * ]
+ * ].
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -125,7 +128,7 @@ class ProductGenerator
         StoreManagerInterface $storeManager,
         ProductTemplateGeneratorFactory $productTemplateGeneratorFactory,
         ScopeConfigInterface $scopeConfig,
-        $customTableMap = []
+        $customTableMap = [],
     ) {
         $this->productFactory = $productFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
@@ -139,20 +142,23 @@ class ProductGenerator
     }
 
     /**
-     * Generate simple products
+     * Generate simple products.
      *
      * @param int $products
      * @param array $fixtureMap
+     *
      * @return void
      */
     public function generate($products, $fixtureMap)
     {
         $this->initializeFixtureDefaultValues($fixtureMap);
         $attributeSets = [];
+
         // prepare attribute sets distribution for save products per attribute set
         for ($productNumber = 1; $productNumber <= $products; $productNumber++) {
             $attributeSetId = $this->getFixtureValue('attribute_set_id', $productNumber, $productNumber, $fixtureMap);
-            if (!isset($attributeSets[$attributeSetId])) {
+
+            if (! isset($attributeSets[$attributeSetId])) {
                 $attributeSets[$attributeSetId] = 0;
             }
             $attributeSets[$attributeSetId]++;
@@ -161,9 +167,7 @@ class ProductGenerator
         $customTableMap = [
             'url_rewrite' => [
                 'entity_id_field' => 'entity_id',
-                'handler' => function ($productId, $entityNumber, $fixture) {
-                    return $this->urlRewriteHandler($productId, $entityNumber, $fixture);
-                },
+                'handler' => fn($productId, $entityNumber, $fixture) => $this->urlRewriteHandler($productId, $entityNumber, $fixture),
             ],
             'catalog_category_product' => [
                 'fields' => [
@@ -178,87 +182,86 @@ class ProductGenerator
             ],
         ];
         $websiteIdsFixtures = $fixtureMap['website_ids'](1, 0);
+
         if (is_array($websiteIdsFixtures) && count($websiteIdsFixtures) === 1) {
             // Get website id from fixture in case when one site is assigned per product
             $customTableMap['catalog_product_website'] = [
                 'fields' => [
                     'website_id' => 'website_ids',
-                ]
+                ],
             ];
         }
         $generator = $this->entityGeneratorFactory->create(
             [
                 'entityType' => ProductInterface::class,
-                'customTableMap' => array_merge($customTableMap, $this->customTableMap)
-            ]
+                'customTableMap' => array_merge($customTableMap, $this->customTableMap),
+            ],
         );
+
         foreach ($attributeSets as $attributeSetId => $productsAmount) {
             $fixtureMap = array_merge($fixtureMap, ['attribute_set_id' => $attributeSetId]);
             $generator->generate(
                 $this->productTemplateGeneratorFactory->create($fixtureMap),
                 $productsAmount,
-                function ($productNumber, $entityNumber) use ($attributeSetId, $fixtureMap) {
+                function($productNumber, $entityNumber) use ($attributeSetId, $fixtureMap) {
                     // add additional attributes to fixture for fulfill it during product generation
                     return array_merge(
                         $fixtureMap,
-                        $fixtureMap['additional_attributes']($attributeSetId, $productNumber, $entityNumber)
+                        $fixtureMap['additional_attributes']($attributeSetId, $productNumber, $entityNumber),
                     );
-                }
+                },
             );
         }
     }
 
     /**
-     * Initialize fixture default values
+     * Initialize fixture default values.
      *
      * @param array $fixture
+     *
      * @return void
      */
     private function initializeFixtureDefaultValues(array &$fixture)
     {
         $defaultValues = [
-            'attribute_set_id' => function () {
-                return $this->productFactory->create()->getDefaultAttributeSetId();
-            },
-            'additional_attributes' => function () {
-                return [];
-            },
-            'url_key' => function ($productId, $entityNumber) use ($fixture) {
-                return strtolower(str_replace(' ', '-', $fixture['sku']($productId, $entityNumber)));
-            },
-            'website_ids' => function () {
-                return $this->storeManager->getDefaultStoreView()->getWebsiteId();
-            },
+            'attribute_set_id' => fn() => $this->productFactory->create()->getDefaultAttributeSetId(),
+            'additional_attributes' => fn() => [],
+            'url_key' => fn($productId, $entityNumber) => mb_strtolower(str_replace(' ', '-', $fixture['sku']($productId, $entityNumber))),
+            'website_ids' => fn() => $this->storeManager->getDefaultStoreView()->getWebsiteId(),
             'status' => Status::STATUS_ENABLED,
         ];
+
         foreach ($defaultValues as $fixtureKey => $value) {
-            if (!isset($fixture[$fixtureKey])) {
+            if (! isset($fixture[$fixtureKey])) {
                 $fixture[$fixtureKey] = $value;
             }
         }
     }
 
     /**
-     * Get fixture value
+     * Get fixture value.
      *
      * @param string $fixtureKey
      * @param int $productId
      * @param int $entityNumber
      * @param array $fixtureMap
+     *
      * @return mixed|string
      */
     private function getFixtureValue($fixtureKey, $productId, $entityNumber, $fixtureMap)
     {
-        $fixtureValue = isset($fixtureMap[$fixtureKey]) ? $fixtureMap[$fixtureKey] : null;
+        $fixtureValue = $fixtureMap[$fixtureKey] ?? null;
+
         return $fixtureValue ? $this->getBindValue($fixtureValue, $productId, $entityNumber) : '';
     }
 
     /**
-     * Get bind value
+     * Get bind value.
      *
      * @param callable|mixed $fixtureValue
      * @param int $productId
      * @param int $entityNumber
+     *
      * @return mixed
      */
     private function getBindValue($fixtureValue, $productId, $entityNumber)
@@ -269,13 +272,15 @@ class ProductGenerator
     }
 
     /**
-     * Handle generation sql query for url rewrite
+     * Handle generation sql query for url rewrite.
      *
      * @param int $productId
      * @param int $entityNumber
      * @param array $fixtureMap
-     * @return array
+     *
      * @throws LocalizedException
+     *
+     * @return array
      */
     private function urlRewriteHandler($productId, $entityNumber, $fixtureMap)
     {
@@ -296,7 +301,8 @@ class ProductGenerator
 
         if (isset($fixtureMap['category_ids']) && $this->isCategoryProductUrlRewriteGenerationEnabled()) {
             $categoryId = $fixtureMap['category_ids']($productId, $entityNumber);
-            if (!isset($this->categories[$categoryId])) {
+
+            if (! isset($this->categories[$categoryId])) {
                 $this->categories[$categoryId] = $this->categoryCollectionFactory
                     ->create()
                     ->addIdFilter($categoryId)
@@ -311,12 +317,13 @@ class ProductGenerator
         }
 
         foreach ($websiteIds as $websiteId) {
-            if (!isset($this->storesPerWebsite[$websiteId])) {
+            if (! isset($this->storesPerWebsite[$websiteId])) {
                 $this->storesPerWebsite[$websiteId] = $this->storeCollectionFactory
                     ->create()
                     ->addWebsiteFilter($websiteId)
                     ->getAllIds();
             }
+
             foreach ($binds as $bind) {
                 foreach ($this->storesPerWebsite[$websiteId] as $storeId) {
                     $bindWithStore = $bind;
@@ -331,25 +338,27 @@ class ProductGenerator
     }
 
     /**
-     * Get url suffix per store for product
+     * Get url suffix per store for product.
      *
      * @param int $storeId
+     *
      * @return string
      */
     private function getUrlSuffix($storeId)
     {
-        if (!isset($this->productUrlSuffix[$storeId])) {
+        if (! isset($this->productUrlSuffix[$storeId])) {
             $this->productUrlSuffix[$storeId] = $this->scopeConfig->getValue(
                 ProductUrlPathGenerator::XML_PATH_PRODUCT_URL_SUFFIX,
                 ScopeInterface::SCOPE_STORE,
-                $storeId
+                $storeId,
             );
         }
+
         return $this->productUrlSuffix[$storeId];
     }
 
     /**
-     * Check config value of generate_category_product_rewrites
+     * Check config value of generate_category_product_rewrites.
      *
      * @return bool
      */

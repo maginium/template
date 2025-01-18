@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -19,12 +20,22 @@ class ClassesScannerTest extends TestCase
     private $model;
 
     /**
-     * the /var/generation directory realpath
+     * the /var/generation directory realpath.
      *
      * @var string
      */
-
     private $generation;
+
+    /**
+     * @test
+     */
+    public function getList()
+    {
+        $pathToScan = str_replace('\\', '/', realpath(__DIR__ . '/../../') . '/_files/app/code/Magento/SomeModule');
+        $actual = $this->model->getList($pathToScan);
+        $this->assertIsArray($actual);
+        $this->assertCount(7, $actual);
+    }
 
     protected function setUp(): void
     {
@@ -32,17 +43,9 @@ class ClassesScannerTest extends TestCase
         $mock = $this->getMockBuilder(DirectoryList::class)
             ->disableOriginalConstructor()
             ->onlyMethods(
-                ['getPath']
+                ['getPath'],
             )->getMock();
         $mock->method('getPath')->willReturn($this->generation);
         $this->model = new ClassesScanner([], $mock);
-    }
-
-    public function testGetList()
-    {
-        $pathToScan = str_replace('\\', '/', realpath(__DIR__ . '/../../') . '/_files/app/code/Magento/SomeModule');
-        $actual = $this->model->getList($pathToScan);
-        $this->assertIsArray($actual);
-        $this->assertCount(7, $actual);
     }
 }

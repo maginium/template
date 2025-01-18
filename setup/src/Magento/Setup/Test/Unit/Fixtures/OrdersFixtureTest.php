@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -22,7 +23,6 @@ use PHPUnit\Framework\TestCase;
 
 class OrdersFixtureTest extends TestCase
 {
-
     /**
      * @var MockObject|FixtureModel
      */
@@ -33,14 +33,17 @@ class OrdersFixtureTest extends TestCase
      */
     private $model;
 
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $storeManagerMock = $this->getMockBuilder(StoreManagerInterface::class)
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
         $productCollectionFactoryMock = $this->getMockBuilder(
-            CollectionFactory::class
+            CollectionFactory::class,
         )
             ->disableOriginalConstructor()
             ->getMock();
@@ -72,7 +75,7 @@ class OrdersFixtureTest extends TestCase
             $optionRepositoryMock,
             $linkManagementMock,
             $serializerMock,
-            $this->fixtureModelMock
+            $this->fixtureModelMock,
         );
 
         $orderMock = $this->getMockBuilder(Order::class)
@@ -89,13 +92,13 @@ class OrdersFixtureTest extends TestCase
             ->willReturn($orderMock);
         $orderMock->expects($this->once())
             ->method('getTable')
-            ->willReturn(strtolower($name) . '_table_name');
+            ->willReturn(mb_strtolower($name) . '_table_name');
         $orderMock->expects($this->once())
             ->method('query')
             ->willReturn($orderMock);
         $orderMock->expects($this->once())
             ->method('getTableName')
-            ->willReturn(strtolower($name) . '_table_name');
+            ->willReturn(mb_strtolower($name) . '_table_name');
 
         $objectManagerMock = $this->createMock(ObjectManager::class);
         $objectManagerMock->expects($this->atLeastOnce())

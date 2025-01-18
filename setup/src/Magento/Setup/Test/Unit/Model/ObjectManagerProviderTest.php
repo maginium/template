@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -20,7 +21,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 
 /**
- * Test for \Magento\Setup\Model\ObjectManagerProvider
+ * Test for \Magento\Setup\Model\ObjectManagerProvider.
  */
 class ObjectManagerProviderTest extends TestCase
 {
@@ -39,15 +40,10 @@ class ObjectManagerProviderTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->serviceLocatorMock = $this->getMockForAbstractClass(ServiceLocatorInterface::class);
-        $this->bootstrapMock = $this->createMock(Bootstrap::class);
-
-        $this->model = new ObjectManagerProvider($this->serviceLocatorMock, $this->bootstrapMock);
-    }
-
-    public function testGet()
+    /**
+     * @test
+     */
+    public function get()
     {
         $initParams = ['param' => 'value'];
         $commands = [
@@ -69,7 +65,7 @@ class ObjectManagerProviderTest extends TestCase
                         Application::class,
                         $application,
                     ],
-                ]
+                ],
             );
 
         $commandListMock = $this->getMockForAbstractClass(CommandListInterface::class);
@@ -101,5 +97,13 @@ class ObjectManagerProviderTest extends TestCase
         foreach ($commands as $command) {
             $this->assertSame($application, $command->getApplication());
         }
+    }
+
+    protected function setUp(): void
+    {
+        $this->serviceLocatorMock = $this->getMockForAbstractClass(ServiceLocatorInterface::class);
+        $this->bootstrapMock = $this->createMock(Bootstrap::class);
+
+        $this->model = new ObjectManagerProvider($this->serviceLocatorMock, $this->bootstrapMock);
     }
 }

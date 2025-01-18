@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,10 @@
 
 namespace Magento\Setup\Module\I18n\Parser\Adapter;
 
+use SimpleXMLElement;
+
 /**
- * Xml parser adapter
+ * Xml parser adapter.
  *
  * Parse "translate" and 'translatable' node and collect phrases:
  * - from itself, it @translate or @translatable == true
@@ -16,16 +21,17 @@ namespace Magento\Setup\Module\I18n\Parser\Adapter;
 class Xml extends AbstractAdapter
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function _parse()
     {
         foreach ($this->_getNodes($this->_file) as $key => $element) {
-            if (!$element instanceof \SimpleXMLElement) {
+            if (! $element instanceof SimpleXMLElement) {
                 continue;
             }
 
             $attributes = $element->attributes();
+
             if ((string)$attributes['translate'] === 'true' || (string)$attributes['translatable'] === 'true') {
                 $this->_addPhrase((string)$element);
             } elseif ($key === 'title') {
@@ -37,9 +43,10 @@ class Xml extends AbstractAdapter
     }
 
     /**
-     * Get nodes with translation
+     * Get nodes with translation.
      *
      * @param string $file
+     *
      * @return array
      */
     protected function _getNodes($file)
@@ -47,14 +54,17 @@ class Xml extends AbstractAdapter
         libxml_use_internal_errors(true);
         $xml = simplexml_load_file($file);
         libxml_use_internal_errors(false);
+
         if ($xml) {
             $nodes = $xml->xpath('//*[@translate|@translatable]');
-            /* To add title of all xml files in translation csv */
+
+            // To add title of all xml files in translation csv
             if ($xml->head) {
-                $nodes['title'] =  $xml->head;
+                $nodes['title'] = $xml->head;
             }
 
             unset($xml);
+
             return is_array($nodes) ? $nodes : [];
         }
 
@@ -64,21 +74,26 @@ class Xml extends AbstractAdapter
     /**
      * Parse nodes pointed out in attribute "translate" and add phrases from them.
      *
-     * @param \SimpleXMLElement $attributes
-     * @param \SimpleXMLElement $element
+     * @param SimpleXMLElement $attributes
+     * @param SimpleXMLElement $element
+     *
      * @return void
      */
-    private function parseTranslatableNodes(\SimpleXMLElement $attributes, \SimpleXMLElement $element)
+    private function parseTranslatableNodes(SimpleXMLElement $attributes, SimpleXMLElement $element)
     {
-        $nodesDelimiter = strpos($attributes['translate'], ' ') === false ? ',' : ' ';
+        $nodesDelimiter = ! str_contains($attributes['translate'], ' ') ? ',' : ' ';
+
         foreach (explode($nodesDelimiter, $attributes['translate']) as $value) {
             $phrase = trim((string)$element->{$value});
+
             if ($phrase) {
                 $this->_addPhrase($phrase);
             }
             $elementAttributes = $element->attributes();
+
             if (isset($elementAttributes[$value])) {
                 $phrase = (string)$elementAttributes[$value];
+
                 if ($phrase) {
                     $this->_addPhrase($phrase);
                 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,47 +14,56 @@ use PHPUnit\Framework\TestCase;
 
 class ModificationChainTest extends TestCase
 {
-    public function testConstructor()
+    /**
+     * @test
+     */
+    public function constructor()
     {
         $modificationsList = [];
         $modificationsList[] = $this->getMockBuilder(
-            ModificationInterface::class
+            ModificationInterface::class,
         )->getMock();
         $modificationsList[] = $this->getMockBuilder(
-            ModificationInterface::class
+            ModificationInterface::class,
         )->getMock();
 
         new ModificationChain($modificationsList);
     }
 
-    public function testConstructorException()
+    /**
+     * @test
+     */
+    public function constructorException()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Wrong modifier provided');
         $modificationsList = [];
         $modificationsList[] = $this->getMockBuilder(
-            ModificationInterface::class
+            ModificationInterface::class,
         )->getMock();
         $modificationsList[] = $this->getMockBuilder(
-            ModificationInterface::class
+            ModificationInterface::class,
         )->getMock();
         $modificationsList[] = 'banana';
 
         new ModificationChain($modificationsList);
     }
 
-    public function testModify()
+    /**
+     * @test
+     */
+    public function modify()
     {
         $inputArray = [
-            'data' => [1, 2, 3]
+            'data' => [1, 2, 3],
         ];
 
         $expectedArray1 = [
-            'data' => [1, 2, 3, 1]
+            'data' => [1, 2, 3, 1],
         ];
 
         $expectedArray2 = [
-            'data' => [1, 2, 3, 1, 1]
+            'data' => [1, 2, 3, 1, 1],
         ];
 
         $modifier1 = $this->getMockBuilder(ModificationInterface::class)

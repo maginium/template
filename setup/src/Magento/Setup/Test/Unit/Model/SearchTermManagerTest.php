@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -28,13 +29,13 @@ class SearchTermManagerTest extends TestCase
     private $searchTermConfiguration = [
         [
             'term' => 'x-wing',
-            'count' => '33'
+            'count' => '33',
         ], [
             'term' => 'tie-fighter',
-            'count' => '100'
+            'count' => '100',
         ], [
             'term' => 'n-1 starfighter',
-            'count' => '42'
+            'count' => '42',
         ],
     ];
 
@@ -43,32 +44,27 @@ class SearchTermManagerTest extends TestCase
      */
     private $searchTermsUsage = [
         'x-wing' => [
-            'used' => 0
+            'used' => 0,
         ],
         'tie-fighter' => [
-            'used' => 0
+            'used' => 0,
         ],
         'n-1 starfighter' => [
-            'used' => 0
-        ]
+            'used' => 0,
+        ],
     ];
 
-    protected function setUp(): void
+    /**
+     * @test
+     */
+    public function searchTermApplied()
     {
-        $this->searchTermManager = new SearchTermManager(
-            $this->searchTermConfiguration,
-            $this->totalProductsCount
-        );
-    }
-
-    public function testSearchTermApplied()
-    {
-        for ($productIndex=1; $productIndex<=$this->totalProductsCount; $productIndex++) {
+        for ($productIndex = 1; $productIndex <= $this->totalProductsCount; $productIndex++) {
             $description = 'Fleet: ';
             $this->searchTermManager->applySearchTermsToDescription($description, $productIndex);
 
             foreach (array_keys($this->searchTermsUsage) as $searchTerm) {
-                if (preg_match("/\\b$searchTerm\\b/", $description)) {
+                if (preg_match("/\\b{$searchTerm}\\b/", $description)) {
                     $this->searchTermsUsage[$searchTerm]['used']++;
                 }
             }
@@ -77,5 +73,13 @@ class SearchTermManagerTest extends TestCase
         foreach ($this->searchTermConfiguration as $searchTerm) {
             $this->assertEquals($searchTerm['count'], $this->searchTermsUsage[$searchTerm['term']]['used']);
         }
+    }
+
+    protected function setUp(): void
+    {
+        $this->searchTermManager = new SearchTermManager(
+            $this->searchTermConfiguration,
+            $this->totalProductsCount,
+        );
     }
 }

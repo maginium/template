@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -15,7 +16,10 @@ use PHPUnit\Framework\TestCase;
  */
 class PatternTest extends TestCase
 {
-    public function testGenerateAttributeSet()
+    /**
+     * @test
+     */
+    public function generateAttributeSet()
     {
         $attributeSets = [
             'name' => 'attribute set name',
@@ -37,30 +41,31 @@ class PatternTest extends TestCase
                             'option' => [
                                 [
                                     'label' => 'option 1',
-                                    'value' => 'option_1'
+                                    'value' => 'option_1',
                                 ],
                                 [
                                     'label' => 'option 2',
-                                    'value' => 'option_2'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                                    'value' => 'option_2',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
-        $pattern = new Pattern();
+        $pattern = new Pattern;
         $this->assertEquals(
             $attributeSets,
             $pattern->generateAttributeSet(
                 'attribute set name',
                 1,
                 2,
-                function ($index, $attributeData) {
+                function($index, $attributeData) {
                     $attributeData['backend_type'] = $index;
+
                     return $attributeData;
-                }
-            )
+                },
+            ),
         );
     }
 }

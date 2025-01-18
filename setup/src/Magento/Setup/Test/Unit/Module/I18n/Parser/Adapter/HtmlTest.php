@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -22,13 +23,10 @@ class HtmlTest extends TestCase
      */
     private $testFile;
 
-    protected function setUp(): void
-    {
-        $this->testFile = str_replace('\\', '/', realpath(__DIR__)) . '/_files/email.html';
-        $this->model = new Html();
-    }
-
-    public function testParse()
+    /**
+     * @test
+     */
+    public function parse()
     {
         $expectedResult = [
             [
@@ -141,11 +139,17 @@ class HtmlTest extends TestCase
                 'file' => $this->testFile,
                 'line' => '',
                 'quote' => '',
-            ]
+            ],
         ];
 
         $this->model->parse($this->testFile);
 
         $this->assertEquals($expectedResult, $this->model->getPhrases());
+    }
+
+    protected function setUp(): void
+    {
+        $this->testFile = str_replace('\\', '/', realpath(__DIR__)) . '/_files/email.html';
+        $this->model = new Html;
     }
 }

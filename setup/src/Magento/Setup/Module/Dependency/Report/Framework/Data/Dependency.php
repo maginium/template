@@ -1,31 +1,35 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Framework\Data;
 
 /**
- * Dependency
+ * Dependency.
  */
 class Dependency
 {
     /**
-     * Lib we depend on
+     * Lib we depend on.
      *
      * @var string
      */
     protected $lib;
 
     /**
-     * Dependencies count
+     * Dependencies count.
      *
      * @var int
      */
     protected $count;
 
     /**
-     * Dependency construct
+     * Dependency construct.
      *
      * @param string $lib
      * @param int $count
@@ -37,7 +41,7 @@ class Dependency
     }
 
     /**
-     * Get lib
+     * Get lib.
      *
      * @return string
      */
@@ -47,7 +51,7 @@ class Dependency
     }
 
     /**
-     * Get count
+     * Get count.
      *
      * @return int
      */

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,6 +10,7 @@
 namespace Magento\Setup\Model;
 
 use Magento\Framework\Config\ConfigOptionsListConstants;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Math\Random;
 
 /**
@@ -32,8 +36,9 @@ class CryptKeyGenerator implements CryptKeyGeneratorInterface
     /**
      * Generates & returns a string to be used as crypt key.
      *
+     * @throws LocalizedException
+     *
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function generate()
     {
@@ -43,8 +48,9 @@ class CryptKeyGenerator implements CryptKeyGeneratorInterface
     /**
      * Returns a random string.
      *
+     * @throws LocalizedException
+     *
      * @return string
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
     private function getRandomString()
     {

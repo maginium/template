@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,23 +13,29 @@ use PHPUnit\Framework\TestCase;
 
 class BackslashTrimTest extends TestCase
 {
-    public function testModifyArgumentsDoNotExist()
+    /**
+     * @test
+     */
+    public function modifyArgumentsDoNotExist()
     {
         $inputConfig = [
-            'data' => []
+            'data' => [],
         ];
-        $modifier = new BackslashTrim();
+        $modifier = new BackslashTrim;
         $this->assertSame($inputConfig, $modifier->modify($inputConfig));
     }
 
-    public function testModifyArguments()
+    /**
+     * @test
+     */
+    public function modifyArguments()
     {
-        $modifier = new BackslashTrim();
+        $modifier = new BackslashTrim;
         $this->assertEquals($this->getOutputConfig(), $modifier->modify($this->getInputConfig()));
     }
 
     /**
-     * Input config
+     * Input config.
      *
      * @return array
      */
@@ -45,15 +52,15 @@ class BackslashTrimTest extends TestCase
                         'array' => [
                             'argument_type' => ['_i_' => '\\Class\\Dependency'],
                             'argument_not_shared' => ['_ins_' => '\\Class\\Dependency'],
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
     /**
-     * Output config
+     * Output config.
      *
      * @return array
      */
@@ -70,10 +77,10 @@ class BackslashTrimTest extends TestCase
                         'array' => [
                             'argument_type' => ['_i_' => 'Class\\Dependency'],
                             'argument_not_shared' => ['_ins_' => 'Class\\Dependency'],
-                        ]
-                    ]
-                ]
-            ]
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }

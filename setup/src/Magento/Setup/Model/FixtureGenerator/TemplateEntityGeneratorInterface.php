@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,7 +10,7 @@
 namespace Magento\Setup\Model\FixtureGenerator;
 
 /**
- * Generate entity template which is used for entity generation
+ * Generate entity template which is used for entity generation.
  */
 interface TemplateEntityGeneratorInterface
 {

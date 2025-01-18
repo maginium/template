@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,18 +31,11 @@ class LockTest extends TestCase
     private $lockConfigOptionsList;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
-        $this->lockConfigOptionsList = new LockConfigOptionsList();
-    }
-
-    /**
      * @return void
+     *
+     * @test
      */
-    public function testGetOptions()
+    public function getOptions()
     {
         $options = $this->lockConfigOptionsList->getOptions();
         $this->assertCount(5, $options);
@@ -70,9 +64,12 @@ class LockTest extends TestCase
     /**
      * @param array $options
      * @param array $expectedResult
+     *
      * @dataProvider createConfigDataProvider
+     *
+     * @test
      */
-    public function testCreateConfig(array $options, array $expectedResult)
+    public function createConfig(array $options, array $expectedResult)
     {
         $this->deploymentConfigMock->expects($this->any())
             ->method('get')
@@ -85,6 +82,7 @@ class LockTest extends TestCase
 
     /**
      * @return array
+     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function createConfigDataProvider(): array
@@ -94,7 +92,7 @@ class LockTest extends TestCase
                 'options' => [],
                 'expectedResult' => [
                     'lock' => [
-                        'provider' => LockBackendFactory::LOCK_DB
+                        'provider' => LockBackendFactory::LOCK_DB,
                     ],
                 ],
             ],
@@ -125,7 +123,7 @@ class LockTest extends TestCase
             'Check specific db lock options' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_DB,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'my_prefix'
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'my_prefix',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -155,7 +153,7 @@ class LockTest extends TestCase
             'Check specific file lock options' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_FILE,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_FILE_PATH => '/my/path'
+                    LockConfigOptionsList::INPUT_KEY_LOCK_FILE_PATH => '/my/path',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -169,18 +167,18 @@ class LockTest extends TestCase
             'Check specific db lock prefix null options' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_DB,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => null
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => null,
                 ],
                 'expectedResult' => [
                     'lock' => [
-                        'provider' => LockBackendFactory::LOCK_DB
+                        'provider' => LockBackendFactory::LOCK_DB,
                     ],
                 ],
             ],
             'Check specific db lock prefix empty options' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_DB,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => ''
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => '',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -197,13 +195,16 @@ class LockTest extends TestCase
     /**
      * @param array $options
      * @param array $expectedResult
+     *
      * @dataProvider updateConfigDataProvider
+     *
+     * @test
      */
-    public function testUpdateConfig(array $options, array $expectedResult)
+    public function updateConfig(array $options, array $expectedResult)
     {
         $valueMap = [
-            [ 'lock/config/prefix', null, 'saved_prefix' ],
-            [ 'lock/provider', 'db', 'db' ]
+            ['lock/config/prefix', null, 'saved_prefix'],
+            ['lock/provider', 'db', 'db'],
         ];
         $this->deploymentConfigMock
             ->expects($this->any())
@@ -217,6 +218,7 @@ class LockTest extends TestCase
 
     /**
      * @return array
+     *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function updateConfigDataProvider(): array
@@ -236,7 +238,7 @@ class LockTest extends TestCase
             'Check lock-db-prefix options overrides existing value when parameter is specified' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_DB,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'new_prefix'
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'new_prefix',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -249,7 +251,7 @@ class LockTest extends TestCase
             ],
             'Check lock-db-prefix options overrides existing value when only this parameter is specified' => [
                 'options' => [
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'new_prefix'
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => 'new_prefix',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -276,7 +278,7 @@ class LockTest extends TestCase
             'Check specific db lock prefix empty options overrides existing value' => [
                 'options' => [
                     LockConfigOptionsList::INPUT_KEY_LOCK_PROVIDER => LockBackendFactory::LOCK_DB,
-                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => ''
+                    LockConfigOptionsList::INPUT_KEY_LOCK_DB_PREFIX => '',
                 ],
                 'expectedResult' => [
                     'lock' => [
@@ -293,16 +295,19 @@ class LockTest extends TestCase
     /**
      * @param array $options
      * @param array $expectedResult
+     *
      * @dataProvider validateDataProvider
+     *
+     * @test
      */
-    public function testValidate(array $options, array $expectedResult)
+    public function validate(array $options, array $expectedResult)
     {
         $this->deploymentConfigMock->expects($this->any())
             ->method('get')
             ->willReturnArgument(1);
         $this->assertSame(
             $expectedResult,
-            $this->lockConfigOptionsList->validate($options, $this->deploymentConfigMock)
+            $this->lockConfigOptionsList->validate($options, $this->deploymentConfigMock),
         );
     }
 
@@ -347,5 +352,14 @@ class LockTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->deploymentConfigMock = $this->createMock(DeploymentConfig::class);
+        $this->lockConfigOptionsList = new LockConfigOptionsList;
     }
 }

@@ -1,30 +1,35 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Builder;
 
+use InvalidArgumentException;
 use Magento\Setup\Module\Dependency\ParserInterface;
 use Magento\Setup\Module\Dependency\Report\BuilderInterface;
 use Magento\Setup\Module\Dependency\Report\WriterInterface;
 
 /**
- *  Abstract report builder by config files
+ *  Abstract report builder by config files.
  */
 abstract class AbstractBuilder implements BuilderInterface
 {
     /**
-     * Dependencies parser
+     * Dependencies parser.
      *
-     * @var \Magento\Setup\Module\Dependency\ParserInterface
+     * @var ParserInterface
      */
     protected $dependenciesParser;
 
     /**
-     * Report writer
+     * Report writer.
      *
-     * @var \Magento\Setup\Module\Dependency\Report\WriterInterface
+     * @var WriterInterface
      */
     protected $reportWriter;
 
@@ -34,7 +39,7 @@ abstract class AbstractBuilder implements BuilderInterface
     protected $options = [];
 
     /**
-     * Builder constructor
+     * Builder constructor.
      *
      * @param ParserInterface $dependenciesParser
      * @param WriterInterface $reportWriter
@@ -46,7 +51,7 @@ abstract class AbstractBuilder implements BuilderInterface
     }
 
     /**
-     * Template method. Main algorithm
+     * Template method. Main algorithm.
      *
      * {@inheritdoc}
      */
@@ -60,27 +65,30 @@ abstract class AbstractBuilder implements BuilderInterface
     }
 
     /**
-     * Template method. Check passed options step
+     * Template method. Check passed options step.
      *
      * @param array $options
+     *
+     * @throws InvalidArgumentException
+     *
      * @return void
-     * @throws \InvalidArgumentException
      */
     protected function checkOptions($options)
     {
-        if (!isset($options['parse']) || empty($options['parse'])) {
-            throw new \InvalidArgumentException('Passed option section "parse" is wrong.');
+        if (! isset($options['parse']) || empty($options['parse'])) {
+            throw new InvalidArgumentException('Passed option section "parse" is wrong.');
         }
 
-        if (!isset($options['write']) || empty($options['write'])) {
-            throw new \InvalidArgumentException('Passed option section "write" is wrong.');
+        if (! isset($options['write']) || empty($options['write'])) {
+            throw new InvalidArgumentException('Passed option section "write" is wrong.');
         }
     }
 
     /**
-     * Template method. Prepare data for writer step
+     * Template method. Prepare data for writer step.
      *
      * @param array $modulesData
+     *
      * @return \Magento\Setup\Module\Dependency\Report\Data\ConfigInterface
      */
     abstract protected function buildData($modulesData);

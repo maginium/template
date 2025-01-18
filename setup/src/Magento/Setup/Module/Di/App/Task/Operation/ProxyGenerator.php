@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -8,6 +11,7 @@ namespace Magento\Setup\Module\Di\App\Task\Operation;
 
 use Magento\Setup\Module\Di\App\Task\OperationInterface;
 use Magento\Setup\Module\Di\Code\Scanner;
+use Magento\Setup\Module\Di\Code\Scanner\ConfigurationScanner;
 
 class ProxyGenerator implements OperationInterface
 {
@@ -22,19 +26,19 @@ class ProxyGenerator implements OperationInterface
     private $data;
 
     /**
-     * @var Scanner\ConfigurationScanner
+     * @var ConfigurationScanner
      */
     private $configurationScanner;
 
     /**
      * @param Scanner\XmlScanner $proxyScanner
-     * @param Scanner\ConfigurationScanner $configurationScanner
+     * @param ConfigurationScanner $configurationScanner
      * @param array $data
      */
     public function __construct(
         Scanner\XmlScanner $proxyScanner,
-        \Magento\Setup\Module\Di\Code\Scanner\ConfigurationScanner $configurationScanner,
-        $data = []
+        ConfigurationScanner $configurationScanner,
+        $data = [],
     ) {
         $this->proxyScanner = $proxyScanner;
         $this->data = $data;
@@ -42,7 +46,7 @@ class ProxyGenerator implements OperationInterface
     }
 
     /**
-     * Processes operation task
+     * Processes operation task.
      *
      * @return void
      */
@@ -50,13 +54,14 @@ class ProxyGenerator implements OperationInterface
     {
         $files = $this->configurationScanner->scan('di.xml');
         $proxies = $this->proxyScanner->collectEntities($files);
+
         foreach ($proxies as $entityName) {
             class_exists($entityName);
         }
     }
 
     /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */

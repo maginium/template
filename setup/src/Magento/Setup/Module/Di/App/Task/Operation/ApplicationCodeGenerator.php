@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task\Operation;
 
 use Magento\Framework\Exception\FileSystemException;
@@ -43,7 +47,7 @@ class ApplicationCodeGenerator implements OperationInterface
         ClassesScanner $classesScanner,
         PhpScanner $phpScanner,
         DirectoryScanner $directoryScanner,
-        $data = []
+        $data = [],
     ) {
         $this->data = $data;
         $this->classesScanner = $classesScanner;
@@ -52,7 +56,7 @@ class ApplicationCodeGenerator implements OperationInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function doOperation()
     {
@@ -62,13 +66,14 @@ class ApplicationCodeGenerator implements OperationInterface
         }
 
         foreach ($this->data['paths'] as $paths) {
-            if (!is_array($paths)) {
+            if (! is_array($paths)) {
                 $paths = (array)$paths;
             }
 
             $files = $this->getFiles($paths);
 
             $entities = $this->phpScanner->collectEntities($files['php'] ?? []);
+
             foreach ($entities as $entityName) {
                 class_exists($entityName);
             }
@@ -76,7 +81,7 @@ class ApplicationCodeGenerator implements OperationInterface
     }
 
     /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */
@@ -89,8 +94,10 @@ class ApplicationCodeGenerator implements OperationInterface
      * Get list if files.
      *
      * @param string[] $paths
-     * @return array
+     *
      * @throws FileSystemException
+     *
+     * @return array
      */
     private function getFiles(array $paths): array
     {
@@ -102,7 +109,7 @@ class ApplicationCodeGenerator implements OperationInterface
             $files[] = $this->directoryScanner->scan(
                 $path,
                 $this->data['filePatterns'],
-                $this->data['excludePatterns']
+                $this->data['excludePatterns'],
             );
         }
 

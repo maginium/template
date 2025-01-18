@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,6 +8,7 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Test\Unit\Module\I18n\Pack\Writer\File;
 
+use InvalidArgumentException;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
 use Magento\Setup\Module\I18n\Context;
 use Magento\Setup\Module\I18n\Dictionary;
@@ -56,36 +58,16 @@ class CsvTest extends TestCase
     private $object;
 
     /**
-     * @return void
-     */
-    protected function setUp(): void
-    {
-        /** @var ObjectManagerHelper $objectManagerHelper */
-        $objectManagerHelper = new ObjectManagerHelper($this);
-
-        $this->contextMock = $this->createMock(Context::class);
-        $this->localeMock = $this->createMock(Locale::class);
-        $this->dictionaryMock = $this->createMock(Dictionary::class);
-        $this->phraseMock = $this->createMock(Phrase::class);
-        $this->factoryMock = $this->createMock(Factory::class);
-
-        $constructorArguments = $objectManagerHelper->getConstructArguments(
-            Csv::class,
-            [
-                'context' => $this->contextMock,
-                'factory' => $this->factoryMock
-            ]
-        );
-        $this->object = $objectManagerHelper->getObject(Csv::class, $constructorArguments);
-    }
-
-    /**
      * @param string $contextType
      * @param array $contextValue
+     *
      * @dataProvider writeDictionaryWithRuntimeExceptionDataProvider
+     *
      * @return void
+     *
+     * @test
      */
-    public function testWriteDictionaryWithRuntimeException($contextType, $contextValue)
+    public function writeDictionaryWithRuntimeException($contextType, $contextValue)
     {
         $this->expectException('RuntimeException');
         $this->configureGeneralPhrasesMock($contextType, $contextValue);
@@ -101,14 +83,16 @@ class CsvTest extends TestCase
         return [
             ['', []],
             ['module', []],
-            ['', ['Magento_Module']]
+            ['', ['Magento_Module']],
         ];
     }
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testWriteDictionaryWithInvalidArgumentException()
+    public function writeDictionaryWithInvalidArgumentException()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Some error. Row #1.');
@@ -120,15 +104,17 @@ class CsvTest extends TestCase
         $this->contextMock->expects($this->once())
             ->method('buildPathToLocaleDirectoryByContext')
             ->with($contextType, $contextValue)
-            ->willThrowException(new \InvalidArgumentException('Some error.'));
+            ->willThrowException(new InvalidArgumentException('Some error.'));
 
         $this->object->writeDictionary($this->dictionaryMock, $this->localeMock);
     }
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testWriteDictionaryWherePathIsNull()
+    public function writeDictionaryWherePathIsNull()
     {
         $contextType = 'module';
         $contextValue = 'Magento_Module';
@@ -150,8 +136,10 @@ class CsvTest extends TestCase
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testWriteDictionary()
+    public function writeDictionary()
     {
         $contextType = 'module';
         $contextValue = 'Magento_Module';
@@ -193,8 +181,33 @@ class CsvTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        /** @var ObjectManagerHelper $objectManagerHelper */
+        $objectManagerHelper = new ObjectManagerHelper($this);
+
+        $this->contextMock = $this->createMock(Context::class);
+        $this->localeMock = $this->createMock(Locale::class);
+        $this->dictionaryMock = $this->createMock(Dictionary::class);
+        $this->phraseMock = $this->createMock(Phrase::class);
+        $this->factoryMock = $this->createMock(Factory::class);
+
+        $constructorArguments = $objectManagerHelper->getConstructArguments(
+            Csv::class,
+            [
+                'context' => $this->contextMock,
+                'factory' => $this->factoryMock,
+            ],
+        );
+        $this->object = $objectManagerHelper->getObject(Csv::class, $constructorArguments);
+    }
+
+    /**
      * @param string $contextType
      * @param array $contextValue
+     *
      * @return void
      */
     private function configureGeneralPhrasesMock($contextType, $contextValue)

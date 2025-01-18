@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -15,12 +16,15 @@ class ResourceConfigTest extends TestCase
 {
     /**
      * @dataProvider getConnectionNameDataProvider
+     *
      * @param string $resourceName
+     *
+     * @test
      */
-    public function testGetConnectionName($resourceName)
+    public function getConnectionName($resourceName)
     {
         $connectionName = ResourceConnection::DEFAULT_CONNECTION;
-        $resourceConfig = new ResourceConfig();
+        $resourceConfig = new ResourceConfig;
         $this->assertEquals($connectionName, $resourceConfig->getConnectionName($resourceName));
     }
 
@@ -32,7 +36,7 @@ class ResourceConfigTest extends TestCase
         return [
             'validResourceName' => ['validResourceName'],
             'invalidResourceName' => ['invalidResourceName'],
-            'blankResourceName' => ['']
+            'blankResourceName' => [''],
         ];
     }
 }

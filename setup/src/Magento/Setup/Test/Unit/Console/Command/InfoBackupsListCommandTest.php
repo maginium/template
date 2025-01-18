@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,22 +14,29 @@ use Magento\Setup\Console\Command\InfoBackupsListCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableFactory;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class InfoBackupsListCommandTest extends TestCase
 {
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $table = $this->createMock(Table::class);
         $table->expects($this->once())->method('setHeaders')->with(['Backup Filename', 'Backup Type']);
         $table->expects($this->once())->method('addRow')->with(['backupFile_media.tgz', 'media']);
-        /** @var \Symfony\Component\Console\Helper\TableFactory|MockObject $helperSet */
-        $tableFactoryMock = $this->createMock(\Symfony\Component\Console\Helper\TableFactory::class);
+
+        /** @var TableFactory|MockObject $helperSet */
+        $tableFactoryMock = $this->createMock(TableFactory::class);
         $tableFactoryMock->expects($this->once())->method('create')->willReturn($table);
+
         /** @var DirectoryList
          * |\PHPUnit\Framework\MockObject\MockObject $directoryList
          */
         $directoryList = $this->createMock(DirectoryList::class);
+
         /** @var File|MockObject $file */
         $file = $this->createMock(File::class);
         $file->expects($this->once())->method('isExists')->willReturn(true);

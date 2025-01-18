@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -47,33 +48,12 @@ class ConfigurableProductsFixtureTest extends TestCase
      */
     private $attributePatternMock;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getValue', 'getObjectManager'])
-            ->addMethods(['createAttributeSet'])
-            ->getMock();
-
-        $this->attributeSetsFixtureMock = $this->getMockBuilder(AttributeSetFixture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->attributePatternMock = $this->getMockBuilder(Pattern::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->model = (new ObjectManager($this))->getObject(ConfigurableProductsFixture::class, [
-            'fixtureModel' => $this->fixtureModelMock,
-            'attributeSetsFixture' => $this->attributeSetsFixtureMock,
-            'attributePattern' => $this->attributePatternMock,
-        ]);
-    }
-
     /**
      * @SuppressWarnings(PHPMD)
+     *
+     * @test
      */
-    public function testExecute()
+    public function execute()
     {
         $importMock = $this->getMockBuilder(Import::class)
             ->disableOriginalConstructor()
@@ -96,11 +76,11 @@ class ConfigurableProductsFixtureTest extends TestCase
             ->getMock();
 
         $attributeSetRepositoryMock = $this->getMockForAbstractClass(
-            AttributeSetRepositoryInterface::class
+            AttributeSetRepositoryInterface::class,
         );
 
         $productAttributeOptionManagementInterface = $this->getMockForAbstractClass(
-            ProductAttributeOptionManagementInterface::class
+            ProductAttributeOptionManagementInterface::class,
         );
 
         $objectManagerMock->expects($this->any())
@@ -108,16 +88,16 @@ class ConfigurableProductsFixtureTest extends TestCase
             ->willReturnMap([
                 [
                     StoreManager::class,
-                    $storeManagerMock
+                    $storeManagerMock,
                 ],
                 [
                     AttributeSetRepositoryInterface::class,
-                    $attributeSetRepositoryMock
+                    $attributeSetRepositoryMock,
                 ],
                 [
                     ProductAttributeOptionManagementInterface::class,
-                    $productAttributeOptionManagementInterface
-                ]
+                    $productAttributeOptionManagementInterface,
+                ],
             ]);
 
         $attributeCollectionFactoryMock = $this->getMockBuilder(CollectionFactory::class)
@@ -128,7 +108,7 @@ class ConfigurableProductsFixtureTest extends TestCase
         $objectManagerMock->expects($this->any())
             ->method('create')
             ->willReturnCallback(
-                function ($className) use (
+                function($className) use (
                     $attributeCollectionFactoryMock,
                     $categoryMock,
                     $importMock,
@@ -149,15 +129,13 @@ class ConfigurableProductsFixtureTest extends TestCase
                     if ($className === Generator::class) {
                         return $source;
                     }
-
-                    return null;
-                }
+                },
             );
 
         $valuesMap = [
             ['configurable_products', 0, 1],
             ['simple_products', 0, 1],
-            ['search_terms', null, ['search_term' =>[['term' => 'iphone 6', 'count' => '1']]]],
+            ['search_terms', null, ['search_term' => [['term' => 'iphone 6', 'count' => '1']]]],
             ['configurable_products_variation', 3, 1],
             [
                 'search_config',
@@ -166,8 +144,8 @@ class ConfigurableProductsFixtureTest extends TestCase
                     'max_amount_of_words_description' => '200',
                     'max_amount_of_words_short_description' => '20',
                     'min_amount_of_words_description' => '20',
-                    'min_amount_of_words_short_description' => '5'
-                ]
+                    'min_amount_of_words_short_description' => '5',
+                ],
             ],
             ['attribute_sets',
                 null,
@@ -192,17 +170,17 @@ class ConfigurableProductsFixtureTest extends TestCase
                                             'option' => [
                                                 [
                                                     'label' => 'yellow1',
-                                                    'value' => ''
-                                                ]
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                                                    'value' => '',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $this->fixtureModelMock
@@ -213,7 +191,10 @@ class ConfigurableProductsFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testNoFixtureConfigValue()
+    /**
+     * @test
+     */
+    public function noFixtureConfigValue()
     {
         $importMock = $this->getMockBuilder(Import::class)
             ->disableOriginalConstructor()
@@ -237,13 +218,42 @@ class ConfigurableProductsFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating configurable products', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([], $this->model->introduceParamLabels());
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getValue', 'getObjectManager'])
+            ->addMethods(['createAttributeSet'])
+            ->getMock();
+
+        $this->attributeSetsFixtureMock = $this->getMockBuilder(AttributeSetFixture::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->attributePatternMock = $this->getMockBuilder(Pattern::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->model = (new ObjectManager($this))->getObject(ConfigurableProductsFixture::class, [
+            'fixtureModel' => $this->fixtureModelMock,
+            'attributeSetsFixture' => $this->attributeSetsFixtureMock,
+            'attributePattern' => $this->attributePatternMock,
+        ]);
     }
 }

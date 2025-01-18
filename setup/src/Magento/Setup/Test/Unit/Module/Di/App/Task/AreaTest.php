@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -21,7 +22,7 @@ use PHPUnit\Framework\TestCase;
 class AreaTest extends TestCase
 {
     /**
-     * @var App\AreaList|MockObject
+     * @var AreaList|MockObject
      */
     private $areaListMock;
 
@@ -31,7 +32,7 @@ class AreaTest extends TestCase
     private $areaInstancesNamesList;
 
     /**
-     * @var Config\Reader|MockObject
+     * @var Reader|MockObject
      */
     private $configReaderMock;
 
@@ -44,6 +45,73 @@ class AreaTest extends TestCase
      * @var ModificationChain|MockObject
      */
     private $configChain;
+
+    /**
+     * @test
+     */
+    public function doOperationEmptyPath()
+    {
+        $areaOperation = new Area(
+            $this->areaListMock,
+            $this->areaInstancesNamesList,
+            $this->configReaderMock,
+            $this->configWriterMock,
+            $this->configChain,
+        );
+
+        $this->assertNull($areaOperation->doOperation());
+    }
+
+    /**
+     * @test
+     */
+    public function doOperationGlobalArea()
+    {
+        $path = 'path/to/codebase/';
+        $arguments = ['class' => []];
+        $generatedConfig = [
+            'arguments' => $arguments,
+            'preferences' => [],
+            'instanceTypes' => [],
+        ];
+
+        $areaOperation = new Area(
+            $this->areaListMock,
+            $this->areaInstancesNamesList,
+            $this->configReaderMock,
+            $this->configWriterMock,
+            $this->configChain,
+            [$path],
+        );
+
+        $this->areaListMock->expects($this->once())
+            ->method('getCodes')
+            ->willReturn([]);
+        $this->areaInstancesNamesList->expects($this->once())
+            ->method('getList')
+            ->with($path)
+            ->willReturn($arguments);
+        $this->configReaderMock->expects($this->once())
+            ->method('generateCachePerScope')
+            ->with(
+                $this->isInstanceOf(Collection::class),
+                App\Area::AREA_GLOBAL,
+            )
+            ->willReturn($generatedConfig);
+        $this->configChain->expects($this->once())
+            ->method('modify')
+            ->with($generatedConfig)
+            ->willReturn($generatedConfig);
+
+        $this->configWriterMock->expects($this->once())
+            ->method('write')
+            ->with(
+                App\Area::AREA_GLOBAL,
+                $generatedConfig,
+            );
+
+        $areaOperation->doOperation();
+    }
 
     protected function setUp(): void
     {
@@ -64,66 +132,5 @@ class AreaTest extends TestCase
         $this->configChain = $this->getMockBuilder(ModificationChain::class)
             ->disableOriginalConstructor()
             ->getMock();
-    }
-
-    public function testDoOperationEmptyPath()
-    {
-        $areaOperation = new Area(
-            $this->areaListMock,
-            $this->areaInstancesNamesList,
-            $this->configReaderMock,
-            $this->configWriterMock,
-            $this->configChain
-        );
-
-        $this->assertNull($areaOperation->doOperation());
-    }
-
-    public function testDoOperationGlobalArea()
-    {
-        $path = 'path/to/codebase/';
-        $arguments = ['class' => []];
-        $generatedConfig = [
-            'arguments' => $arguments,
-            'preferences' => [],
-            'instanceTypes' => []
-        ];
-
-        $areaOperation = new Area(
-            $this->areaListMock,
-            $this->areaInstancesNamesList,
-            $this->configReaderMock,
-            $this->configWriterMock,
-            $this->configChain,
-            [$path]
-        );
-
-        $this->areaListMock->expects($this->once())
-            ->method('getCodes')
-            ->willReturn([]);
-        $this->areaInstancesNamesList->expects($this->once())
-            ->method('getList')
-            ->with($path)
-            ->willReturn($arguments);
-        $this->configReaderMock->expects($this->once())
-            ->method('generateCachePerScope')
-            ->with(
-                $this->isInstanceOf(Collection::class),
-                App\Area::AREA_GLOBAL
-            )
-            ->willReturn($generatedConfig);
-        $this->configChain->expects($this->once())
-            ->method('modify')
-            ->with($generatedConfig)
-            ->willReturn($generatedConfig);
-
-        $this->configWriterMock->expects($this->once())
-            ->method('write')
-            ->with(
-                App\Area::AREA_GLOBAL,
-                $generatedConfig
-            );
-
-        $areaOperation->doOperation();
     }
 }

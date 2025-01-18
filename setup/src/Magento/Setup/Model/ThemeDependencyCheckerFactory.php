@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,7 +12,7 @@ namespace Magento\Setup\Model;
 use Magento\Theme\Model\Theme\ThemeDependencyChecker;
 
 /**
- * Class ThemeDependencyCheckerFactory creates instance of ThemeDependencyChecker
+ * Class ThemeDependencyCheckerFactory creates instance of ThemeDependencyChecker.
  */
 class ThemeDependencyCheckerFactory
 {
@@ -19,7 +22,7 @@ class ThemeDependencyCheckerFactory
     private $objectManagerProvider;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param ObjectManagerProvider $objectManagerProvider
      */
@@ -29,12 +32,12 @@ class ThemeDependencyCheckerFactory
     }
 
     /**
-     * Creates ThemeDependencyChecker object
+     * Creates ThemeDependencyChecker object.
      *
      * @return ThemeDependencyChecker
      */
     public function create()
     {
-        return $this->objectManagerProvider->get()->get(\Magento\Theme\Model\Theme\ThemeDependencyChecker::class);
+        return $this->objectManagerProvider->get()->get(ThemeDependencyChecker::class);
     }
 }

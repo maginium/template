@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -24,18 +25,16 @@ class ContextTest extends TestCase
      */
     protected $componentRegistrar;
 
-    protected function setUp(): void
-    {
-        $this->componentRegistrar = $this->createMock(ComponentRegistrar::class);
-    }
-
     /**
      * @param array $context
      * @param string $path
      * @param array $pathValues
+     *
      * @dataProvider dataProviderContextByPath
+     *
+     * @test
      */
-    public function testGetContextByPath($context, $path, $pathValues)
+    public function getContextByPath($context, $path, $pathValues)
     {
         $this->componentRegistrar->expects($this->any())
             ->method('getPaths')
@@ -56,7 +55,7 @@ class ContextTest extends TestCase
                 [
                     [Context::CONTEXT_TYPE_MODULE, ['Magento_Module' => '/app/code/Magento/Module']],
                     [Context::CONTEXT_TYPE_THEME, []],
-                ]
+                ],
             ],
             [
                 [Context::CONTEXT_TYPE_THEME, 'frontend/Some/theme'],
@@ -64,7 +63,7 @@ class ContextTest extends TestCase
                 [
                     [Context::CONTEXT_TYPE_MODULE, []],
                     [Context::CONTEXT_TYPE_THEME, ['frontend/Some/theme' => '/app/design/area/theme']],
-                ]
+                ],
             ],
             [
                 [Context::CONTEXT_TYPE_LIB, 'lib/web/module/test.phtml'],
@@ -72,12 +71,15 @@ class ContextTest extends TestCase
                 [
                     [Context::CONTEXT_TYPE_MODULE, []],
                     [Context::CONTEXT_TYPE_THEME, []],
-                ]
+                ],
             ],
         ];
     }
 
-    public function testGetContextByPathWithInvalidPath()
+    /**
+     * @test
+     */
+    public function getContextByPathWithInvalidPath()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Invalid path given: "invalid_path".');
@@ -85,7 +87,7 @@ class ContextTest extends TestCase
             ->method('getPaths')
             ->willReturnMap([
                 [ComponentRegistrar::MODULE, ['/path/to/module']],
-                [ComponentRegistrar::THEME, ['/path/to/theme']]
+                [ComponentRegistrar::THEME, ['/path/to/theme']],
             ]);
         $this->context = new Context($this->componentRegistrar);
         $this->context->getContextByPath('invalid_path');
@@ -95,11 +97,15 @@ class ContextTest extends TestCase
      * @param string $path
      * @param array $context
      * @param array $registrar
+     *
      * @dataProvider dataProviderPathToLocaleDirectoryByContext
+     *
+     * @test
      */
-    public function testBuildPathToLocaleDirectoryByContext($path, $context, $registrar)
+    public function buildPathToLocaleDirectoryByContext($path, $context, $registrar)
     {
         $paths = [];
+
         foreach ($registrar as $module) {
             $paths[$module[1]] = $module[2];
         }
@@ -119,29 +125,32 @@ class ContextTest extends TestCase
             [
                 BP . '/app/code/Magento/Module/i18n/',
                 [Context::CONTEXT_TYPE_MODULE, 'Magento_Module'],
-                [[ComponentRegistrar::MODULE, 'Magento_Module', BP . '/app/code/Magento/Module']]
+                [[ComponentRegistrar::MODULE, 'Magento_Module', BP . '/app/code/Magento/Module']],
             ],
             [
                 BP . '/app/design/frontend/Magento/luma/i18n/',
                 [Context::CONTEXT_TYPE_THEME, 'frontend/Magento/luma'],
-                [[ComponentRegistrar::THEME, 'frontend/Magento/luma', BP . '/app/design/frontend/Magento/luma']]
+                [[ComponentRegistrar::THEME, 'frontend/Magento/luma', BP . '/app/design/frontend/Magento/luma']],
             ],
 
             [
                 null,
                 [Context::CONTEXT_TYPE_MODULE, 'Unregistered_Module'],
-                [[ComponentRegistrar::MODULE, 'Unregistered_Module', null]]
+                [[ComponentRegistrar::MODULE, 'Unregistered_Module', null]],
             ],
             [
                 null,
                 [Context::CONTEXT_TYPE_THEME, 'frontend/Magento/unregistered'],
-                [[ComponentRegistrar::THEME, 'frontend/Magento/unregistered', null]]
+                [[ComponentRegistrar::THEME, 'frontend/Magento/unregistered', null]],
             ],
             [BP . '/lib/web/i18n/', [Context::CONTEXT_TYPE_LIB, 'lib/web/module/test.phtml'], []],
         ];
     }
 
-    public function testBuildPathToLocaleDirectoryByContextWithInvalidType()
+    /**
+     * @test
+     */
+    public function buildPathToLocaleDirectoryByContextWithInvalidType()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Invalid context given: "invalid_type".');
@@ -149,5 +158,10 @@ class ContextTest extends TestCase
             ->method('getPath');
         $this->context = new Context($this->componentRegistrar);
         $this->context->buildPathToLocaleDirectoryByContext('invalid_type', 'Magento_Module');
+    }
+
+    protected function setUp(): void
+    {
+        $this->componentRegistrar = $this->createMock(ComponentRegistrar::class);
     }
 }

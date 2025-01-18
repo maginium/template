@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,7 +12,7 @@ class DoubleColon
 {
     public function __construct()
     {
-        DoubleColon::class;
+        self::class;
     }
 
     public function method()

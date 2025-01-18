@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 use Magento\Framework\Setup\Declaration\Schema\Diff\SchemaDiff;
@@ -39,7 +43,7 @@ class DeclarationInstaller
     public function __construct(
         SchemaConfigInterface $schemaConfig,
         SchemaDiff $schemaDiff,
-        OperationsExecutor $operationsExecutor
+        OperationsExecutor $operationsExecutor,
     ) {
         $this->operationsExecutor = $operationsExecutor;
         $this->schemaConfig = $schemaConfig;
@@ -50,6 +54,7 @@ class DeclarationInstaller
      * Install Schema in declarative way.
      *
      * @param array $requestData -> Data params which comes from UI or from CLI.
+     *
      * @return void
      */
     public function installSchema(array $requestData)

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,21 +18,19 @@ class WordWrapperTest extends TestCase
      */
     private $wrapper;
 
-    protected function setUp(): void
-    {
-        $this->wrapper = new WordWrapper();
-    }
-
     /**
      * @param array $inputData
      * @param string $expectedResult
+     *
      * @dataProvider getTestData
+     *
+     * @test
      */
-    public function testWrapping($inputData, $expectedResult)
+    public function wrapping($inputData, $expectedResult)
     {
         $this->assertEquals(
             $expectedResult,
-            $this->wrapper->wrapWords($inputData['source'], $inputData['words'], $inputData['format'])
+            $this->wrapper->wrapWords($inputData['source'], $inputData['words'], $inputData['format']),
         );
     }
 
@@ -47,7 +46,7 @@ class WordWrapperTest extends TestCase
                     'words' => [],
                     'format' => '',
                 ],
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
             ],
 
             [
@@ -56,7 +55,7 @@ class WordWrapperTest extends TestCase
                     'words' => ['Lorem'],
                     'format' => '<test>%s</test>',
                 ],
-                '<test>Lorem</test> ipsum dolor sit amet, consectetur adipiscing elit.'
+                '<test>Lorem</test> ipsum dolor sit amet, consectetur adipiscing elit.',
             ],
 
             [
@@ -65,8 +64,13 @@ class WordWrapperTest extends TestCase
                     'words' => ['Lorem', 'consectetur', 'elit'],
                     'format' => '<test>%s</test>',
                 ],
-                '<test>Lorem</test> ipsum dolor sit amet, <test>consectetur</test> adipiscing <test>elit</test>.'
+                '<test>Lorem</test> ipsum dolor sit amet, <test>consectetur</test> adipiscing <test>elit</test>.',
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->wrapper = new WordWrapper;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -26,43 +27,47 @@ class ArgumentsSerializationTest extends TestCase
     private $serializer;
 
     /**
-     * Set up mocks.
+     * @test
      */
-    protected function setUp(): void
-    {
-        $this->serializer = $this->getMockBuilder(SerializerInterface::class)
-            ->getMock();
-        $this->serializer->expects($this->any())->method('serialize')->willReturnCallback(function ($param) {
-            return json_encode($param);
-        });
-    }
-
-    public function testModifyArgumentsDoNotExist()
+    public function modifyArgumentsDoNotExist()
     {
         $inputConfig = [
-            'data' => []
+            'data' => [],
         ];
         $modifier = new ArgumentsSerialization($this->serializer);
         $this->assertSame($inputConfig, $modifier->modify($inputConfig));
     }
 
-    public function testModifyArguments()
+    /**
+     * @test
+     */
+    public function modifyArguments()
     {
         $inputConfig = [
             'arguments' => [
                 'argument1' => [],
                 'argument2' => null,
-            ]
+            ],
         ];
 
         $expected = [
             'arguments' => [
                 'argument1' => json_encode([]),
                 'argument2' => null,
-            ]
+            ],
         ];
 
         $modifier = new ArgumentsSerialization($this->serializer);
         $this->assertEquals($expected, $modifier->modify($inputConfig));
+    }
+
+    /**
+     * Set up mocks.
+     */
+    protected function setUp(): void
+    {
+        $this->serializer = $this->getMockBuilder(SerializerInterface::class)
+            ->getMock();
+        $this->serializer->expects($this->any())->method('serialize')->willReturnCallback(fn($param) => json_encode($param));
     }
 }

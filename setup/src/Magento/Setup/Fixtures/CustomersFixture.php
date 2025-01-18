@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,35 +10,33 @@
 namespace Magento\Setup\Fixtures;
 
 use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory;
+use Magento\Setup\Model\Address\AddressDataGenerator;
 use Magento\Setup\Model\Customer\CustomerDataGenerator;
 use Magento\Setup\Model\Customer\CustomerDataGeneratorFactory;
 use Magento\Setup\Model\FixtureGenerator\CustomerGenerator;
+use Magento\Setup\Model\FixtureGenerator\CustomerTemplateGenerator;
 
 /**
  * Generate customers based on profile configuration
  * Supports the following format:
  * <customers>{customers amount}</customers>
- * Customers will have normal distribution on all available websites
+ * Customers will have normal distribution on all available websites.
  *
  * Each customer will have absolutely the same data
  * except customer email, customer group and customer addresses
  *
- * @see \Magento\Setup\Model\FixtureGenerator\CustomerTemplateGenerator
+ * @see CustomerTemplateGenerator
  * to view general customer data
- *
- * @see \Magento\Setup\Model\Customer\CustomerDataGenerator
+ * @see CustomerDataGenerator
  * if you need dynamically change data per each customer
- *
- * @see \Magento\Setup\Model\Address\AddressDataGenerator
+ * @see AddressDataGenerator
  * if you need dynamically change address data per each customer
- *
  * @see setup/performance-toolkit/config/customerConfig.xml
  * here you can change amount of addresses to be generated per each customer
  * Supports the following format:
  * <customer-config>
  *      <addresses-count>{amount of addresses}</addresses-count>
  * </customer-config>
- *
  * @see setup/performance-toolkit/profiles/ce/small.xml
  */
 class CustomersFixture extends Fixture
@@ -59,7 +60,7 @@ class CustomersFixture extends Fixture
      * @var array
      */
     private $defaultCustomerConfig = [
-        'addresses-count' => 2
+        'addresses-count' => 2,
     ];
 
     /**
@@ -77,7 +78,7 @@ class CustomersFixture extends Fixture
         FixtureModel $fixtureModel,
         CustomerGenerator $customerGenerator,
         CustomerDataGeneratorFactory $customerDataGeneratorFactory,
-        CollectionFactory $collectionFactory
+        CollectionFactory $collectionFactory,
     ) {
         parent::__construct($fixtureModel);
 
@@ -92,30 +93,21 @@ class CustomersFixture extends Fixture
     public function execute()
     {
         $customersNumber = $this->getCustomersAmount();
-        if (!$customersNumber) {
+
+        if (! $customersNumber) {
             return;
         }
 
         /** @var CustomerDataGenerator $customerDataGenerator */
         $customerDataGenerator = $this->customerDataGeneratorFactory->create(
-            $this->getCustomersConfig()
+            $this->getCustomersConfig(),
         );
 
         $fixtureMap = [
-            'customer_data' => function ($customerId) use ($customerDataGenerator) {
-                return $customerDataGenerator->generate($customerId);
-            },
+            'customer_data' => fn($customerId) => $customerDataGenerator->generate($customerId),
         ];
 
         $this->customerGenerator->generate($customersNumber, $fixtureMap);
-    }
-
-    /**
-     * @return int
-     */
-    private function getCustomersAmount()
-    {
-        return max(0, $this->fixtureModel->getValue('customers', 0) - $this->collectionFactory->create()->getSize());
     }
 
     /**
@@ -132,8 +124,16 @@ class CustomersFixture extends Fixture
     public function introduceParamLabels()
     {
         return [
-            'customers' => 'Customers'
+            'customers' => 'Customers',
         ];
+    }
+
+    /**
+     * @return int
+     */
+    private function getCustomersAmount()
+    {
+        return max(0, $this->fixtureModel->getValue('customers', 0) - $this->collectionFactory->create()->getSize());
     }
 
     /**

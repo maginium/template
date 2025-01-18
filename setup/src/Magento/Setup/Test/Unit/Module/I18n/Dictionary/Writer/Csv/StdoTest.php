@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,10 +13,13 @@ use PHPUnit\Framework\TestCase;
 
 class StdoTest extends TestCase
 {
-    public function testThatHandlerIsRight()
+    /**
+     * @test
+     */
+    public function thatHandlerIsRight()
     {
         $this->markTestSkipped('Skipped in #27500 due to testing protected/private methods and properties');
-        $writer = new Stdo();
+        $writer = new Stdo;
         $this->assertAttributeEquals(STDOUT, '_fileHandler', $writer);
     }
 }

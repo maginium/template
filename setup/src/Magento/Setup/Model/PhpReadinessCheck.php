@@ -1,20 +1,33 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 use Composer\Package\Version\VersionParser;
+use Exception;
 use Magento\Framework\Composer\ComposerInformation;
 use Magento\Framework\Convert\DataSize;
 use Magento\Setup\Controller\ResponseTypeInterface;
+use UnexpectedValueException;
 
 /**
  * Checks for PHP readiness. It is used by both Cron and Setup wizard.
  */
 class PhpReadinessCheck
 {
+    /**
+     * Data size converter.
+     *
+     * @var DataSize
+     */
+    protected $dataSize;
+
     /**
      * @var ComposerInformation
      */
@@ -31,14 +44,7 @@ class PhpReadinessCheck
     private $versionParser;
 
     /**
-     * Data size converter
-     *
-     * @var DataSize
-     */
-    protected $dataSize;
-
-    /**
-     * Constructor
+     * Constructor.
      *
      * @param ComposerInformation $composerInformation
      * @param PhpInformation $phpInformation
@@ -49,7 +55,7 @@ class PhpReadinessCheck
         ComposerInformation $composerInformation,
         PhpInformation $phpInformation,
         VersionParser $versionParser,
-        DataSize $dataSize
+        DataSize $dataSize,
     ) {
         $this->composerInformation = $composerInformation;
         $this->phpInformation = $phpInformation;
@@ -58,7 +64,7 @@ class PhpReadinessCheck
     }
 
     /**
-     * Checks PHP version
+     * Checks PHP version.
      *
      * @return array
      */
@@ -66,12 +72,12 @@ class PhpReadinessCheck
     {
         try {
             $requiredVersion = $this->composerInformation->getRequiredPhpVersion();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'responseType' => ResponseTypeInterface::RESPONSE_TYPE_ERROR,
                 'data' => [
                     'error' => 'phpVersionError',
-                    'message' => 'Cannot determine required PHP version: ' . $e->getMessage()
+                    'message' => 'Cannot determine required PHP version: ' . $e->getMessage(),
                 ],
             ];
         }
@@ -79,9 +85,11 @@ class PhpReadinessCheck
         $normalizedPhpVersion = $this->getNormalizedCurrentPhpVersion(PHP_VERSION);
         $currentPhpVersion = $this->versionParser->parseConstraints($normalizedPhpVersion);
         $responseType = ResponseTypeInterface::RESPONSE_TYPE_SUCCESS;
-        if (!$multipleConstraints->matches($currentPhpVersion)) {
+
+        if (! $multipleConstraints->matches($currentPhpVersion)) {
             $responseType = ResponseTypeInterface::RESPONSE_TYPE_ERROR;
         }
+
         return [
             'responseType' => $responseType,
             'data' => [
@@ -92,7 +100,7 @@ class PhpReadinessCheck
     }
 
     /**
-     * Checks PHP settings
+     * Checks PHP settings.
      *
      * @return array
      */
@@ -103,7 +111,7 @@ class PhpReadinessCheck
         $settings = array_merge(
             $this->checkXDebugNestedLevel(),
             $this->checkPopulateRawPostSetting(),
-            $this->checkFunctionsExistence()
+            $this->checkFunctionsExistence(),
         );
 
         foreach ($settings as $setting) {
@@ -114,12 +122,12 @@ class PhpReadinessCheck
 
         return [
             'responseType' => $responseType,
-            'data' => $settings
+            'data' => $settings,
         ];
     }
 
     /**
-     * Checks PHP settings for cron
+     * Checks PHP settings for cron.
      *
      * @return array
      */
@@ -129,7 +137,7 @@ class PhpReadinessCheck
 
         $settings = array_merge(
             $this->checkXDebugNestedLevel(),
-            $this->checkMemoryLimit()
+            $this->checkMemoryLimit(),
         );
 
         foreach ($settings as $setting) {
@@ -140,12 +148,12 @@ class PhpReadinessCheck
 
         return [
             'responseType' => $responseType,
-            'data' => $settings
+            'data' => $settings,
         ];
     }
 
     /**
-     * Checks PHP extensions
+     * Checks PHP extensions.
      *
      * @return array
      */
@@ -154,20 +162,22 @@ class PhpReadinessCheck
         try {
             $required = $this->composerInformation->getRequiredExtensions();
             $current = $this->phpInformation->getCurrent();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'responseType' => ResponseTypeInterface::RESPONSE_TYPE_ERROR,
                 'data' => [
                     'error' => 'phpExtensionError',
-                    'message' => 'Cannot determine required PHP extensions: ' . $e->getMessage()
+                    'message' => 'Cannot determine required PHP extensions: ' . $e->getMessage(),
                 ],
             ];
         }
         $responseType = ResponseTypeInterface::RESPONSE_TYPE_SUCCESS;
         $missing = array_values(array_diff($required, $current));
+
         if ($missing) {
             $responseType = ResponseTypeInterface::RESPONSE_TYPE_ERROR;
         }
+
         return [
             'responseType' => $responseType,
             'data' => [
@@ -178,7 +188,7 @@ class PhpReadinessCheck
     }
 
     /**
-     * Checks php memory limit
+     * Checks php memory limit.
      *
      * @return array
      */
@@ -207,7 +217,7 @@ class PhpReadinessCheck
                  (The command php --ini tells you where it is located.)
                  After that, restart your web server and try again.',
                 $currentMemoryLimit,
-                $minimumRequiredMemoryLimit
+                $minimumRequiredMemoryLimit,
             );
         } elseif ($currentMemoryInteger > 0
             && $this->dataSize->convertSizeToBytes($currentMemoryLimit)
@@ -221,7 +231,7 @@ class PhpReadinessCheck
                  (The command php --ini tells you where it is located.)
                  After that, restart your web server and try again.',
                 $currentMemoryLimit,
-                $recommendedForUpgradeMemoryLimit
+                $recommendedForUpgradeMemoryLimit,
             );
         }
 
@@ -235,7 +245,7 @@ class PhpReadinessCheck
     }
 
     /**
-     * Checks if xdebug.max_nesting_level is set 200 or more
+     * Checks if xdebug.max_nesting_level is set 200 or more.
      *
      * @return array
      */
@@ -245,6 +255,7 @@ class PhpReadinessCheck
         $error = false;
 
         $currentExtensions = $this->phpInformation->getCurrent();
+
         if (in_array('xdebug', $currentExtensions)) {
             $currentXDebugNestingLevel = (int)ini_get('xdebug.max_nesting_level');
             $minimumRequiredXDebugNestedLevel = $this->phpInformation->getRequiredMinimumXDebugNestedLevel();
@@ -258,12 +269,12 @@ class PhpReadinessCheck
                  Magento 2 requires it to be set to %d or more.
                  Edit your config, restart web server, and try again.',
                 $currentXDebugNestingLevel,
-                $minimumRequiredXDebugNestedLevel
+                $minimumRequiredXDebugNestedLevel,
             );
 
             $data['xdebug_max_nesting_level'] = [
                 'message' => $message,
-                'error' => $error
+                'error' => $error,
             ];
         }
 
@@ -271,7 +282,7 @@ class PhpReadinessCheck
     }
 
     /**
-     * Checks if PHP version >= 5.6.0 and always_populate_raw_post_data is set to -1
+     * Checks if PHP version >= 5.6.0 and always_populate_raw_post_data is set to -1.
      *
      * Beginning PHP 7.0, support for 'always_populate_raw_post_data' is going to removed.
      * And beginning PHP 5.6, a deprecated message is displayed if 'always_populate_raw_post_data'
@@ -293,6 +304,7 @@ class PhpReadinessCheck
         $checkVersionConstraint = $this->versionParser->parseConstraints('~5.6.0');
         $normalizedPhpVersion = $this->getNormalizedCurrentPhpVersion(PHP_VERSION);
         $currentVersion = $this->versionParser->parseConstraints($normalizedPhpVersion);
+
         if ($checkVersionConstraint->matches($currentVersion) && $iniSetting !== -1) {
             $error = true;
         }
@@ -304,20 +316,20 @@ class PhpReadinessCheck
 	        Please open your php.ini file and set always_populate_raw_post_data to -1.
  	        If you need more help please call your hosting provider.',
             PHP_VERSION,
-            (int)ini_get('always_populate_raw_post_data')
+            (int)ini_get('always_populate_raw_post_data'),
         );
 
         $data['always_populate_raw_post_data'] = [
             'message' => $message,
             'helpUrl' => 'http://php.net/manual/en/ini.core.php#ini.always-populate-settings-data',
-            'error' => $error
+            'error' => $error,
         ];
 
         return $data;
     }
 
     /**
-     * Check whether all special functions exists
+     * Check whether all special functions exists.
      *
      * @return array
      */
@@ -336,7 +348,7 @@ class PhpReadinessCheck
             $data['missed_function_' . $function['name']] = [
                 'message' => $function['message'],
                 'helpUrl' => $function['helpUrl'],
-                'error' => !function_exists($function['name']),
+                'error' => ! function_exists($function['name']),
             ];
         }
 
@@ -344,19 +356,21 @@ class PhpReadinessCheck
     }
 
     /**
-     * Normalize PHP Version
+     * Normalize PHP Version.
      *
      * @param string $version
+     *
      * @return string
      */
     private function getNormalizedCurrentPhpVersion($version)
     {
         try {
             $normalizedPhpVersion = $this->versionParser->normalize($version);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', $version);
             $normalizedPhpVersion = $this->versionParser->normalize($prettyVersion);
         }
+
         return $normalizedPhpVersion;
     }
 }

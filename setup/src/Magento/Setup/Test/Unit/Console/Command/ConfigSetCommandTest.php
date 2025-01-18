@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -35,6 +36,59 @@ class ConfigSetCommandTest extends TestCase
      */
     private $command;
 
+    /**
+     * @test
+     */
+    public function executeNoInteractive()
+    {
+        $this->deploymentConfig
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn(null);
+        $this->configModel
+            ->expects($this->once())
+            ->method('process')
+            ->with(['db-host' => 'host']);
+        $commandTester = new CommandTester($this->command);
+        $commandTester->execute(['--db-host' => 'host']);
+        $this->assertSame(
+            'You saved the new configuration.' . PHP_EOL,
+            $commandTester->getDisplay(),
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function executeInteractiveWithYes()
+    {
+        $this->deploymentConfig
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn('localhost');
+        $this->configModel
+            ->expects($this->once())
+            ->method('process')
+            ->with(['db-host' => 'host']);
+        $this->checkInteraction('Y');
+    }
+
+    /**
+     * @test
+     */
+    public function executeInteractiveWithNo()
+    {
+        $this->deploymentConfig
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn('localhost');
+        $this->configModel
+            ->expects($this->once())
+            ->method('process')
+            ->with([]);
+        $this->checkInteraction('n');
+    }
+
     protected function setUp(): void
     {
         $option = $this->createMock(TextConfigOption::class);
@@ -52,54 +106,11 @@ class ConfigSetCommandTest extends TestCase
         $this->command = new ConfigSetCommand($this->configModel, $moduleList, $this->deploymentConfig);
     }
 
-    public function testExecuteNoInteractive()
-    {
-        $this->deploymentConfig
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn(null);
-        $this->configModel
-            ->expects($this->once())
-            ->method('process')
-            ->with(['db-host' => 'host']);
-        $commandTester = new CommandTester($this->command);
-        $commandTester->execute(['--db-host' => 'host']);
-        $this->assertSame(
-            'You saved the new configuration.' . PHP_EOL,
-            $commandTester->getDisplay()
-        );
-    }
-
-    public function testExecuteInteractiveWithYes()
-    {
-        $this->deploymentConfig
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn('localhost');
-        $this->configModel
-            ->expects($this->once())
-            ->method('process')
-            ->with(['db-host' => 'host']);
-        $this->checkInteraction('Y');
-    }
-
-    public function testExecuteInteractiveWithNo()
-    {
-        $this->deploymentConfig
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn('localhost');
-        $this->configModel
-            ->expects($this->once())
-            ->method('process')
-            ->with([]);
-        $this->checkInteraction('n');
-    }
-
     /**
-     * Checks interaction with users on CLI
+     * Checks interaction with users on CLI.
      *
      * @param string $interactionType
+     *
      * @return void
      */
     private function checkInteraction($interactionType)
@@ -121,14 +132,15 @@ class ConfigSetCommandTest extends TestCase
 
         $commandTester = new CommandTester($this->command);
         $commandTester->execute(['--db-host' => 'host']);
-        if (strtolower($interactionType) === 'y') {
+
+        if (mb_strtolower($interactionType) === 'y') {
             $message = 'You saved the new configuration.' . PHP_EOL;
         } else {
             $message = 'You made no changes to the configuration.' . PHP_EOL;
         }
         $this->assertSame(
             $message,
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
     }
 }

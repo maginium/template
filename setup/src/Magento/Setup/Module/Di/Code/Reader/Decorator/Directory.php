@@ -1,18 +1,26 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Code\Reader\Decorator;
 
+use Magento\Framework\Code\Reader\ClassReader;
+use Magento\Framework\Code\Validator;
+use Magento\Framework\Exception\ValidatorException;
+use Magento\Setup\Module\Di\Code\Reader\ClassesScanner;
+use Magento\Setup\Module\Di\Code\Reader\ClassesScannerInterface;
 use Magento\Setup\Module\Di\Compiler\Log\Log;
+use ReflectionException;
 
 /**
- * Class Directory
- *
- * @package Magento\Setup\Module\Di\Code\Reader\Decorator
+ * Class Directory.
  */
-class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerInterface
+class Directory implements ClassesScannerInterface
 {
     /**
      * @var string
@@ -20,7 +28,7 @@ class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerIn
     private $current;
 
     /**
-     * @var \Magento\Setup\Module\Di\Compiler\Log\Log
+     * @var Log
      */
     private $log;
 
@@ -30,17 +38,17 @@ class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerIn
     private $relations = [];
 
     /**
-     * @var \Magento\Framework\Code\Validator
+     * @var Validator
      */
     private $validator;
 
     /**
-     * @var \Magento\Framework\Code\Reader\ClassReader
+     * @var ClassReader
      */
     private $classReader;
 
     /**
-     * @var \Magento\Setup\Module\Di\Code\Reader\ClassesScanner
+     * @var ClassesScanner
      */
     private $classesScanner;
 
@@ -50,18 +58,18 @@ class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerIn
     private $generationDir;
 
     /**
-     * @param \Magento\Setup\Module\Di\Compiler\Log\Log $log Logging object
-     * @param \Magento\Framework\Code\Reader\ClassReader $classReader
-     * @param \Magento\Setup\Module\Di\Code\Reader\ClassesScanner $classesScanner
-     * @param \Magento\Framework\Code\Validator $validator
+     * @param Log $log Logging object
+     * @param ClassReader $classReader
+     * @param ClassesScanner $classesScanner
+     * @param Validator $validator
      * @param string $generationDir directory where generated files is
      */
     public function __construct(
-        \Magento\Setup\Module\Di\Compiler\Log\Log $log,
-        \Magento\Framework\Code\Reader\ClassReader $classReader,
-        \Magento\Setup\Module\Di\Code\Reader\ClassesScanner $classesScanner,
-        \Magento\Framework\Code\Validator $validator,
-        $generationDir
+        Log $log,
+        ClassReader $classReader,
+        ClassesScanner $classesScanner,
+        Validator $validator,
+        $generationDir,
     ) {
         $this->log = $log;
         $this->classReader = $classReader;
@@ -73,20 +81,7 @@ class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerIn
     }
 
     /**
-     * ErrorHandler for logging
-     *
-     * @param int $errorNumber
-     * @param string $msg
-     *
-     * @return void
-     */
-    public function errorHandler($errorNumber, $msg)
-    {
-        $this->log->add(Log::COMPILATION_ERROR, $this->current, '#' . $errorNumber . ' ' . $msg);
-    }
-
-    /**
-     * Retrieves list of classes for given path
+     * Retrieves list of classes for given path.
      *
      * @param string $path path to dir with files
      *
@@ -96,19 +91,33 @@ class Directory implements \Magento\Setup\Module\Di\Code\Reader\ClassesScannerIn
     {
         foreach ($this->classesScanner->getList($path) as $className) {
             $this->current = $className; // for errorHandler function
+
             try {
-                if ($path != $this->generationDir) { // validate all classes except classes in generation dir
+                if ($path !== $this->generationDir) { // validate all classes except classes in generation dir
                     $this->validator->validate($className);
                 }
                 $this->relations[$className] = $this->classReader->getParents($className);
-            } catch (\Magento\Framework\Exception\ValidatorException $exception) {
+            } catch (ValidatorException $exception) {
                 $this->log->add(Log::COMPILATION_ERROR, $className, $exception->getMessage());
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
                 $this->log->add(Log::COMPILATION_ERROR, $className, $e->getMessage());
             }
         }
 
         return $this->relations;
+    }
+
+    /**
+     * ErrorHandler for logging.
+     *
+     * @param int $errorNumber
+     * @param string $msg
+     *
+     * @return void
+     */
+    public function errorHandler($errorNumber, $msg)
+    {
+        $this->log->add(Log::COMPILATION_ERROR, $this->current, '#' . $errorNumber . ' ' . $msg);
     }
 
     /**

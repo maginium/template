@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,29 +12,28 @@ namespace Magento\Setup\Module\Di\Compiler\Config\Chain;
 use Magento\Setup\Module\Di\Compiler\Config\ModificationInterface;
 
 /**
- * Class PreferencesResolving
- *
- * @package Magento\Setup\Module\Di\Compiler\Config\Chain
+ * Class PreferencesResolving.
  */
 class PreferencesResolving implements ModificationInterface
 {
     /**
-     * Argument keys which require recursive resolving
+     * Argument keys which require recursive resolving.
      */
     private const RECURSIVE_ARGUMENT_KEYS = [
         '_i_' => true, // shared instance of a class or interface
-        '_ins_' => true // non-shared instance of a class or interface
+        '_ins_' => true, // non-shared instance of a class or interface
     ];
 
     /**
-     * Modifies input config
+     * Modifies input config.
      *
      * @param array $config
+     *
      * @return array
      */
     public function modify(array $config)
     {
-        if (!isset($config['arguments'], $config['preferences'])) {
+        if (! isset($config['arguments'], $config['preferences'])) {
             return $config;
         }
 
@@ -41,20 +43,21 @@ class PreferencesResolving implements ModificationInterface
     }
 
     /**
-     * Replaces interfaces to their concrete implementations in scope of current config
+     * Replaces interfaces to their concrete implementations in scope of current config.
      *
      * @param array $argument
      * @param array $preferences
      */
     private function resolvePreferences(&$argument, &$preferences)
     {
-        if (!is_array($argument)) {
+        if (! is_array($argument)) {
             return;
         }
 
         foreach ($argument as $key => &$value) {
             if (isset(self::RECURSIVE_ARGUMENT_KEYS[$key])) {
                 $value = $this->resolvePreferenceRecursive($value, $preferences);
+
                 continue;
             }
 
@@ -63,7 +66,7 @@ class PreferencesResolving implements ModificationInterface
     }
 
     /**
-     * Resolves preference recursively
+     * Resolves preference recursively.
      *
      * @param string $value
      * @param array $preferences

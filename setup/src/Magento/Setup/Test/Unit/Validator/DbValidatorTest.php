@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -10,8 +11,11 @@ namespace Magento\Setup\Test\Unit\Validator;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Setup\Module\ConnectionFactory;
 use Magento\Setup\Validator\DbValidator;
+use PDO;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Zend_Db_Statement_Exception;
+use Zend_Db_Statement_Interface;
 
 class DbValidatorTest extends TestCase
 {
@@ -30,22 +34,17 @@ class DbValidatorTest extends TestCase
      */
     private $connection;
 
-    protected function setUp(): void
-    {
-        $this->connectionFactory = $this->createMock(ConnectionFactory::class);
-        $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
-        $this->connectionFactory->expects($this->any())->method('create')->willReturn($this->connection);
-        $this->dbValidator = new DbValidator($this->connectionFactory);
-    }
-
-    public function testCheckDatabaseConnection()
+    /**
+     * @test
+     */
+    public function checkDatabaseConnection()
     {
         $this->connection
             ->expects($this->exactly(2))
             ->method('fetchOne')
             ->with('SELECT version()')
             ->willReturn('5.6.0-0ubuntu0.12.04.1');
-        $pdo = $this->getMockForAbstractClass(\Zend_Db_Statement_Interface::class, [], '', false);
+        $pdo = $this->getMockForAbstractClass(Zend_Db_Statement_Interface::class, [], '', false);
         $this->connection
             ->expects($this->atLeastOnce())
             ->method('query')
@@ -75,15 +74,18 @@ class DbValidatorTest extends TestCase
             ->method('fetchAll')
             ->willReturnMap(
                 [
-                    [\PDO::FETCH_COLUMN, 0, $accessibleDbs],
-                    [\PDO::FETCH_NUM, null, $listOfPrivileges]
-                ]
+                    [PDO::FETCH_COLUMN, 0, $accessibleDbs],
+                    [PDO::FETCH_NUM, null, $listOfPrivileges],
+                ],
             );
         $this->assertTrue($this->dbValidator->checkDatabaseConnection('name', 'host', 'user', 'password'));
         $this->assertTrue($this->dbValidator->checkDatabaseConnection('name', 'host:3339', 'user', 'password'));
     }
 
-    public function testCheckDatabaseConnectionNotEnoughPrivileges()
+    /**
+     * @test
+     */
+    public function checkDatabaseConnectionNotEnoughPrivileges()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessage('Database user does not have enough privileges.');
@@ -92,7 +94,7 @@ class DbValidatorTest extends TestCase
             ->method('fetchOne')
             ->with('SELECT version()')
             ->willReturn('5.6.0-0ubuntu0.12.04.1');
-        $pdo = $this->getMockForAbstractClass(\Zend_Db_Statement_Interface::class, [], '', false);
+        $pdo = $this->getMockForAbstractClass(Zend_Db_Statement_Interface::class, [], '', false);
         $this->connection
             ->expects($this->atLeastOnce())
             ->method('query')
@@ -104,25 +106,28 @@ class DbValidatorTest extends TestCase
             ->method('fetchAll')
             ->willReturnMap(
                 [
-                    [\PDO::FETCH_COLUMN, 0, $accessibleDbs],
-                    [\PDO::FETCH_NUM, null, $listOfPrivileges]
-                ]
+                    [PDO::FETCH_COLUMN, 0, $accessibleDbs],
+                    [PDO::FETCH_NUM, null, $listOfPrivileges],
+                ],
             );
         $this->dbValidator->checkDatabaseConnection('name', 'host', 'user', 'password');
     }
 
-    public function testCheckDatabaseConnectionDbNotAccessible()
+    /**
+     * @test
+     */
+    public function checkDatabaseConnectionDbNotAccessible()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessage(
-            'Database \'name\' does not exist or specified database server user does not have'
+            'Database \'name\' does not exist or specified database server user does not have',
         );
         $this->connection
             ->expects($this->once())
             ->method('fetchOne')
             ->with('SELECT version()')
             ->willReturn('5.6.0-0ubuntu0.12.04.1');
-        $pdo = $this->getMockForAbstractClass(\Zend_Db_Statement_Interface::class, [], '', false);
+        $pdo = $this->getMockForAbstractClass(Zend_Db_Statement_Interface::class, [], '', false);
         $this->connection
             ->expects($this->atLeastOnce())
             ->method('query')
@@ -131,34 +136,46 @@ class DbValidatorTest extends TestCase
         $pdo->expects($this->atLeastOnce())
             ->method('fetchAll')
             ->willThrowException(
-                new \Zend_Db_Statement_Exception("1044 - Access denied for user 'user'@'host' to database 'name'")
+                new Zend_Db_Statement_Exception("1044 - Access denied for user 'user'@'host' to database 'name'"),
             );
 
         $this->dbValidator->checkDatabaseConnection('name', 'host', 'user', 'password');
     }
 
-    public function testCheckDatabaseTablePrefix()
+    /**
+     * @test
+     */
+    public function checkDatabaseTablePrefix()
     {
         $this->assertTrue($this->dbValidator->checkDatabaseTablePrefix('test'));
     }
 
-    public function testCheckDatabaseTablePrefixWrongFormat()
+    /**
+     * @test
+     */
+    public function checkDatabaseTablePrefixWrongFormat()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Please correct the table prefix format');
         $this->assertTrue($this->dbValidator->checkDatabaseTablePrefix('_wrong_format'));
     }
 
-    public function testCheckDatabaseTablePrefixWrongLength()
+    /**
+     * @test
+     */
+    public function checkDatabaseTablePrefixWrongLength()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Table prefix length can\'t be more than');
         $this->assertTrue(
-            $this->dbValidator->checkDatabaseTablePrefix('mvbXzXzItSIr0wrZW3gqgV2UKrWiK1Mj7bkBlW72rZW3gqgV2UKrWiK1M')
+            $this->dbValidator->checkDatabaseTablePrefix('mvbXzXzItSIr0wrZW3gqgV2UKrWiK1Mj7bkBlW72rZW3gqgV2UKrWiK1M'),
         );
     }
 
-    public function testCheckDatabaseConnectionFailed()
+    /**
+     * @test
+     */
+    public function checkDatabaseConnectionFailed()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessage('Database connection failure.');
@@ -168,7 +185,10 @@ class DbValidatorTest extends TestCase
         $this->dbValidator->checkDatabaseConnection('name', 'host', 'user', 'password');
     }
 
-    public function testCheckDatabaseConnectionIncompatible()
+    /**
+     * @test
+     */
+    public function checkDatabaseConnectionIncompatible()
     {
         $this->expectException('Magento\Setup\Exception');
         $this->expectExceptionMessage('Sorry, but we support MySQL version');
@@ -178,5 +198,13 @@ class DbValidatorTest extends TestCase
             ->with('SELECT version()')
             ->willReturn('5.5.40-0ubuntu0.12.04.1');
         $this->dbValidator->checkDatabaseConnection('name', 'host', 'user', 'password');
+    }
+
+    protected function setUp(): void
+    {
+        $this->connectionFactory = $this->createMock(ConnectionFactory::class);
+        $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
+        $this->connectionFactory->expects($this->any())->method('create')->willReturn($this->connection);
+        $this->dbValidator = new DbValidator($this->connectionFactory);
     }
 }

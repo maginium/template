@@ -1,55 +1,42 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Setup;
 
 use Magento\Framework\Setup\DataCacheInterface;
 
 /**
- * In-memory cache of DB data
+ * In-memory cache of DB data.
  */
 class SetupCache implements DataCacheInterface
 {
     /**
-     * Cache storage
+     * Cache storage.
      *
      * @var array
      */
     private $data = [];
 
     /**
-     * @inheritdoc
-     */
-    public function setRow($table, $parentId, $rowId, $value)
-    {
-        $value = $value !== false ? $value : [];
-        $this->data[$table][$parentId][$rowId] = $value;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setField($table, $parentId, $rowId, $field, $value)
-    {
-        $this->data[$table][$parentId][$rowId][$field] = $value;
-    }
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get($table, $parentId, $rowId, $field = null)
     {
-        if (null === $field) {
+        if ($field === null) {
             return $this->data[$table][$parentId][$rowId] ?? false;
-        } else {
-            return $this->data[$table][$parentId][$rowId][$field] ?? false;
         }
+
+        return $this->data[$table][$parentId][$rowId][$field] ?? false;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function remove($table, $parentId, $rowId)
     {
@@ -59,14 +46,31 @@ class SetupCache implements DataCacheInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     */
+    public function setRow($table, $parentId, $rowId, $value)
+    {
+        $value = $value !== false ? $value : [];
+        $this->data[$table][$parentId][$rowId] = $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setField($table, $parentId, $rowId, $field, $value)
+    {
+        $this->data[$table][$parentId][$rowId][$field] = $value;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function has($table, $parentId, $rowId, $field = null)
     {
-        if (null === $field) {
-            return !empty($this->data[$table][$parentId][$rowId]);
-        } else {
-            return !empty($this->data[$table][$parentId][$rowId][$field]);
+        if ($field === null) {
+            return ! empty($this->data[$table][$parentId][$rowId]);
         }
+
+        return ! empty($this->data[$table][$parentId][$rowId][$field]);
     }
 }

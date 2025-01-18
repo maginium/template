@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -51,6 +52,38 @@ class ModuleRegistryUninstallerTest extends TestCase
      */
     private $moduleRegistryUninstaller;
 
+    /**
+     * @test
+     */
+    public function removeModulesFromDb()
+    {
+        $this->output->expects($this->atLeastOnce())->method('writeln');
+        $this->dataSetup->expects($this->atLeastOnce())->method('deleteTableRow');
+        $this->moduleRegistryUninstaller->removeModulesFromDb($this->output, ['moduleA', 'moduleB']);
+    }
+
+    /**
+     * @test
+     */
+    public function removeModulesFromDeploymentConfig()
+    {
+        $this->output->expects($this->atLeastOnce())->method('writeln');
+        $this->deploymentConfig->expects($this->once())
+            ->method('getConfigData')
+            ->willReturn(['moduleA' => 1, 'moduleB' => 1, 'moduleC' => 1, 'moduleD' => 1]);
+        $this->loader->expects($this->once())->method('load')->willReturn(['moduleC' => [], 'moduleD' => []]);
+        $this->writer->expects($this->once())
+            ->method('saveConfig')
+            ->with(
+                [
+                    ConfigFilePool::APP_CONFIG => [
+                        ConfigOptionsListConstants::KEY_MODULES => ['moduleC' => 1, 'moduleD' => 1],
+                    ],
+                ],
+            );
+        $this->moduleRegistryUninstaller->removeModulesFromDeploymentConfig($this->output, ['moduleA', 'moduleB']);
+    }
+
     protected function setUp(): void
     {
         $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
@@ -64,33 +97,7 @@ class ModuleRegistryUninstallerTest extends TestCase
             $dataSetupFactory,
             $this->deploymentConfig,
             $this->writer,
-            $this->loader
+            $this->loader,
         );
-    }
-
-    public function testRemoveModulesFromDb()
-    {
-        $this->output->expects($this->atLeastOnce())->method('writeln');
-        $this->dataSetup->expects($this->atLeastOnce())->method('deleteTableRow');
-        $this->moduleRegistryUninstaller->removeModulesFromDb($this->output, ['moduleA', 'moduleB']);
-    }
-
-    public function testRemoveModulesFromDeploymentConfig()
-    {
-        $this->output->expects($this->atLeastOnce())->method('writeln');
-        $this->deploymentConfig->expects($this->once())
-            ->method('getConfigData')
-            ->willReturn(['moduleA' => 1, 'moduleB' => 1, 'moduleC' => 1, 'moduleD' => 1]);
-        $this->loader->expects($this->once())->method('load')->willReturn(['moduleC' => [], 'moduleD' => []]);
-        $this->writer->expects($this->once())
-            ->method('saveConfig')
-            ->with(
-                [
-                    ConfigFilePool::APP_CONFIG => [
-                        ConfigOptionsListConstants::KEY_MODULES => ['moduleC' => 1, 'moduleD' => 1]
-                    ]
-                ]
-            );
-        $this->moduleRegistryUninstaller->removeModulesFromDeploymentConfig($this->output, ['moduleA', 'moduleB']);
     }
 }

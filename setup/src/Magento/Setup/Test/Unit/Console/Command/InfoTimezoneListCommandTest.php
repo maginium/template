@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,22 +13,26 @@ use Magento\Setup\Console\Command\InfoTimezoneListCommand;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableFactory;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class InfoTimezoneListCommandTest extends TestCase
 {
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $timezones = [
-            'timezone' => 'timezone description'
+            'timezone' => 'timezone description',
         ];
 
         $table = $this->createMock(Table::class);
         $table->expects($this->once())->method('setHeaders')->with(['Timezone', 'Code']);
         $table->expects($this->once())->method('addRow')->with(['timezone description', 'timezone']);
 
-        /** @var \Symfony\Component\Console\Helper\TableFactory|MockObject $helperSet */
-        $tableFactoryMock = $this->createMock(\Symfony\Component\Console\Helper\TableFactory::class);
+        /** @var TableFactory|MockObject $helperSet */
+        $tableFactoryMock = $this->createMock(TableFactory::class);
         $tableFactoryMock->expects($this->once())->method('create')->willReturn($table);
 
         /** @var Lists|MockObject $list */

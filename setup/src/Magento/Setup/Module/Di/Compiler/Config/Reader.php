@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,9 +15,10 @@ use Magento\Setup\Module\Di\Code\Reader\ClassReaderDecorator;
 use Magento\Setup\Module\Di\Code\Reader\Type;
 use Magento\Setup\Module\Di\Compiler\ArgumentsResolverFactory;
 use Magento\Setup\Module\Di\Definition\Collection as DefinitionsCollection;
+use ReflectionException;
 
 /**
- * DI Confir Reader
+ * DI Confir Reader.
  *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
@@ -57,7 +61,7 @@ class Reader
         App\ObjectManager\ConfigLoader $configLoader,
         ArgumentsResolverFactory $argumentsResolverFactory,
         ClassReaderDecorator $classReaderDecorator,
-        Type $typeReader
+        Type $typeReader,
     ) {
         $this->diContainerConfig = $diContainerConfig;
         $this->configLoader = $configLoader;
@@ -67,7 +71,7 @@ class Reader
     }
 
     /**
-     * Generates config per scope and returns it
+     * Generates config per scope and returns it.
      *
      * @param DefinitionsCollection $definitionsCollection
      * @param string $areaCode
@@ -76,9 +80,10 @@ class Reader
      */
     public function generateCachePerScope(
         DefinitionsCollection $definitionsCollection,
-        $areaCode
+        $areaCode,
     ) {
         $areaConfig = clone $this->diContainerConfig;
+
         if ($areaCode !== App\Area::AREA_GLOBAL) {
             $areaConfig->extend($this->configLoader->load($areaCode));
         }
@@ -90,6 +95,7 @@ class Reader
 
         foreach ($definitionsCollection->getInstancesNamesList() as $instanceName) {
             $preference = $areaConfig->getPreference($instanceName);
+
             if ($instanceName !== $preference) {
                 $config['preferences'][$instanceName] = $preference;
             }
@@ -103,30 +109,35 @@ class Reader
     }
 
     /**
-     * Returns constructor with defined arguments
+     * Returns constructor with defined arguments.
      *
      * @param DefinitionsCollection $definitionsCollection
      * @param ConfigInterface $config
+     *
+     * @throws ReflectionException
+     *
      * @return array|mixed
-     * @throws \ReflectionException
      */
     private function getConfigForScope(DefinitionsCollection $definitionsCollection, ConfigInterface $config)
     {
         $constructors = [];
         $argumentsResolver = $this->argumentsResolverFactory->create($config);
+
         foreach ($definitionsCollection->getCollection() as $instanceType => $constructor) {
-            if (!$this->typeReader->isConcrete($instanceType)) {
+            if (! $this->typeReader->isConcrete($instanceType)) {
                 continue;
             }
             $constructors[$instanceType] = $argumentsResolver->getResolvedConstructorArguments(
                 $instanceType,
-                $constructor
+                $constructor,
             );
         }
+
         foreach (array_keys($config->getVirtualTypes()) as $instanceType) {
             $originalType = $config->getInstanceType($instanceType);
-            if (!$definitionsCollection->hasInstance($originalType)) {
-                if (!$this->typeReader->isConcrete($originalType)) {
+
+            if (! $definitionsCollection->hasInstance($originalType)) {
+                if (! $this->typeReader->isConcrete($originalType)) {
                     continue;
                 }
                 $constructor = $this->classReaderDecorator->getConstructor($originalType);
@@ -135,14 +146,15 @@ class Reader
             }
             $constructors[$instanceType] = $argumentsResolver->getResolvedConstructorArguments(
                 $instanceType,
-                $constructor
+                $constructor,
             );
         }
+
         return $constructors;
     }
 
     /**
-     * Returns preferences for third party code
+     * Returns preferences for third party code.
      *
      * @param ConfigInterface $config
      * @param DefinitionsCollection $definitionsCollection

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -38,14 +39,10 @@ class CatalogPriceRulesFixtureTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-
-        $this->model = new CatalogPriceRulesFixture($this->fixtureModelMock);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $storeMock = $this->createMock(Store::class);
         $storeMock->expects($this->once())
@@ -73,7 +70,7 @@ class CatalogPriceRulesFixtureTest extends TestCase
             true,
             true,
             true,
-            ['getAllChildren']
+            ['getAllChildren'],
         );
         $abstractDbMock->expects($this->once())
             ->method('getAllChildren')
@@ -100,7 +97,7 @@ class CatalogPriceRulesFixtureTest extends TestCase
         $valueMap = [
             [Rule::class, $modelMock],
             [Category::class, $categoryMock],
-            [MetadataPool::class, $metadataPoolMock]
+            [MetadataPool::class, $metadataPoolMock],
         ];
         $metadataPoolMock
             ->expects($this->once())
@@ -127,7 +124,10 @@ class CatalogPriceRulesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testNoFixtureConfigValue()
+    /**
+     * @test
+     */
+    public function noFixtureConfigValue()
     {
         $ruleMock = $this->createMock(\Magento\SalesRule\Model\Rule::class);
         $ruleMock->expects($this->never())->method('save');
@@ -150,15 +150,28 @@ class CatalogPriceRulesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating catalog price rules', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([
-            'catalog_price_rules' => 'Catalog Price Rules'
+            'catalog_price_rules' => 'Catalog Price Rules',
         ], $this->model->introduceParamLabels());
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+
+        $this->model = new CatalogPriceRulesFixture($this->fixtureModelMock);
     }
 }

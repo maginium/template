@@ -1,4 +1,5 @@
 <?php
+
 /***
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,7 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Testcase for CryptKeyGenerator
+ * Testcase for CryptKeyGenerator.
  */
 class CryptKeyGeneratorTest extends TestCase
 {
@@ -27,16 +28,10 @@ class CryptKeyGeneratorTest extends TestCase
      */
     private $cryptKeyGenerator;
 
-    protected function setUp(): void
-    {
-        $this->randomMock = $this->getMockBuilder(Random::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->cryptKeyGenerator = new CryptKeyGenerator($this->randomMock);
-    }
-
-    public function testStringForHashingIsReadFromRandom()
+    /**
+     * @test
+     */
+    public function stringForHashingIsReadFromRandom()
     {
         $this->randomMock
             ->expects($this->once())
@@ -44,5 +39,14 @@ class CryptKeyGeneratorTest extends TestCase
             ->willReturn('');
 
         $this->cryptKeyGenerator->generate();
+    }
+
+    protected function setUp(): void
+    {
+        $this->randomMock = $this->getMockBuilder(Random::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->cryptKeyGenerator = new CryptKeyGenerator($this->randomMock);
     }
 }

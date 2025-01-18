@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Unit test for \Magento\Setup\Fixtures\EavVariationsFixture.
+ *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  */
 class EavVariationsFixtureTest extends TestCase
@@ -63,49 +65,13 @@ class EavVariationsFixtureTest extends TestCase
     private $attributeFactoryMock;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->eavConfigMock = $this->getMockBuilder(Config::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storeManagerMock = $this->getMockBuilder(StoreManager::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->attributeSetMock = $this->getMockBuilder(Set::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->cacheMock = $this->getMockBuilder(CacheInterface::class)
-            ->disableOriginalConstructor()
-            ->getMockForAbstractClass();
-        $this->attributeFactoryMock = $this->getMockBuilder(AttributeFactory::class)
-            ->onlyMethods(['create'])
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->model = (new ObjectManager($this))->getObject(
-            EavVariationsFixture::class,
-            [
-                'fixtureModel' => $this->fixtureModelMock,
-                'eavConfig' => $this->eavConfigMock,
-                'storeManager' => $this->storeManagerMock,
-                'attributeSet' => $this->attributeSetMock,
-                'cache' => $this->cacheMock,
-                'attributeFactory' => $this->attributeFactoryMock,
-            ]
-        );
-    }
-
-    /**
      * Test for execute method when attribute already exists.
      *
      * @return void
+     *
+     * @test
      */
-    public function testDoNotExecuteWhenAttributeAlreadyExist()
+    public function doNotExecuteWhenAttributeAlreadyExist()
     {
         $this->fixtureModelMock->expects($this->once())
             ->method('getValue')->with('configurable_products', [])->willReturn(10);
@@ -120,8 +86,10 @@ class EavVariationsFixtureTest extends TestCase
      * Test for execute method.
      *
      * @return void
+     *
+     * @test
      */
-    public function testExecute()
+    public function execute()
     {
         $storeId = 5;
         $this->eavConfigMock->expects($this->once())
@@ -196,8 +164,8 @@ class EavVariationsFixtureTest extends TestCase
                         'optionvisual' => [
                             'value' => ['option_1' => ['option 1']],
                         ],
-                    ]
-                ]
+                    ],
+                ],
             )->willReturn($attributeMock);
         $this->cacheMock->expects($this->once())
             ->method('remove')->with(Config::ATTRIBUTES_CACHE_ID . Product::ENTITY);
@@ -209,8 +177,10 @@ class EavVariationsFixtureTest extends TestCase
      * Test for getActionTitle method.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGetActionTitle()
+    public function getActionTitle()
     {
         $this->assertSame('Generating configurable EAV variations', $this->model->getActionTitle());
     }
@@ -219,9 +189,49 @@ class EavVariationsFixtureTest extends TestCase
      * Test for introduceParamLabels method.
      *
      * @return void
+     *
+     * @test
      */
-    public function testIntroduceParamLabels()
+    public function introduceParamLabels()
     {
         $this->assertSame([], $this->model->introduceParamLabels());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->eavConfigMock = $this->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->storeManagerMock = $this->getMockBuilder(StoreManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->attributeSetMock = $this->getMockBuilder(Set::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->cacheMock = $this->getMockBuilder(CacheInterface::class)
+            ->disableOriginalConstructor()
+            ->getMockForAbstractClass();
+        $this->attributeFactoryMock = $this->getMockBuilder(AttributeFactory::class)
+            ->onlyMethods(['create'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->model = (new ObjectManager($this))->getObject(
+            EavVariationsFixture::class,
+            [
+                'fixtureModel' => $this->fixtureModelMock,
+                'eavConfig' => $this->eavConfigMock,
+                'storeManager' => $this->storeManagerMock,
+                'attributeSet' => $this->attributeSetMock,
+                'cache' => $this->cacheMock,
+                'attributeFactory' => $this->attributeFactoryMock,
+            ],
+        );
     }
 }

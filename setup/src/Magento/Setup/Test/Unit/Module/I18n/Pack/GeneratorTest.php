@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -45,26 +46,10 @@ class GeneratorTest extends TestCase
      */
     protected $_generator;
 
-    protected function setUp(): void
-    {
-        $this->dictionaryLoaderMock =
-            $this->getMockForAbstractClass(FileInterface::class);
-        $this->packWriterMock = $this->getMockForAbstractClass(WriterInterface::class);
-        $this->factoryMock = $this->createMock(Factory::class);
-        $this->dictionaryMock = $this->createMock(Dictionary::class);
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->_generator = $objectManagerHelper->getObject(
-            Generator::class,
-            [
-                'dictionaryLoader' => $this->dictionaryLoaderMock,
-                'packWriter' => $this->packWriterMock,
-                'factory' => $this->factoryMock
-            ]
-        );
-    }
-
-    public function testGenerate()
+    /**
+     * @test
+     */
+    public function generate()
     {
         $dictionaryPath = 'dictionary_path';
         $localeString = 'locale';
@@ -92,7 +77,10 @@ class GeneratorTest extends TestCase
         $this->_generator->generate($dictionaryPath, $localeString, $mode, $allowDuplicates);
     }
 
-    public function testGenerateEmptyFile()
+    /**
+     * @test
+     */
+    public function generateEmptyFile()
     {
         $this->expectException('UnexpectedValueException');
         $this->expectExceptionMessage('No phrases have been found by the specified path.');
@@ -117,7 +105,10 @@ class GeneratorTest extends TestCase
         $this->_generator->generate($dictionaryPath, $localeString, $mode, $allowDuplicates);
     }
 
-    public function testGenerateWithNotAllowedDuplicatesAndDuplicatesExist()
+    /**
+     * @test
+     */
+    public function generateWithNotAllowedDuplicatesAndDuplicatesExist()
     {
         $error = "Duplicated translation is found, but it is not allowed.\n"
             . "The phrase \"phrase1\" is translated in 1 places.\n"
@@ -144,5 +135,24 @@ class GeneratorTest extends TestCase
             ->willReturn([[$phraseFirstMock], [$phraseSecondMock]]);
 
         $this->_generator->generate('dictionary_path', 'locale', 'mode', $allowDuplicates);
+    }
+
+    protected function setUp(): void
+    {
+        $this->dictionaryLoaderMock =
+            $this->getMockForAbstractClass(FileInterface::class);
+        $this->packWriterMock = $this->getMockForAbstractClass(WriterInterface::class);
+        $this->factoryMock = $this->createMock(Factory::class);
+        $this->dictionaryMock = $this->createMock(Dictionary::class);
+
+        $objectManagerHelper = new ObjectManager($this);
+        $this->_generator = $objectManagerHelper->getObject(
+            Generator::class,
+            [
+                'dictionaryLoader' => $this->dictionaryLoaderMock,
+                'packWriter' => $this->packWriterMock,
+                'factory' => $this->factoryMock,
+            ],
+        );
     }
 }

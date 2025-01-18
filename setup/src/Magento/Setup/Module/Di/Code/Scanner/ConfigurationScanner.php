@@ -1,40 +1,46 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Code\Scanner;
 
 use Magento\Framework\App\Area;
+use Magento\Framework\App\AreaList;
+use Magento\Framework\App\Config\FileResolver;
 
 class ConfigurationScanner
 {
     /**
-     * @var \Magento\Framework\App\Config\FileResolver
+     * @var FileResolver
      */
     private $fileResolver;
 
     /**
-     * @var \Magento\Framework\App\AreaList
+     * @var AreaList
      */
     private $areaList;
 
     /**
      * ConfigurationScanner constructor.
      *
-     * @param \Magento\Framework\App\Config\FileResolver $fileResolver
-     * @param \Magento\Framework\App\AreaList $areaList
+     * @param FileResolver $fileResolver
+     * @param AreaList $areaList
      */
     public function __construct(
-        \Magento\Framework\App\Config\FileResolver $fileResolver,
-        \Magento\Framework\App\AreaList $areaList
+        FileResolver $fileResolver,
+        AreaList $areaList,
     ) {
         $this->fileResolver = $fileResolver;
         $this->areaList = $areaList;
     }
 
     /**
-     * Scan configuration files
+     * Scan configuration files.
      *
      * @param string $fileName
      *
@@ -45,14 +51,16 @@ class ConfigurationScanner
         $files = [];
         $areaCodes = array_merge(
             ['primary', Area::AREA_GLOBAL],
-            $this->areaList->getCodes()
+            $this->areaList->getCodes(),
         );
+
         foreach ($areaCodes as $area) {
             $files = array_merge_recursive(
                 $files,
-                $this->fileResolver->get($fileName, $area)->toArray()
+                $this->fileResolver->get($fileName, $area)->toArray(),
             );
         }
+
         return array_keys($files);
     }
 }

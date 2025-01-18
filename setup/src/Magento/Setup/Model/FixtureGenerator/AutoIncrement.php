@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,13 +9,15 @@
 
 namespace Magento\Setup\Model\FixtureGenerator;
 
+use Magento\Framework\App\ResourceConnection;
+
 /**
  * Class provides information about MySQL auto_increment configuration setting.
  */
 class AutoIncrement
 {
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @var ResourceConnection
      */
     private $resource;
 
@@ -22,9 +27,9 @@ class AutoIncrement
     private $incrementValue;
 
     /**
-     * @param \Magento\Framework\App\ResourceConnection $resource
+     * @param ResourceConnection $resource
      */
-    public function __construct(\Magento\Framework\App\ResourceConnection $resource)
+    public function __construct(ResourceConnection $resource)
     {
         $this->resource = $resource;
     }
@@ -38,8 +43,9 @@ class AutoIncrement
     {
         if ($this->incrementValue === null) {
             $increment = $this->resource->getConnection()->fetchRow('SHOW VARIABLES LIKE "auto_increment_increment"');
-            $this->incrementValue = !empty($increment['Value']) ? (int)$increment['Value'] : 1;
+            $this->incrementValue = ! empty($increment['Value']) ? (int)$increment['Value'] : 1;
         }
+
         return $this->incrementValue;
     }
 }

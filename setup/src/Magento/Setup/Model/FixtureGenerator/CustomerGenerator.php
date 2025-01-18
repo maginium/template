@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,10 +9,13 @@
 
 namespace Magento\Setup\Model\FixtureGenerator;
 
+use Closure;
 use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
 
 /**
- * Customer generator
+ * Customer generator.
  */
 class CustomerGenerator
 {
@@ -24,24 +30,24 @@ class CustomerGenerator
     private $customerTemplateGenerator;
 
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @var ResourceConnection
      */
     private $resourceConnection;
 
     /**
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface
+     * @var AdapterInterface
      */
     private $connection;
 
     /**
      * @param EntityGeneratorFactory $entityGeneratorFactory
      * @param CustomerTemplateGenerator $customerTemplateGenerator
-     * @param \Magento\Framework\App\ResourceConnection $resourceConnection
+     * @param ResourceConnection $resourceConnection
      */
     public function __construct(
         EntityGeneratorFactory $entityGeneratorFactory,
         CustomerTemplateGenerator $customerTemplateGenerator,
-        \Magento\Framework\App\ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
     ) {
         $this->entityGeneratorFactory = $entityGeneratorFactory;
         $this->customerTemplateGenerator = $customerTemplateGenerator;
@@ -49,10 +55,11 @@ class CustomerGenerator
     }
 
     /**
-     * Generate entities
+     * Generate entities.
      *
      * @param int $customers
      * @param array $fixtureMap
+     *
      * @return void
      */
     public function generate($customers, array $fixtureMap)
@@ -62,20 +69,21 @@ class CustomerGenerator
                 'entityType' => CustomerInterface::class,
                 'customTableMap' => [
                     'customer_entity' => [
-                        'handler' => $this->getCustomerEntityHandler()
+                        'handler' => $this->getCustomerEntityHandler(),
                     ],
 
                     'customer_address_entity' => [
-                        'handler' => $this->getCustomerAddressEntityHandler()
-                    ]
+                        'handler' => $this->getCustomerAddressEntityHandler(),
+                    ],
                 ],
             ])->generate(
                 $this->customerTemplateGenerator,
                 $customers,
-                function ($customerId) use ($fixtureMap) {
+                function($customerId) use ($fixtureMap) {
                     $fixtureMap['customer_data'] = call_user_func($fixtureMap['customer_data'], $customerId);
+
                     return $fixtureMap;
-                }
+                },
             );
 
         $this->addDefaultAddresses();
@@ -83,42 +91,40 @@ class CustomerGenerator
 
     /**
      * Creates closure that is used
-     * to replace default customer data with data from fixture
+     * to replace default customer data with data from fixture.
      *
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
-     * @return \Closure
+     *
+     * @return Closure
      */
     private function getCustomerEntityHandler()
     {
-        return function ($entityId, $entityNumber, $fixtureMap, $binds) {
-            return array_map(
-                'array_merge',
-                $binds,
-                array_fill(0, count($binds), $fixtureMap['customer_data']['customer'])
-            );
-        };
+        return fn($entityId, $entityNumber, $fixtureMap, $binds) => array_map(
+            'array_merge',
+            $binds,
+            array_fill(0, count($binds), $fixtureMap['customer_data']['customer']),
+        );
     }
 
     /**
      * Creates closure that is used
-     * to replace default customer address data with data from fixture
+     * to replace default customer address data with data from fixture.
      *
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
-     * @return \Closure
+     *
+     * @return Closure
      */
     private function getCustomerAddressEntityHandler()
     {
-        return function ($entityId, $entityNumber, $fixtureMap, $binds) {
-            return array_map(
-                'array_merge',
-                array_fill(0, count($fixtureMap['customer_data']['addresses']), reset($binds)),
-                $fixtureMap['customer_data']['addresses']
-            );
-        };
+        return fn($entityId, $entityNumber, $fixtureMap, $binds) => array_map(
+            'array_merge',
+            array_fill(0, count($fixtureMap['customer_data']['addresses']), reset($binds)),
+            $fixtureMap['customer_data']['addresses'],
+        );
     }
 
     /**
-     * Set default billing and shipping addresses for customer
+     * Set default billing and shipping addresses for customer.
      *
      * @return void
      */
@@ -127,15 +133,16 @@ class CustomerGenerator
         $batchSize = 10000;
         $customerTableName = $this->resourceConnection->getTableName('customer_entity');
         $customerAddressTableName = $this->resourceConnection->getTableName('customer_address_entity');
-        $customerMaxId = $this->getConnection()->fetchOne("select max(entity_id) from `$customerTableName`");
+        $customerMaxId = $this->getConnection()->fetchOne("select max(entity_id) from `{$customerTableName}`");
+
         for ($i = 1; $i < $customerMaxId; $i += $batchSize) {
             $this->getConnection()->query(
-            "
-                    update `$customerTableName` customer
+                "
+                    update `{$customerTableName}` customer
                         join (
                             select
                                 parent_id, min(entity_id) as min, max(entity_id) as max
-                            from `$customerAddressTableName`
+                            from `{$customerAddressTableName}`
                             group by parent_id
                         ) customer_address on customer_address.parent_id = customer.entity_id
                     set
@@ -145,8 +152,8 @@ class CustomerGenerator
                 ",
                 [
                     'min' => $i,
-                    'max' => $i + $batchSize
-                ]
+                    'max' => $i + $batchSize,
+                ],
             );
         }
     }
@@ -156,7 +163,7 @@ class CustomerGenerator
      */
     private function getConnection()
     {
-        if (null === $this->connection) {
+        if ($this->connection === null) {
             $this->connection = $this->resourceConnection->getConnection();
         }
 

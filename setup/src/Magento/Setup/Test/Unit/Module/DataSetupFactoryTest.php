@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,7 +19,10 @@ use PHPUnit\Framework\TestCase;
 
 class DataSetupFactoryTest extends TestCase
 {
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $resource = $this->createMock(ResourceConnection::class);
         $filesystem = $this->createMock(Filesystem::class);
@@ -32,7 +36,7 @@ class DataSetupFactoryTest extends TestCase
             ObjectManagerInterface::class,
             [],
             '',
-            false
+            false,
         );
         $objectManager->expects($this->once())
             ->method('get')

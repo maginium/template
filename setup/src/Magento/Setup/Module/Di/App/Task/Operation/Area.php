@@ -1,17 +1,23 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\App\Task\Operation;
 
-use Magento\Setup\Module\Di\App\Task\OperationInterface;
 use Magento\Framework\App;
+use Magento\Framework\App\ObjectManager\ConfigWriterInterface;
+use Magento\Setup\Module\Di\App\Task\OperationInterface;
 use Magento\Setup\Module\Di\Compiler\Config;
+use Magento\Setup\Module\Di\Compiler\Config\ModificationChain;
 use Magento\Setup\Module\Di\Definition\Collection as DefinitionsCollection;
 
 /**
- * Area configuration aggregation
+ * Area configuration aggregation.
  */
 class Area implements OperationInterface
 {
@@ -31,7 +37,7 @@ class Area implements OperationInterface
     private $configReader;
 
     /**
-     * @var \Magento\Framework\App\ObjectManager\ConfigWriterInterface
+     * @var ConfigWriterInterface
      */
     private $configWriter;
 
@@ -41,7 +47,7 @@ class Area implements OperationInterface
     private $data = [];
 
     /**
-     * @var \Magento\Setup\Module\Di\Compiler\Config\ModificationChain
+     * @var ModificationChain
      */
     private $modificationChain;
 
@@ -49,17 +55,17 @@ class Area implements OperationInterface
      * @param App\AreaList $areaList
      * @param \Magento\Setup\Module\Di\Code\Reader\Decorator\Area $areaInstancesNamesList
      * @param Config\Reader $configReader
-     * @param \Magento\Framework\App\ObjectManager\ConfigWriterInterface $configWriter
-     * @param \Magento\Setup\Module\Di\Compiler\Config\ModificationChain $modificationChain
+     * @param ConfigWriterInterface $configWriter
+     * @param ModificationChain $modificationChain
      * @param array $data
      */
     public function __construct(
         App\AreaList $areaList,
         \Magento\Setup\Module\Di\Code\Reader\Decorator\Area $areaInstancesNamesList,
         Config\Reader $configReader,
-        \Magento\Framework\App\ObjectManager\ConfigWriterInterface $configWriter,
-        Config\ModificationChain $modificationChain,
-        $data = []
+        ConfigWriterInterface $configWriter,
+        ModificationChain $modificationChain,
+        $data = [],
     ) {
         $this->areaList = $areaList;
         $this->areaInstancesNamesList = $areaInstancesNamesList;
@@ -70,7 +76,7 @@ class Area implements OperationInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function doOperation()
     {
@@ -78,11 +84,13 @@ class Area implements OperationInterface
             return;
         }
 
-        $definitionsCollection = new DefinitionsCollection();
+        $definitionsCollection = new DefinitionsCollection;
+
         foreach ($this->data as $paths) {
-            if (!is_array($paths)) {
+            if (! is_array($paths)) {
                 $paths = (array)$paths;
             }
+
             foreach ($paths as $path) {
                 $definitionsCollection->addCollection($this->getDefinitionsCollection($path));
             }
@@ -91,6 +99,7 @@ class Area implements OperationInterface
         $this->sortDefinitions($definitionsCollection);
 
         $areaCodes = array_merge([App\Area::AREA_GLOBAL], $this->areaList->getCodes());
+
         foreach ($areaCodes as $areaCode) {
             $config = $this->configReader->generateCachePerScope($definitionsCollection, $areaCode);
             $config = $this->modificationChain->modify($config);
@@ -105,22 +114,7 @@ class Area implements OperationInterface
     }
 
     /**
-     * Returns definitions collection
-     *
-     * @param string $path
-     * @return DefinitionsCollection
-     */
-    protected function getDefinitionsCollection($path)
-    {
-        $definitions = new DefinitionsCollection();
-        foreach ($this->areaInstancesNamesList->getList($path) as $className => $constructorArguments) {
-            $definitions->addDefinition($className, $constructorArguments);
-        }
-        return $definitions;
-    }
-
-    /**
-     * Returns operation name
+     * Returns operation name.
      *
      * @return string
      */
@@ -130,7 +124,25 @@ class Area implements OperationInterface
     }
 
     /**
-     * Sort definitions to make reproducible result
+     * Returns definitions collection.
+     *
+     * @param string $path
+     *
+     * @return DefinitionsCollection
+     */
+    protected function getDefinitionsCollection($path)
+    {
+        $definitions = new DefinitionsCollection;
+
+        foreach ($this->areaInstancesNamesList->getList($path) as $className => $constructorArguments) {
+            $definitions->addDefinition($className, $constructorArguments);
+        }
+
+        return $definitions;
+    }
+
+    /**
+     * Sort definitions to make reproducible result.
      *
      * @param DefinitionsCollection $definitionsCollection
      */

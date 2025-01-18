@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,7 +7,6 @@
 declare(strict_types=1);
 
 namespace Magento\Setup\Test\Unit\Model {
-
     use Magento\Backend\Setup\ConfigOptionsList;
     use Magento\Framework\App\Area;
     use Magento\Framework\App\Cache\Manager;
@@ -82,7 +82,21 @@ namespace Magento\Setup\Test\Unit\Model {
             ConfigOptionsListConstants::INPUT_KEY_DB_NAME => 'magento',
             ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'magento',
             ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => 'encryption_key',
-            ConfigOptionsList::INPUT_KEY_BACKEND_FRONTNAME => 'backend'
+            ConfigOptionsList::INPUT_KEY_BACKEND_FRONTNAME => 'backend',
+        ];
+
+        /**
+         * Sample DB configuration segment.
+         *
+         * @var array
+         */
+        private static $dbConfig = [
+            'default' => [
+                ConfigOptionsListConstants::KEY_HOST => '127.0.0.1',
+                ConfigOptionsListConstants::KEY_NAME => 'magento',
+                ConfigOptionsListConstants::KEY_USER => 'magento',
+                ConfigOptionsListConstants::KEY_PASSWORD => '',
+            ],
         ];
 
         /**
@@ -201,19 +215,6 @@ namespace Magento\Setup\Test\Unit\Model {
         private $schemaListenerMock;
 
         /**
-         * Sample DB configuration segment
-         * @var array
-         */
-        private static $dbConfig = [
-            'default' => [
-                ConfigOptionsListConstants::KEY_HOST => '127.0.0.1',
-                ConfigOptionsListConstants::KEY_NAME => 'magento',
-                ConfigOptionsListConstants::KEY_USER => 'magento',
-                ConfigOptionsListConstants::KEY_PASSWORD => ''
-            ]
-        ];
-
-        /**
          * @var Context|MockObject
          */
         private $contextMock;
@@ -232,295 +233,20 @@ namespace Magento\Setup\Test\Unit\Model {
          * @var Collection|MockObject
          */
         private $indexerMock;
+
         /**
          * @var IndexerRegistry|MockObject
          */
         private $indexerRegistryMock;
+
         /**
          * @var IndexerInterface|MockObject
          */
         private $indexerInterfaceMock;
 
         /**
-         * @inheritdoc
-         */
-        protected function setUp(): void
-        {
-            $objectManagerHelper = new ObjectManager($this);
-            $objects = [
-                [
-                    DeploymentConfig::class,
-                    $this->createMock(DeploymentConfig::class)
-                ]
-            ];
-            $objectManagerHelper->prepareObjectManager($objects);
-            $this->filePermissions = $this->createMock(FilePermissions::class);
-            $this->configWriter = $this->createMock(Writer::class);
-            $this->configReader = $this->createMock(Reader::class);
-            $this->config = $this->createMock(DeploymentConfig::class);
-
-            $this->moduleList = $this->getMockForAbstractClass(ModuleListInterface::class);
-            $this->moduleList->expects($this->any())->method('getNames')->willReturn(
-                ['Foo_One', 'Bar_Two']
-            );
-            $this->moduleLoader = $this->createMock(Loader::class);
-            $this->adminFactory = $this->createMock(AdminAccountFactory::class);
-            $this->logger = $this->getMockForAbstractClass(ConsoleLoggerInterface::class);
-            $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
-            $this->maintenanceMode = $this->createMock(MaintenanceMode::class);
-            $this->filesystem = $this->createMock(Filesystem::class);
-            $this->objectManager = $this->getMockForAbstractClass(ObjectManagerInterface::class);
-            $this->contextMock =
-                $this->createMock(Context::class);
-            $this->configModel = $this->createMock(ConfigModel::class);
-            $this->cleanupFiles = $this->createMock(CleanupFiles::class);
-            $this->dbValidator = $this->createMock(DbValidator::class);
-            $this->setupFactory = $this->createMock(SetupFactory::class);
-            $this->dataSetupFactory = $this->createMock(DataSetupFactory::class);
-            $this->sampleDataState = $this->createMock(State::class);
-            $this->componentRegistrar =
-                $this->createMock(ComponentRegistrar::class);
-            $this->phpReadinessCheck = $this->createMock(PhpReadinessCheck::class);
-            $this->declarationInstallerMock = $this->createMock(DeclarationInstaller::class);
-            $this->schemaListenerMock = $this->createMock(SchemaListener::class);
-            $this->patchApplierFactoryMock = $this->createMock(PatchApplierFactory::class);
-            $this->patchApplierMock = $this->createMock(PatchApplier::class);
-            $this->patchApplierFactoryMock->expects($this->any())->method('create')->willReturn(
-                $this->patchApplierMock
-            );
-            $this->indexerMock = $this->createMock(Collection::class);
-            $this->indexerRegistryMock = $this->createMock(IndexerRegistry::class);
-            $this->indexerInterfaceMock = $this->getMockForAbstractClass(IndexerInterface::class);
-
-            $this->object = $this->createObject();
-        }
-
-        /**
-         * Instantiates the object with mocks
-         * @param MockObject|bool $connectionFactory
-         * @param MockObject|bool $objectManagerProvider
-         * @return Installer
-         */
-        private function createObject($connectionFactory = false, $objectManagerProvider = false)
-        {
-            if (!$connectionFactory) {
-                $connectionFactory = $this->createMock(ConnectionFactory::class);
-                $connectionFactory->expects($this->any())->method('create')->willReturn($this->connection);
-            }
-            if (!$objectManagerProvider) {
-                $objectManagerProvider =
-                    $this->createMock(ObjectManagerProvider::class);
-                $objectManagerProvider->expects($this->any())->method('get')->willReturn($this->objectManager);
-            }
-
-            $installer = $this->getMockBuilder(Installer::class)
-                ->enableOriginalConstructor()
-                ->onlyMethods(['getModuleResource'])
-                ->setConstructorArgs([
-                    'filePermissions' => $this->filePermissions,
-                    'deploymentConfigWriter' => $this->configWriter,
-                    'deploymentConfigReader' => $this->configReader,
-                    'deploymentConfig' => $this->config,
-                    'moduleList' => $this->moduleList,
-                    'moduleLoader' => $this->moduleLoader,
-                    'adminAccountFactory' => $this->adminFactory,
-                    'log' => $this->logger,
-                    'connectionFactory' => $connectionFactory,
-                    'maintenanceMode' => $this->maintenanceMode,
-                    'filesystem' => $this->filesystem,
-                    'objectManagerProvider' => $objectManagerProvider,
-                    'context' => $this->contextMock,
-                    'setupConfigModel' => $this->configModel,
-                    'cleanupFiles' => $this->cleanupFiles,
-                    'dbValidator' => $this->dbValidator,
-                    'setupFactory' => $this->setupFactory,
-                    'dataSetupFactory' => $this->dataSetupFactory,
-                    'sampleDataState' => $this->sampleDataState,
-                    'componentRegistrar' => $this->componentRegistrar,
-                    'phpReadinessCheck' => $this->phpReadinessCheck,
-                ])
-                ->getMock();
-
-            return $installer;
-        }
-
-        /**
-         * @param array $request
-         * @param array $logMessages
-         * @param array $logMetaMessages
-         * @dataProvider installDataProvider
-         * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-         */
-        public function testInstall(array $request, array $logMessages, array $logMetaMessages)
-        {
-            $this->moduleList->method('getOne')
-                ->willReturnMap(
-                    [
-                        ['Foo_One', ['setup_version' => '2.0.0']],
-                        ['Bar_Two', ['setup_version' => null]]
-                    ]
-                );
-
-            $this->config->expects($this->atLeastOnce())
-                ->method('get')
-                ->willReturnMap(
-                    [
-                        [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
-                        [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
-                        ['modules/Magento_User', null, '1']
-                    ]
-                );
-            $allModules = ['Foo_One' => [], 'Bar_Two' => []];
-
-            $this->declarationInstallerMock->expects($this->once())->method('installSchema');
-            $this->moduleLoader->expects($this->any())->method('load')->willReturn($allModules);
-            $setup = $this->createMock(Setup::class);
-            $table = $this->createMock(Table::class);
-            $connection = $this->getMockBuilder(AdapterInterface::class)
-                ->onlyMethods(['getTables', 'newTable'])
-                ->addMethods(['getSchemaListener'])
-                ->getMockForAbstractClass();
-            $connection->expects($this->any())->method('getSchemaListener')->willReturn($this->schemaListenerMock);
-            $connection->expects($this->once())->method('getTables')->willReturn([]);
-            $setup->expects($this->any())->method('getConnection')->willReturn($connection);
-            $table->expects($this->any())->method('addColumn')->willReturn($table);
-            $table->expects($this->any())->method('setComment')->willReturn($table);
-            $table->expects($this->any())->method('addIndex')->willReturn($table);
-            $connection->expects($this->any())->method('newTable')->willReturn($table);
-            $resource = $this->createMock(ResourceConnection::class);
-            $this->contextMock->expects($this->any())->method('getResources')->willReturn($resource);
-            $resource->expects($this->any())->method('getConnection')->willReturn($connection);
-
-            $moduleResource = $this->getMockBuilder(ModuleResource::class)
-                ->enableOriginalConstructor()
-                ->onlyMethods(['getDbVersion', 'getDataVersion'])
-                ->setConstructorArgs(['context' => $this->contextMock])
-                ->getMock();
-            $moduleResource->method('getDbVersion')
-                ->willReturnCallback(function () use (&$callCount) {
-                    $callCount++;
-                    if ($callCount === 1) {
-                        return false;
-                    } elseif ($callCount === 2) {
-                        return '2.1.0';
-                    }
-                });
-            $moduleResource->method('getDataVersion')->willReturn(false);
-            $this->object->method('getModuleResource')->willReturn($moduleResource);
-
-            $dataSetup = $this->createMock(DataSetup::class);
-            $dataSetup->expects($this->any())->method('getConnection')->willReturn($connection);
-            $cacheManager = $this->createMock(Manager::class);
-            $cacheManager->expects($this->any())->method('getAvailableTypes')->willReturn(['foo', 'bar']);
-            $cacheManager->expects($this->once())->method('setEnabled')->willReturn(['foo', 'bar']);
-            $cacheManager->expects($this->exactly(2))->method('clean');
-            $cacheManager->expects($this->once())->method('getStatus')->willReturn(['foo' => 1, 'bar' => 1]);
-            $appState = $this->getMockBuilder(\Magento\Framework\App\State::class)
-                ->disableOriginalConstructor()
-                ->disableArgumentCloning()
-                ->getMock();
-            $appState->expects($this->once())
-                ->method('setAreaCode')
-                ->with(Area::AREA_GLOBAL);
-            $registry = $this->createMock(Registry::class);
-            $searchConfigMock = $this->getMockBuilder(SearchConfig::class)->disableOriginalConstructor()->getMock();
-
-            $remoteStorageValidatorMock = $this->getMockBuilder(RemoteStorageValidator::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-
-            $this->configWriter->expects(static::never())->method('checkIfWritable');
-
-            $this->setupFactory->expects($this->atLeastOnce())->method('create')->with($resource)->willReturn($setup);
-            $this->dataSetupFactory->expects($this->atLeastOnce())->method('create')->willReturn($dataSetup);
-            $this->objectManager->expects($this->any())
-                ->method('create')
-                ->willReturnMap(
-                    [
-                        [Manager::class, [], $cacheManager],
-                        [\Magento\Framework\App\State::class, [], $appState],
-                        [
-                            PatchApplierFactory::class,
-                            ['objectManager' => $this->objectManager],
-                            $this->patchApplierFactoryMock
-                        ],
-                    ]
-                );
-            $this->patchApplierMock->expects($this->exactly(2))->method('applySchemaPatch')->willReturnMap(
-                [
-                    ['Bar_Two'],
-                    ['Foo_One']
-                ]
-            );
-            $this->patchApplierMock->expects($this->exactly(2))->method('applyDataPatch')->willReturnMap(
-                [
-                    ['Bar_Two'],
-                    ['Foo_One']
-                ]
-            );
-            $this->objectManager->expects($this->any())
-                ->method('get')
-                ->willReturnMap(
-                    [
-                        [\Magento\Framework\App\State::class, $appState],
-                        [Manager::class, $cacheManager],
-                        [DeclarationInstaller::class, $this->declarationInstallerMock],
-                        [Registry::class, $registry],
-                        [SearchConfig::class, $searchConfigMock],
-                        [RemoteStorageValidator::class, $remoteStorageValidatorMock],
-                        [Collection::class, $this->indexerMock],
-                        [IndexerRegistry::class, $this->indexerRegistryMock]
-                    ]
-                );
-            $this->adminFactory->expects($this->any())->method('create')->willReturn(
-                $this->createMock(AdminAccount::class)
-            );
-            $this->sampleDataState->expects($this->once())->method('hasError')->willReturn(true);
-            $this->phpReadinessCheck->expects($this->once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
-            );
-            $this->filePermissions->expects($this->any())
-                ->method('getMissingWritablePathsForInstallation')
-                ->willReturn([]);
-            $this->filePermissions->expects($this->once())
-                ->method('getMissingWritableDirectoriesForDbUpgrade')
-                ->willReturn([]);
-            $this->indexerMock->expects($this->once())->method('getAllIds')->willReturn(
-                [
-                    'catalog_category_product',
-                    'catalog_product_category',
-                ]
-            );
-            $this->indexerRegistryMock->expects($this->exactly(2))->method('get')->willReturn(
-                $this->indexerInterfaceMock
-            );
-            $this->logger->expects($this->exactly(count($logMessages)))->method('log')
-                ->willReturnCallback(function ($arg) use ($logMessages) {
-                    if ($arg == $logMessages) {
-                        return null;
-                    }
-                });
-            $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
-                ->willReturnCallback(function ($arg) use ($logMetaMessages) {
-                    if ($arg == $logMetaMessages) {
-                        return null;
-                    }
-                });
-            $this->logger->expects($this->exactly(3))
-                ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache cleared successfully'
-                        || $arg == 'Magento installation complete.'
-                        || $arg == 'Magento Admin URI: /') {
-                        return null;
-                    }
-                });
-
-            $this->object->install($request);
-        }
-
-        /**
          * @return array
+         *
          * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
          */
         public static function installDataProvider()
@@ -556,7 +282,7 @@ namespace Magento\Setup\Test\Unit\Model {
                         ['Write installation date...'],
                         ['Indexing...'],
                         ['13 indexer(s) are indexed.'],
-                        ['Sample Data is installed with errors. See log file for details']
+                        ['Sample Data is installed with errors. See log file for details'],
                     ],
                     'logMetaMessages' => [
                         ['Starting Magento installation:'],
@@ -600,7 +326,7 @@ namespace Magento\Setup\Test\Unit\Model {
                         AdminAccount::KEY_PASSWORD => '123',
                         AdminAccount::KEY_EMAIL => 'admin@example.com',
                         AdminAccount::KEY_FIRST_NAME => 'John',
-                        AdminAccount::KEY_LAST_NAME => 'Doe'
+                        AdminAccount::KEY_LAST_NAME => 'Doe',
                     ],
                     'logMessages' => [
                         ['File permissions check...'],
@@ -631,7 +357,7 @@ namespace Magento\Setup\Test\Unit\Model {
                         ['Write installation date...'],
                         ['Indexing...'],
                         ['13 indexer(s) are indexed.'],
-                        ['Sample Data is installed with errors. See log file for details']
+                        ['Sample Data is installed with errors. See log file for details'],
                     ],
                     'logMetaMessages' => [
                         ['Starting Magento installation:'],
@@ -669,25 +395,126 @@ namespace Magento\Setup\Test\Unit\Model {
         }
 
         /**
-         * Test the installation with order increment prefix set and enabled
+         * @return array
          *
+         * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         */
+        public static function installWithOrderIncrementPrefixDataProvider(): array
+        {
+            return [
+                [
+                    'request' => [
+                        ConfigOptionsListConstants::INPUT_KEY_DB_HOST => '127.0.0.1',
+                        ConfigOptionsListConstants::INPUT_KEY_DB_NAME => 'magento',
+                        ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'magento',
+                        ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => 'encryption_key',
+                        ConfigOptionsList::INPUT_KEY_BACKEND_FRONTNAME => 'backend',
+                        InstallCommand::INPUT_KEY_SALES_ORDER_INCREMENT_PREFIX => 'ORD',
+                    ],
+                    'logMessages' => [
+                        ['File permissions check...'],
+                        ['Required extensions check...'],
+                        ['Enabling Maintenance Mode...'],
+                        ['Installing deployment configuration...'],
+                        ['Installing database schema:'],
+                        ['Module \'Foo_One\':'],
+                        ['Module \'Bar_Two\':'],
+                        ['Module \'Foo_One\':'],
+                        ['Module \'Bar_Two\':'],
+                        ['Installing search configuration...'],
+                        ['Validating remote storage configuration...'],
+                        ['Installing user configuration...'],
+                        ['Enabling caches:'],
+                        ['Current status:'],
+                        ['foo: 1'],
+                        ['bar: 1'],
+                        ['Installing data...'],
+                        ['Module \'Foo_One\':'],
+                        ['Module \'Bar_Two\':'],
+                        ['Module \'Foo_One\':'],
+                        ['Module \'Bar_Two\':'],
+                        ['Creating sales order increment prefix...'], // << added
+                        ['Caches clearing:'],
+                        ['Disabling Maintenance Mode:'],
+                        ['Post installation file permissions check...'],
+                        ['Write installation date...'],
+                        ['Indexing...'],
+                        ['13 indexer(s) are indexed.'],
+                        ['Sample Data is installed with errors. See log file for details'],
+                    ],
+                    'logMetaMessages' => [
+                        ['Starting Magento installation:'],
+                        ['[Progress: 1 / 24]'],
+                        ['[Progress: 2 / 24]'],
+                        ['[Progress: 3 / 24]'],
+                        ['[Progress: 4 / 24]'],
+                        ['Schema creation/updates:'],
+                        ['[Progress: 5 / 24]'],
+                        ['[Progress: 6 / 24]'],
+                        ['Schema post-updates:'],
+                        ['[Progress: 7 / 24]'],
+                        ['[Progress: 8 / 24]'],
+                        ['[Progress: 9 / 24]'],
+                        ['[Progress: 10 / 24]'],
+                        ['[Progress: 11 / 24]'],
+                        ['[Progress: 12 / 24]'],
+                        ['[Progress: 13 / 24]'],
+                        ['Data install/update:'],
+                        ['[Progress: 14 / 24]'],
+                        ['[Progress: 15 / 24]'],
+                        ['Data post-updates:'],
+                        ['[Progress: 16 / 24]'],
+                        ['[Progress: 17 / 24]'],
+                        ['[Progress: 18 / 24]'],
+                        ['[Progress: 19 / 24]'],
+                        ['[Progress: 20 / 24]'],
+                        ['[Progress: 21 / 24]'],
+                        ['[Progress: 22 / 24]'],
+                        ['[Progress: 23 / 24]'],
+                        ['[Progress: 24 / 24]'],
+                    ],
+                ],
+            ];
+        }
+
+        /**
+         * @return array
+         */
+        public static function installWithInvalidRemoteStorageConfigurationDataProvider()
+        {
+            return [
+                [true],
+                [false],
+            ];
+        }
+
+        public static function installWithInvalidRemoteStorageConfigurationWithEarlyExceptionDataProvider()
+        {
+            return [
+                [new RuntimeException(__('Remote driver is not available.'))],
+                [new DriverException(__('Bucket and region are required values'))],
+            ];
+        }
+
+        /**
          * @param array $request
          * @param array $logMessages
          * @param array $logMetaMessages
-         * @throws RuntimeException
-         * @throws FileSystemException
-         * @throws LocalizedException
-         * @dataProvider installWithOrderIncrementPrefixDataProvider
+         *
+         * @dataProvider installDataProvider
+         *
          * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         *
+         * @test
          */
-        public function testInstallWithOrderIncrementPrefix(array $request, array $logMessages, array $logMetaMessages)
+        public function install(array $request, array $logMessages, array $logMetaMessages)
         {
             $this->moduleList->method('getOne')
                 ->willReturnMap(
                     [
                         ['Foo_One', ['setup_version' => '2.0.0']],
-                        ['Bar_Two', ['setup_version' => null]]
-                    ]
+                        ['Bar_Two', ['setup_version' => null]],
+                    ],
                 );
 
             $this->config->expects($this->atLeastOnce())
@@ -696,8 +523,8 @@ namespace Magento\Setup\Test\Unit\Model {
                     [
                         [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
                         [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
-                        ['modules/Magento_User', null, '1']
-                    ]
+                        ['modules/Magento_User', null, '1'],
+                    ],
                 );
             $allModules = ['Foo_One' => [], 'Bar_Two' => []];
 
@@ -705,25 +532,12 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->moduleLoader->expects($this->any())->method('load')->willReturn($allModules);
             $setup = $this->createMock(Setup::class);
             $table = $this->createMock(Table::class);
-
-            $select = $this->createMock(Select::class);
-            $select->expects($this->any())->method('from')->willReturn($select);
-            $select->expects($this->any())->method('where')->willReturn($select);
-
             $connection = $this->getMockBuilder(AdapterInterface::class)
-                ->onlyMethods(['getTables', 'newTable','select'])
+                ->onlyMethods(['getTables', 'newTable'])
                 ->addMethods(['getSchemaListener'])
                 ->getMockForAbstractClass();
             $connection->expects($this->any())->method('getSchemaListener')->willReturn($this->schemaListenerMock);
             $connection->expects($this->once())->method('getTables')->willReturn([]);
-            $connection->expects($this->any())->method('select')->willReturn($select);
-
-            $connection->expects($this->atLeastOnce())->method('fetchRow')->willReturn([
-                'entity_store_id' => 1,
-                'profile_id' => 1
-            ]);
-            $connection->expects($this->exactly(2))->method('update');
-
             $setup->expects($this->any())->method('getConnection')->willReturn($connection);
             $table->expects($this->any())->method('addColumn')->willReturn($table);
             $table->expects($this->any())->method('setComment')->willReturn($table);
@@ -739,11 +553,14 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->setConstructorArgs(['context' => $this->contextMock])
                 ->getMock();
             $moduleResource->method('getDbVersion')
-                ->willReturnCallback(function () use (&$callCount) {
+                ->willReturnCallback(function() use (&$callCount) {
                     $callCount++;
+
                     if ($callCount === 1) {
                         return false;
-                    } elseif ($callCount === 2) {
+                    }
+
+                    if ($callCount === 2) {
                         return '2.1.0';
                     }
                 });
@@ -784,21 +601,21 @@ namespace Magento\Setup\Test\Unit\Model {
                         [
                             PatchApplierFactory::class,
                             ['objectManager' => $this->objectManager],
-                            $this->patchApplierFactoryMock
+                            $this->patchApplierFactoryMock,
                         ],
-                    ]
+                    ],
                 );
             $this->patchApplierMock->expects($this->exactly(2))->method('applySchemaPatch')->willReturnMap(
                 [
                     ['Bar_Two'],
-                    ['Foo_One']
-                ]
+                    ['Foo_One'],
+                ],
             );
             $this->patchApplierMock->expects($this->exactly(2))->method('applyDataPatch')->willReturnMap(
                 [
                     ['Bar_Two'],
-                    ['Foo_One']
-                ]
+                    ['Foo_One'],
+                ],
             );
             $this->objectManager->expects($this->any())
                 ->method('get')
@@ -811,24 +628,225 @@ namespace Magento\Setup\Test\Unit\Model {
                         [SearchConfig::class, $searchConfigMock],
                         [RemoteStorageValidator::class, $remoteStorageValidatorMock],
                         [Collection::class, $this->indexerMock],
-                        [IndexerRegistry::class, $this->indexerRegistryMock]
-                    ]
+                        [IndexerRegistry::class, $this->indexerRegistryMock],
+                    ],
+                );
+            $this->adminFactory->expects($this->any())->method('create')->willReturn(
+                $this->createMock(AdminAccount::class),
+            );
+            $this->sampleDataState->expects($this->once())->method('hasError')->willReturn(true);
+            $this->phpReadinessCheck->expects($this->once())->method('checkPhpExtensions')->willReturn(
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
+            );
+            $this->filePermissions->expects($this->any())
+                ->method('getMissingWritablePathsForInstallation')
+                ->willReturn([]);
+            $this->filePermissions->expects($this->once())
+                ->method('getMissingWritableDirectoriesForDbUpgrade')
+                ->willReturn([]);
+            $this->indexerMock->expects($this->once())->method('getAllIds')->willReturn(
+                [
+                    'catalog_category_product',
+                    'catalog_product_category',
+                ],
+            );
+            $this->indexerRegistryMock->expects($this->exactly(2))->method('get')->willReturn(
+                $this->indexerInterfaceMock,
+            );
+            $this->logger->expects($this->exactly(count($logMessages)))->method('log')
+                ->willReturnCallback(function($arg) use ($logMessages) {
+                    if ($arg === $logMessages) {
+                        return;
+                    }
+                });
+            $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
+                ->willReturnCallback(function($arg) use ($logMetaMessages) {
+                    if ($arg === $logMetaMessages) {
+                        return;
+                    }
+                });
+            $this->logger->expects($this->exactly(3))
+                ->method('logSuccess')
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache cleared successfully'
+                        || $arg === 'Magento installation complete.'
+                        || $arg === 'Magento Admin URI: /') {
+                        return;
+                    }
+                });
+
+            $this->object->install($request);
+        }
+
+        /**
+         * Test the installation with order increment prefix set and enabled.
+         *
+         * @param array $request
+         * @param array $logMessages
+         * @param array $logMetaMessages
+         *
+         * @throws RuntimeException
+         * @throws FileSystemException
+         * @throws LocalizedException
+         *
+         * @dataProvider installWithOrderIncrementPrefixDataProvider
+         *
+         * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         *
+         * @test
+         */
+        public function installWithOrderIncrementPrefix(array $request, array $logMessages, array $logMetaMessages)
+        {
+            $this->moduleList->method('getOne')
+                ->willReturnMap(
+                    [
+                        ['Foo_One', ['setup_version' => '2.0.0']],
+                        ['Bar_Two', ['setup_version' => null]],
+                    ],
+                );
+
+            $this->config->expects($this->atLeastOnce())
+                ->method('get')
+                ->willReturnMap(
+                    [
+                        [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
+                        [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
+                        ['modules/Magento_User', null, '1'],
+                    ],
+                );
+            $allModules = ['Foo_One' => [], 'Bar_Two' => []];
+
+            $this->declarationInstallerMock->expects($this->once())->method('installSchema');
+            $this->moduleLoader->expects($this->any())->method('load')->willReturn($allModules);
+            $setup = $this->createMock(Setup::class);
+            $table = $this->createMock(Table::class);
+
+            $select = $this->createMock(Select::class);
+            $select->expects($this->any())->method('from')->willReturn($select);
+            $select->expects($this->any())->method('where')->willReturn($select);
+
+            $connection = $this->getMockBuilder(AdapterInterface::class)
+                ->onlyMethods(['getTables', 'newTable', 'select'])
+                ->addMethods(['getSchemaListener'])
+                ->getMockForAbstractClass();
+            $connection->expects($this->any())->method('getSchemaListener')->willReturn($this->schemaListenerMock);
+            $connection->expects($this->once())->method('getTables')->willReturn([]);
+            $connection->expects($this->any())->method('select')->willReturn($select);
+
+            $connection->expects($this->atLeastOnce())->method('fetchRow')->willReturn([
+                'entity_store_id' => 1,
+                'profile_id' => 1,
+            ]);
+            $connection->expects($this->exactly(2))->method('update');
+
+            $setup->expects($this->any())->method('getConnection')->willReturn($connection);
+            $table->expects($this->any())->method('addColumn')->willReturn($table);
+            $table->expects($this->any())->method('setComment')->willReturn($table);
+            $table->expects($this->any())->method('addIndex')->willReturn($table);
+            $connection->expects($this->any())->method('newTable')->willReturn($table);
+            $resource = $this->createMock(ResourceConnection::class);
+            $this->contextMock->expects($this->any())->method('getResources')->willReturn($resource);
+            $resource->expects($this->any())->method('getConnection')->willReturn($connection);
+
+            $moduleResource = $this->getMockBuilder(ModuleResource::class)
+                ->enableOriginalConstructor()
+                ->onlyMethods(['getDbVersion', 'getDataVersion'])
+                ->setConstructorArgs(['context' => $this->contextMock])
+                ->getMock();
+            $moduleResource->method('getDbVersion')
+                ->willReturnCallback(function() use (&$callCount) {
+                    $callCount++;
+
+                    if ($callCount === 1) {
+                        return false;
+                    }
+
+                    if ($callCount === 2) {
+                        return '2.1.0';
+                    }
+                });
+            $moduleResource->method('getDataVersion')->willReturn(false);
+            $this->object->method('getModuleResource')->willReturn($moduleResource);
+
+            $dataSetup = $this->createMock(DataSetup::class);
+            $dataSetup->expects($this->any())->method('getConnection')->willReturn($connection);
+            $cacheManager = $this->createMock(Manager::class);
+            $cacheManager->expects($this->any())->method('getAvailableTypes')->willReturn(['foo', 'bar']);
+            $cacheManager->expects($this->once())->method('setEnabled')->willReturn(['foo', 'bar']);
+            $cacheManager->expects($this->exactly(2))->method('clean');
+            $cacheManager->expects($this->once())->method('getStatus')->willReturn(['foo' => 1, 'bar' => 1]);
+            $appState = $this->getMockBuilder(\Magento\Framework\App\State::class)
+                ->disableOriginalConstructor()
+                ->disableArgumentCloning()
+                ->getMock();
+            $appState->expects($this->once())
+                ->method('setAreaCode')
+                ->with(Area::AREA_GLOBAL);
+            $registry = $this->createMock(Registry::class);
+            $searchConfigMock = $this->getMockBuilder(SearchConfig::class)->disableOriginalConstructor()->getMock();
+
+            $remoteStorageValidatorMock = $this->getMockBuilder(RemoteStorageValidator::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+
+            $this->configWriter->expects(static::never())->method('checkIfWritable');
+
+            $this->setupFactory->expects($this->atLeastOnce())->method('create')->with($resource)->willReturn($setup);
+            $this->dataSetupFactory->expects($this->atLeastOnce())->method('create')->willReturn($dataSetup);
+            $this->objectManager->expects($this->any())
+                ->method('create')
+                ->willReturnMap(
+                    [
+                        [Manager::class, [], $cacheManager],
+                        [\Magento\Framework\App\State::class, [], $appState],
+                        [
+                            PatchApplierFactory::class,
+                            ['objectManager' => $this->objectManager],
+                            $this->patchApplierFactoryMock,
+                        ],
+                    ],
+                );
+            $this->patchApplierMock->expects($this->exactly(2))->method('applySchemaPatch')->willReturnMap(
+                [
+                    ['Bar_Two'],
+                    ['Foo_One'],
+                ],
+            );
+            $this->patchApplierMock->expects($this->exactly(2))->method('applyDataPatch')->willReturnMap(
+                [
+                    ['Bar_Two'],
+                    ['Foo_One'],
+                ],
+            );
+            $this->objectManager->expects($this->any())
+                ->method('get')
+                ->willReturnMap(
+                    [
+                        [\Magento\Framework\App\State::class, $appState],
+                        [Manager::class, $cacheManager],
+                        [DeclarationInstaller::class, $this->declarationInstallerMock],
+                        [Registry::class, $registry],
+                        [SearchConfig::class, $searchConfigMock],
+                        [RemoteStorageValidator::class, $remoteStorageValidatorMock],
+                        [Collection::class, $this->indexerMock],
+                        [IndexerRegistry::class, $this->indexerRegistryMock],
+                    ],
                 );
             $this->indexerMock->expects($this->once())->method('getAllIds')->willReturn(
                 [
                     'catalog_category_product',
                     'catalog_product_category',
-                ]
+                ],
             );
             $this->indexerRegistryMock->expects($this->exactly(2))->method('get')->willReturn(
-                $this->indexerInterfaceMock
+                $this->indexerInterfaceMock,
             );
             $this->adminFactory->expects($this->any())->method('create')->willReturn(
-                $this->createMock(AdminAccount::class)
+                $this->createMock(AdminAccount::class),
             );
             $this->sampleDataState->expects($this->once())->method('hasError')->willReturn(true);
             $this->phpReadinessCheck->expects($this->once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
             );
             $this->filePermissions->expects($this->any())
                 ->method('getMissingWritablePathsForInstallation')
@@ -837,24 +855,24 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->method('getMissingWritableDirectoriesForDbUpgrade')
                 ->willReturn([]);
             $this->logger->expects($this->exactly(count($logMessages)))->method('log')
-                ->willReturnCallback(function ($arg) use ($logMessages) {
-                    if ($arg == $logMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMessages) {
+                    if ($arg === $logMessages) {
+                        return;
                     }
                 });
             $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
-                ->willReturnCallback(function ($arg) use ($logMetaMessages) {
-                    if ($arg == $logMetaMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMetaMessages) {
+                    if ($arg === $logMetaMessages) {
+                        return;
                     }
                 });
             $this->logger->expects($this->exactly(3))
                 ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache cleared successfully'
-                        || $arg == 'Magento installation complete.'
-                        || $arg == 'Magento Admin URI: /') {
-                        return null;
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache cleared successfully'
+                        || $arg === 'Magento installation complete.'
+                        || $arg === 'Magento Admin URI: /') {
+                        return;
                     }
                 });
 
@@ -862,99 +880,22 @@ namespace Magento\Setup\Test\Unit\Model {
         }
 
         /**
-         * @return array
-         * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
-         */
-        public static function installWithOrderIncrementPrefixDataProvider(): array
-        {
-            return [
-                [
-                    'request' => [
-                        ConfigOptionsListConstants::INPUT_KEY_DB_HOST => '127.0.0.1',
-                        ConfigOptionsListConstants::INPUT_KEY_DB_NAME => 'magento',
-                        ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'magento',
-                        ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => 'encryption_key',
-                        ConfigOptionsList::INPUT_KEY_BACKEND_FRONTNAME => 'backend',
-                        InstallCommand::INPUT_KEY_SALES_ORDER_INCREMENT_PREFIX => 'ORD'
-                    ],
-                    'logMessages' => [
-                        ['File permissions check...'],
-                        ['Required extensions check...'],
-                        ['Enabling Maintenance Mode...'],
-                        ['Installing deployment configuration...'],
-                        ['Installing database schema:'],
-                        ['Module \'Foo_One\':'],
-                        ['Module \'Bar_Two\':'],
-                        ['Module \'Foo_One\':'],
-                        ['Module \'Bar_Two\':'],
-                        ['Installing search configuration...'],
-                        ['Validating remote storage configuration...'],
-                        ['Installing user configuration...'],
-                        ['Enabling caches:'],
-                        ['Current status:'],
-                        ['foo: 1'],
-                        ['bar: 1'],
-                        ['Installing data...'],
-                        ['Module \'Foo_One\':'],
-                        ['Module \'Bar_Two\':'],
-                        ['Module \'Foo_One\':'],
-                        ['Module \'Bar_Two\':'],
-                        ['Creating sales order increment prefix...'], // << added
-                        ['Caches clearing:'],
-                        ['Disabling Maintenance Mode:'],
-                        ['Post installation file permissions check...'],
-                        ['Write installation date...'],
-                        ['Indexing...'],
-                        ['13 indexer(s) are indexed.'],
-                        ['Sample Data is installed with errors. See log file for details']
-                    ],
-                    'logMetaMessages' => [
-                        ['Starting Magento installation:'],
-                        ['[Progress: 1 / 24]'],
-                        ['[Progress: 2 / 24]'],
-                        ['[Progress: 3 / 24]'],
-                        ['[Progress: 4 / 24]'],
-                        ['Schema creation/updates:'],
-                        ['[Progress: 5 / 24]'],
-                        ['[Progress: 6 / 24]'],
-                        ['Schema post-updates:'],
-                        ['[Progress: 7 / 24]'],
-                        ['[Progress: 8 / 24]'],
-                        ['[Progress: 9 / 24]'],
-                        ['[Progress: 10 / 24]'],
-                        ['[Progress: 11 / 24]'],
-                        ['[Progress: 12 / 24]'],
-                        ['[Progress: 13 / 24]'],
-                        ['Data install/update:'],
-                        ['[Progress: 14 / 24]'],
-                        ['[Progress: 15 / 24]'],
-                        ['Data post-updates:'],
-                        ['[Progress: 16 / 24]'],
-                        ['[Progress: 17 / 24]'],
-                        ['[Progress: 18 / 24]'],
-                        ['[Progress: 19 / 24]'],
-                        ['[Progress: 20 / 24]'],
-                        ['[Progress: 21 / 24]'],
-                        ['[Progress: 22 / 24]'],
-                        ['[Progress: 23 / 24]'],
-                        ['[Progress: 24 / 24]'],
-                    ],
-                ],
-            ];
-        }
-
-        /**
          * Test installation with invalid remote storage configuration raises ValidationException via validation
-         * and reverts configuration back to local file driver
+         * and reverts configuration back to local file driver.
          *
          * @param bool $isDeploymentConfigWritable
+         *
          * @dataProvider installWithInvalidRemoteStorageConfigurationDataProvider
-         * @throws \Magento\Framework\Exception\FileSystemException
-         * @throws \Magento\Framework\Exception\LocalizedException
-         * @throws \Magento\Framework\Exception\RuntimeException
+         *
+         * @throws FileSystemException
+         * @throws LocalizedException
+         * @throws RuntimeException
+         *
          * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         *
+         * @test
          */
-        public function testInstallWithInvalidRemoteStorageConfiguration(bool $isDeploymentConfigWritable)
+        public function installWithInvalidRemoteStorageConfiguration(bool $isDeploymentConfigWritable)
         {
             $request = self::$request;
 
@@ -994,8 +935,8 @@ namespace Magento\Setup\Test\Unit\Model {
                     [
                         [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
                         [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
-                        ['modules/Magento_User', null, '1']
-                    ]
+                        ['modules/Magento_User', null, '1'],
+                    ],
                 );
             $this->moduleList->method('getOne')->willReturn(['setup_version' => '2.0.0']);
             $allModules = ['Foo_One' => [], 'Bar_Two' => []];
@@ -1056,26 +997,26 @@ namespace Magento\Setup\Test\Unit\Model {
                 [
                     ConfigFilePool::APP_ENV => [
                         'remote_storage' => [
-                            'driver' => 'file'
-                        ]
-                    ]
+                            'driver' => 'file',
+                        ],
+                    ],
                 ],
-                true
+                true,
             ];
 
             if ($isDeploymentConfigWritable) { // assert remote storage reversion is attempted
                 $this->configWriter
                     ->method('saveConfig')
-                    ->willReturnCallback(function ($arg) use ($remoteStorageReversionArguments) {
-                        if (empty($arg) || $arg == $remoteStorageReversionArguments) {
-                            return null;
+                    ->willReturnCallback(function($arg) use ($remoteStorageReversionArguments) {
+                        if (empty($arg) || $arg === $remoteStorageReversionArguments) {
+                            return;
                         }
                     });
             } else { // assert remote storage reversion is never attempted
                 $this->configWriter
                     ->expects(static::any())
                     ->method('saveConfig')
-                    ->willReturnCallback(function (array $data, $override) use ($remoteStorageReversionArguments) {
+                    ->willReturnCallback(function(array $data, $override) use ($remoteStorageReversionArguments) {
                         $this->assertNotEquals($remoteStorageReversionArguments, [$data, $override]);
                     });
             }
@@ -1091,15 +1032,15 @@ namespace Magento\Setup\Test\Unit\Model {
                         [
                             PatchApplierFactory::class,
                             ['objectManager' => $this->objectManager],
-                            $this->patchApplierFactoryMock
-                        ]
-                    ]
+                            $this->patchApplierFactoryMock,
+                        ],
+                    ],
                 );
             $this->patchApplierMock->expects(static::exactly(2))->method('applySchemaPatch')->willReturnMap(
                 [
                     ['Bar_Two'],
-                    ['Foo_One']
-                ]
+                    ['Foo_One'],
+                ],
             );
             $this->objectManager->expects(static::any())
                 ->method('get')
@@ -1110,14 +1051,14 @@ namespace Magento\Setup\Test\Unit\Model {
                         [DeclarationInstaller::class, $this->declarationInstallerMock],
                         [Registry::class, $registry],
                         [SearchConfig::class, $searchConfigMock],
-                        [RemoteStorageValidator::class, $remoteStorageValidatorMock]
-                    ]
+                        [RemoteStorageValidator::class, $remoteStorageValidatorMock],
+                    ],
                 );
 
             $this->sampleDataState->expects(static::never())->method('hasError');
 
             $this->phpReadinessCheck->expects(static::once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
             );
 
             $this->filePermissions->expects(static::exactly(2))
@@ -1125,16 +1066,16 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->willReturn([]);
 
             $this->logger->expects($this->exactly(count($logMessages)))->method('log')
-                ->willReturnCallback(function ($arg) use ($logMessages) {
-                    if ($arg == $logMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMessages) {
+                    if ($arg === $logMessages) {
+                        return;
                     }
                 });
 
             $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
-                ->willReturnCallback(function ($arg) use ($logMetaMessages) {
-                    if ($arg == $logMetaMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMetaMessages) {
+                    if ($arg === $logMetaMessages) {
+                        return;
                     }
                 });
 
@@ -1144,27 +1085,19 @@ namespace Magento\Setup\Test\Unit\Model {
         }
 
         /**
-         * @return array
-         */
-        public static function installWithInvalidRemoteStorageConfigurationDataProvider()
-        {
-            return [
-                [true],
-                [false]
-            ];
-        }
-
-        /**
          * Test that installation with unresolvable remote storage validator object still produces successful install
          * in case RemoteStorage module is not available.
          *
-         * @throws \Magento\Framework\Exception\FileSystemException
-         * @throws \Magento\Framework\Exception\LocalizedException
-         * @throws \Magento\Framework\Exception\RuntimeException
+         * @throws FileSystemException
+         * @throws LocalizedException
+         * @throws RuntimeException
+         *
          * @SuppressWarnings(PHPMD.CyclomaticComplexity)
          * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         *
+         * @test
          */
-        public function testInstallWithUnresolvableRemoteStorageValidator()
+        public function installWithUnresolvableRemoteStorageValidator()
         {
             $request = self::$request;
 
@@ -1178,8 +1111,8 @@ namespace Magento\Setup\Test\Unit\Model {
                     [
                         [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
                         [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
-                        ['modules/Magento_User', null, '1']
-                    ]
+                        ['modules/Magento_User', null, '1'],
+                    ],
                 );
             $allModules = ['Foo_One' => [], 'Bar_Two' => []];
             $this->moduleList->method('getOne')->willReturn(['setup_version' => '2.0.0']);
@@ -1235,18 +1168,18 @@ namespace Magento\Setup\Test\Unit\Model {
                 [
                     ConfigFilePool::APP_ENV => [
                         'remote_storage' => [
-                            'driver' => 'file'
-                        ]
-                    ]
+                            'driver' => 'file',
+                        ],
+                    ],
                 ],
-                true
+                true,
             ];
 
             // assert remote storage reversion is never attempted
             $this->configWriter
                 ->expects(static::any())
                 ->method('saveConfig')
-                ->willReturnCallback(function (array $data, $override) use ($remoteStorageReversionArguments) {
+                ->willReturnCallback(function(array $data, $override) use ($remoteStorageReversionArguments) {
                     $this->assertNotEquals($remoteStorageReversionArguments, [$data, $override]);
                 });
 
@@ -1261,21 +1194,21 @@ namespace Magento\Setup\Test\Unit\Model {
                         [
                             PatchApplierFactory::class,
                             ['objectManager' => $this->objectManager],
-                            $this->patchApplierFactoryMock
-                        ]
-                    ]
+                            $this->patchApplierFactoryMock,
+                        ],
+                    ],
                 );
             $this->patchApplierMock->expects(static::exactly(2))->method('applySchemaPatch')->willReturnMap(
                 [
                     ['Bar_Two'],
-                    ['Foo_One']
-                ]
+                    ['Foo_One'],
+                ],
             );
             $this->patchApplierMock->expects(static::exactly(2))->method('applyDataPatch')->willReturnMap(
                 [
                     ['Bar_Two'],
-                    ['Foo_One']
-                ]
+                    ['Foo_One'],
+                ],
             );
 
             $objectManagerReturnMapSequence = [
@@ -1284,20 +1217,19 @@ namespace Magento\Setup\Test\Unit\Model {
                 2 => [SearchConfig::class, $searchConfigMock],
                 3 => [
                     RemoteStorageValidator::class,
-                    new ReflectionException('Class ' . RemoteStorageValidator::class . ' does not exist')
+                    new ReflectionException('Class ' . RemoteStorageValidator::class . ' does not exist'),
                 ],
                 4 => [\Magento\Framework\App\State::class, $appState],
                 5 => [Registry::class, $registry],
                 6 => [Manager::class, $cacheManager],
                 7 => [Collection::class, $this->indexerMock],
                 8 => [IndexerRegistry::class, $this->indexerRegistryMock],
-                9 => [IndexerRegistry::class, $this->indexerRegistryMock]
+                9 => [IndexerRegistry::class, $this->indexerRegistryMock],
             ];
             $withArgs = $willReturnArgs = [];
 
             foreach ($objectManagerReturnMapSequence as $map) {
-
-                list($getArgument, $mockedObject) = $map;
+                [$getArgument, $mockedObject] = $map;
 
                 $withArgs[] = [$getArgument];
 
@@ -1310,15 +1242,16 @@ namespace Magento\Setup\Test\Unit\Model {
 
             $this->objectManager
                 ->method('get')
-                ->willReturnCallback(function ($withArgs) use ($willReturnArgs) {
-                    if (!empty($withArgs)) {
+                ->willReturnCallback(function($withArgs) use ($willReturnArgs) {
+                    if (! empty($withArgs)) {
                         static $callCount = 0;
                         $returnValue = $willReturnArgs[$callCount] ?? null;
                         $callCount++;
-                        if ($withArgs == RemoteStorageValidator::class) {
-                            throw new
-                            ReflectionException('Class ' . RemoteStorageValidator::class . ' does not exist');
+
+                        if ($withArgs === RemoteStorageValidator::class) {
+                            throw new ReflectionException('Class ' . RemoteStorageValidator::class . ' does not exist');
                         }
+
                         return $returnValue;
                     }
                 });
@@ -1327,17 +1260,17 @@ namespace Magento\Setup\Test\Unit\Model {
                 [
                     'catalog_category_product',
                     'catalog_product_category',
-                ]
+                ],
             );
             $this->indexerRegistryMock->expects($this->exactly(2))->method('get')->willReturn(
-                $this->indexerInterfaceMock
+                $this->indexerInterfaceMock,
             );
             $this->adminFactory->expects(static::any())->method('create')->willReturn(
-                $this->createMock(AdminAccount::class)
+                $this->createMock(AdminAccount::class),
             );
             $this->sampleDataState->expects(static::once())->method('hasError')->willReturn(true);
             $this->phpReadinessCheck->expects(static::once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
             );
             $this->filePermissions->expects(static::any())
                 ->method('getMissingWritablePathsForInstallation')
@@ -1346,25 +1279,25 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->method('getMissingWritableDirectoriesForDbUpgrade')
                 ->willReturn([]);
             $this->logger->expects($this->exactly(count($logMessages)))->method('log')
-                ->willReturnCallback(function ($arg) use ($logMessages) {
-                    if ($arg == $logMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMessages) {
+                    if ($arg === $logMessages) {
+                        return;
                     }
                 });
             $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
-                ->willReturnCallback(function ($arg) use ($logMetaMessages) {
-                    if ($arg == $logMetaMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMetaMessages) {
+                    if ($arg === $logMetaMessages) {
+                        return;
                     }
                 });
 
             $this->logger->expects($this->exactly(3))
                 ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache cleared successfully'
-                        || $arg == 'Magento installation complete.'
-                        || $arg == 'Magento Admin URI: /') {
-                        return null;
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache cleared successfully'
+                        || $arg === 'Magento installation complete.'
+                        || $arg === 'Magento Admin URI: /') {
+                        return;
                     }
                 });
 
@@ -1376,12 +1309,16 @@ namespace Magento\Setup\Test\Unit\Model {
          * the queued validation step if necessary, and that configuration is reverted back to local file driver.
          *
          * @dataProvider installWithInvalidRemoteStorageConfigurationWithEarlyExceptionDataProvider
-         * @throws \Magento\Framework\Exception\FileSystemException
-         * @throws \Magento\Framework\Exception\LocalizedException
-         * @throws \Magento\Framework\Exception\RuntimeException
+         *
+         * @throws FileSystemException
+         * @throws LocalizedException
+         * @throws RuntimeException
+         *
          * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+         *
+         * @test
          */
-        public function testInstallWithInvalidRemoteStorageConfigurationWithEarlyException(\Exception $exception)
+        public function installWithInvalidRemoteStorageConfigurationWithEarlyException(\Exception $exception)
         {
             $request = self::$request;
 
@@ -1408,8 +1345,8 @@ namespace Magento\Setup\Test\Unit\Model {
                     [
                         [ConfigOptionsListConstants::CONFIG_PATH_DB_CONNECTION_DEFAULT, null, true],
                         [ConfigOptionsListConstants::CONFIG_PATH_CRYPT_KEY, null, true],
-                        ['modules/Magento_User', null, '1']
-                    ]
+                        ['modules/Magento_User', null, '1'],
+                    ],
                 );
             $allModules = ['Foo_One' => [], 'Bar_Two' => []];
             $this->moduleList->method('getOne')->willReturn(['setup_version' => '2.0.0']);
@@ -1464,19 +1401,19 @@ namespace Magento\Setup\Test\Unit\Model {
                 [
                     ConfigFilePool::APP_ENV => [
                         'remote_storage' => [
-                            'driver' => 'file'
-                        ]
-                    ]
+                            'driver' => 'file',
+                        ],
+                    ],
                 ],
-                true
+                true,
             ];
 
             $this->configWriter
                 ->method('saveConfig')
-                ->willReturnCallback(function ($arg) use ($remoteStorageReversionArguments) {
-                    if (empty($arg) || $arg == $remoteStorageReversionArguments
+                ->willReturnCallback(function($arg) use ($remoteStorageReversionArguments) {
+                    if (empty($arg) || $arg === $remoteStorageReversionArguments
                     ) {
-                        return null;
+                        return;
                     }
                 });
 
@@ -1487,14 +1424,14 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->willReturnMap(
                     [
                         [DeclarationInstaller::class, $this->declarationInstallerMock],
-                        [Registry::class, $registry]
-                    ]
+                        [Registry::class, $registry],
+                    ],
                 );
 
             $this->sampleDataState->expects(static::never())->method('hasError');
 
             $this->phpReadinessCheck->expects(static::once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
             );
 
             $this->filePermissions->expects(static::exactly(2))
@@ -1502,16 +1439,16 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->willReturn([]);
 
             $this->logger->expects($this->exactly(count($logMessages)))->method('log')
-                ->willReturnCallback(function ($arg) use ($logMessages) {
-                    if ($arg == $logMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMessages) {
+                    if ($arg === $logMessages) {
+                        return;
                     }
                 });
 
             $this->logger->expects($this->exactly(count($logMetaMessages)))->method('logMeta')
-                ->willReturnCallback(function ($arg) use ($logMetaMessages) {
-                    if ($arg == $logMetaMessages) {
-                        return null;
+                ->willReturnCallback(function($arg) use ($logMetaMessages) {
+                    if ($arg === $logMetaMessages) {
+                        return;
                     }
                 });
 
@@ -1520,20 +1457,14 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->object->install($request);
         }
 
-        public static function installWithInvalidRemoteStorageConfigurationWithEarlyExceptionDataProvider()
-        {
-            return [
-                [new RuntimeException(__('Remote driver is not available.'))],
-                [new DriverException(__('Bucket and region are required values'))]
-            ];
-        }
-
         /**
-         * Test for InstallDataFixtures
+         * Test for InstallDataFixtures.
          *
          * @return void
+         *
+         * @test
          */
-        public function testInstallDataFixtures(): void
+        public function installDataFixtures(): void
         {
             $this->moduleList->method('getOne')->willReturn(['setup_version' => '2.0.0']);
 
@@ -1547,9 +1478,9 @@ namespace Magento\Setup\Test\Unit\Model {
                         [
                             PatchApplierFactory::class,
                             ['objectManager' => $this->objectManager],
-                            $this->patchApplierFactoryMock
+                            $this->patchApplierFactoryMock,
                         ],
-                    ]
+                    ],
                 );
 
             $registryMock = $this->createMock(Registry::class);
@@ -1594,7 +1525,10 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->object->installDataFixtures(self::$request);
         }
 
-        public function testCheckInstallationFilePermissions()
+        /**
+         * @test
+         */
+        public function checkInstallationFilePermissions()
         {
             $this->filePermissions
                 ->expects($this->once())
@@ -1603,7 +1537,10 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->object->checkInstallationFilePermissions();
         }
 
-        public function testCheckInstallationFilePermissionsError()
+        /**
+         * @test
+         */
+        public function checkInstallationFilePermissionsError()
         {
             $this->expectException('Exception');
             $this->expectExceptionMessage('Missing write permissions to the following paths:');
@@ -1614,28 +1551,37 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->object->checkInstallationFilePermissions();
         }
 
-        public function testCheckExtensions()
+        /**
+         * @test
+         */
+        public function checkExtensions()
         {
             $this->phpReadinessCheck->expects($this->once())->method('checkPhpExtensions')->willReturn(
-                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS]
+                ['responseType' => ResponseTypeInterface::RESPONSE_TYPE_SUCCESS],
             );
             $this->object->checkExtensions();
         }
 
-        public function testCheckExtensionsError()
+        /**
+         * @test
+         */
+        public function checkExtensionsError()
         {
             $this->expectException('Exception');
             $this->expectExceptionMessage('Missing following extensions: \'foo\'');
             $this->phpReadinessCheck->expects($this->once())->method('checkPhpExtensions')->willReturn(
                 [
                     'responseType' => ResponseTypeInterface::RESPONSE_TYPE_ERROR,
-                    'data' => ['required' => ['foo', 'bar'], 'missing' => ['foo']]
-                ]
+                    'data' => ['required' => ['foo', 'bar'], 'missing' => ['foo']],
+                ],
             );
             $this->object->checkExtensions();
         }
 
-        public function testCheckApplicationFilePermissions()
+        /**
+         * @test
+         */
+        public function checkApplicationFilePermissions()
         {
             $this->filePermissions
                 ->expects($this->once())
@@ -1647,63 +1593,69 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->assertSame(['message' => [$expectedMessage]], $this->object->getInstallInfo());
         }
 
-        public function testUpdateModulesSequence()
+        /**
+         * @test
+         */
+        public function updateModulesSequence()
         {
             $this->cleanupFiles->expects($this->once())->method('clearCodeGeneratedFiles')->willReturn(
                 [
-                    "The directory '/generation' doesn't exist - skipping cleanup"
-                ]
+                    "The directory '/generation' doesn't exist - skipping cleanup",
+                ],
             );
             $installer = $this->prepareForUpdateModulesTests();
 
             $this->logger
                 ->method('log')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'The directory \'/generation\' doesn\'t exist - skipping cleanup') {
-                        return null;
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'The directory \'/generation\' doesn\'t exist - skipping cleanup') {
+                        return;
                     }
                 });
             $this->logger
                 ->method('logMeta')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'File system cleanup:' ||
-                        $arg == 'Updating modules:'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'File system cleanup:' ||
+                        $arg === 'Updating modules:'
                     ) {
-                        return null;
+                        return;
                     }
                 });
             $this->logger
                 ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache types config flushed successfully' ||
-                        $arg == 'Cache cleared successfully'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache types config flushed successfully' ||
+                        $arg === 'Cache cleared successfully'
                     ) {
-                        return null;
+                        return;
                     }
                 });
 
             $installer->updateModulesSequence(false);
         }
 
-        public function testUpdateModulesSequenceKeepGenerated()
+        /**
+         * @test
+         */
+        public function updateModulesSequenceKeepGenerated()
         {
             $this->cleanupFiles->expects($this->never())->method('clearCodeGeneratedClasses');
 
             $installer = $this->prepareForUpdateModulesTests();
             $this->logger
                 ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache types config flushed successfully' ||
-                        $arg == 'Cache cleared successfully'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache types config flushed successfully' ||
+                        $arg === 'Cache cleared successfully'
                     ) {
-                        return null;
+                        return;
                     }
                 });
             $this->logger
                 ->method('logMeta')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Updating modules:') {
-                        return null;
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Updating modules:') {
+                        return;
                     }
                 });
 
@@ -1712,9 +1664,12 @@ namespace Magento\Setup\Test\Unit\Model {
 
         /**
          * @return void
+         *
          * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+         *
+         * @test
          */
-        public function testUninstall(): void
+        public function uninstall(): void
         {
             $this->config->expects($this->once())
                 ->method('get')
@@ -1723,11 +1678,11 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->configReader->expects($this->once())->method('getFiles')->willReturn(
                 [
                     'ConfigOne.php',
-                    'ConfigTwo.php'
-                ]
+                    'ConfigTwo.php',
+                ],
             );
             $configDir = $this->getMockForAbstractClass(
-                WriteInterface::class
+                WriteInterface::class,
             );
             $configDir
                 ->expects($this->exactly(2))
@@ -1735,8 +1690,8 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->willReturnMap(
                     [
                         ['ConfigOne.php', '/config/ConfigOne.php'],
-                        ['ConfigTwo.php', '/config/ConfigTwo.php']
-                    ]
+                        ['ConfigTwo.php', '/config/ConfigTwo.php'],
+                    ],
                 );
             $this->filesystem
                 ->expects($this->any())
@@ -1744,7 +1699,7 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->willReturnMap(
                     [
                         [DirectoryList::CONFIG, DriverPool::FILE, $configDir],
-                    ]
+                    ],
                 );
             $cacheManager = $this->createMock(Manager::class);
             $cacheManager->expects($this->once())->method('getAvailableTypes')->willReturn(['foo', 'bar']);
@@ -1756,38 +1711,38 @@ namespace Magento\Setup\Test\Unit\Model {
             $this->cleanupFiles->expects($this->once())->method('clearAllFiles')->willReturn(
                 [
                     "The directory '/var' doesn't exist - skipping cleanup",
-                    "The directory '/static' doesn't exist - skipping cleanup"
-                ]
+                    "The directory '/static' doesn't exist - skipping cleanup",
+                ],
             );
 
             $this->logger
                 ->method('log')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'No database connection defined - skipping database cleanup' ||
-                        $arg == "The directory '/var' doesn't exist - skipping cleanup" ||
-                        $arg == "The directory '/static' doesn't exist - skipping cleanup" ||
-                        $arg == "The file '/config/ConfigOne.php' doesn't exist - skipping cleanup" ||
-                        $arg == "The file '/config/ConfigTwo.php' doesn't exist - skipping cleanup"
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'No database connection defined - skipping database cleanup' ||
+                        $arg === "The directory '/var' doesn't exist - skipping cleanup" ||
+                        $arg === "The directory '/static' doesn't exist - skipping cleanup" ||
+                        $arg === "The file '/config/ConfigOne.php' doesn't exist - skipping cleanup" ||
+                        $arg === "The file '/config/ConfigTwo.php' doesn't exist - skipping cleanup"
                     ) {
-                        return null;
+                        return;
                     }
                 });
             $this->logger
                 ->method('logMeta')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Starting Magento uninstallation:' ||
-                        $arg == 'File system cleanup:'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Starting Magento uninstallation:' ||
+                        $arg === 'File system cleanup:'
                     ) {
-                        return null;
+                        return;
                     }
                 });
             $this->logger
                 ->method('logSuccess')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'Cache cleared successfully' ||
-                        $arg == 'Magento uninstallation complete.'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'Cache cleared successfully' ||
+                        $arg === 'Magento uninstallation complete.'
                     ) {
-                        return null;
+                        return;
                     }
                 });
 
@@ -1796,8 +1751,10 @@ namespace Magento\Setup\Test\Unit\Model {
 
         /**
          * @return void
+         *
+         * @test
          */
-        public function testCleanupDb(): void
+        public function cleanupDb(): void
         {
             $this->config->expects($this->once())
                 ->method('get')
@@ -1810,11 +1767,11 @@ namespace Magento\Setup\Test\Unit\Model {
 
             $this->connection
                 ->method('query')
-                ->willReturnCallback(function ($arg) {
-                    if ($arg == 'DROP DATABASE IF EXISTS `magento`' ||
-                        $arg == 'CREATE DATABASE IF NOT EXISTS `magento`'
+                ->willReturnCallback(function($arg) {
+                    if ($arg === 'DROP DATABASE IF EXISTS `magento`' ||
+                        $arg === 'CREATE DATABASE IF NOT EXISTS `magento`'
                     ) {
-                        return null;
+                        return;
                     }
                 });
 
@@ -1823,7 +1780,114 @@ namespace Magento\Setup\Test\Unit\Model {
         }
 
         /**
-         * Prepare mocks for update modules tests and returns the installer to use
+         * {@inheritdoc}
+         */
+        protected function setUp(): void
+        {
+            $objectManagerHelper = new ObjectManager($this);
+            $objects = [
+                [
+                    DeploymentConfig::class,
+                    $this->createMock(DeploymentConfig::class),
+                ],
+            ];
+            $objectManagerHelper->prepareObjectManager($objects);
+            $this->filePermissions = $this->createMock(FilePermissions::class);
+            $this->configWriter = $this->createMock(Writer::class);
+            $this->configReader = $this->createMock(Reader::class);
+            $this->config = $this->createMock(DeploymentConfig::class);
+
+            $this->moduleList = $this->getMockForAbstractClass(ModuleListInterface::class);
+            $this->moduleList->expects($this->any())->method('getNames')->willReturn(
+                ['Foo_One', 'Bar_Two'],
+            );
+            $this->moduleLoader = $this->createMock(Loader::class);
+            $this->adminFactory = $this->createMock(AdminAccountFactory::class);
+            $this->logger = $this->getMockForAbstractClass(ConsoleLoggerInterface::class);
+            $this->connection = $this->getMockForAbstractClass(AdapterInterface::class);
+            $this->maintenanceMode = $this->createMock(MaintenanceMode::class);
+            $this->filesystem = $this->createMock(Filesystem::class);
+            $this->objectManager = $this->getMockForAbstractClass(ObjectManagerInterface::class);
+            $this->contextMock =
+                $this->createMock(Context::class);
+            $this->configModel = $this->createMock(ConfigModel::class);
+            $this->cleanupFiles = $this->createMock(CleanupFiles::class);
+            $this->dbValidator = $this->createMock(DbValidator::class);
+            $this->setupFactory = $this->createMock(SetupFactory::class);
+            $this->dataSetupFactory = $this->createMock(DataSetupFactory::class);
+            $this->sampleDataState = $this->createMock(State::class);
+            $this->componentRegistrar =
+                $this->createMock(ComponentRegistrar::class);
+            $this->phpReadinessCheck = $this->createMock(PhpReadinessCheck::class);
+            $this->declarationInstallerMock = $this->createMock(DeclarationInstaller::class);
+            $this->schemaListenerMock = $this->createMock(SchemaListener::class);
+            $this->patchApplierFactoryMock = $this->createMock(PatchApplierFactory::class);
+            $this->patchApplierMock = $this->createMock(PatchApplier::class);
+            $this->patchApplierFactoryMock->expects($this->any())->method('create')->willReturn(
+                $this->patchApplierMock,
+            );
+            $this->indexerMock = $this->createMock(Collection::class);
+            $this->indexerRegistryMock = $this->createMock(IndexerRegistry::class);
+            $this->indexerInterfaceMock = $this->getMockForAbstractClass(IndexerInterface::class);
+
+            $this->object = $this->createObject();
+        }
+
+        /**
+         * Instantiates the object with mocks.
+         *
+         * @param MockObject|bool $connectionFactory
+         * @param MockObject|bool $objectManagerProvider
+         *
+         * @return Installer
+         */
+        private function createObject($connectionFactory = false, $objectManagerProvider = false)
+        {
+            if (! $connectionFactory) {
+                $connectionFactory = $this->createMock(ConnectionFactory::class);
+                $connectionFactory->expects($this->any())->method('create')->willReturn($this->connection);
+            }
+
+            if (! $objectManagerProvider) {
+                $objectManagerProvider =
+                    $this->createMock(ObjectManagerProvider::class);
+                $objectManagerProvider->expects($this->any())->method('get')->willReturn($this->objectManager);
+            }
+
+            $installer = $this->getMockBuilder(Installer::class)
+                ->enableOriginalConstructor()
+                ->onlyMethods(['getModuleResource'])
+                ->setConstructorArgs([
+                    'filePermissions' => $this->filePermissions,
+                    'deploymentConfigWriter' => $this->configWriter,
+                    'deploymentConfigReader' => $this->configReader,
+                    'deploymentConfig' => $this->config,
+                    'moduleList' => $this->moduleList,
+                    'moduleLoader' => $this->moduleLoader,
+                    'adminAccountFactory' => $this->adminFactory,
+                    'log' => $this->logger,
+                    'connectionFactory' => $connectionFactory,
+                    'maintenanceMode' => $this->maintenanceMode,
+                    'filesystem' => $this->filesystem,
+                    'objectManagerProvider' => $objectManagerProvider,
+                    'context' => $this->contextMock,
+                    'setupConfigModel' => $this->configModel,
+                    'cleanupFiles' => $this->cleanupFiles,
+                    'dbValidator' => $this->dbValidator,
+                    'setupFactory' => $this->setupFactory,
+                    'dataSetupFactory' => $this->dataSetupFactory,
+                    'sampleDataState' => $this->sampleDataState,
+                    'componentRegistrar' => $this->componentRegistrar,
+                    'phpReadinessCheck' => $this->phpReadinessCheck,
+                ])
+                ->getMock();
+
+            return $installer;
+        }
+
+        /**
+         * Prepare mocks for update modules tests and returns the installer to use.
+         *
          * @return Installer
          */
         private function prepareForUpdateModulesTests()
@@ -1831,7 +1895,7 @@ namespace Magento\Setup\Test\Unit\Model {
             $allModules = [
                 'Foo_One' => [],
                 'Bar_Two' => [],
-                'New_Module' => []
+                'New_Module' => [],
             ];
 
             $cacheManager = $this->createMock(Manager::class);
@@ -1841,8 +1905,8 @@ namespace Magento\Setup\Test\Unit\Model {
                 ->method('get')
                 ->willReturnMap(
                     [
-                        [Manager::class, $cacheManager]
-                    ]
+                        [Manager::class, $cacheManager],
+                    ],
                 );
             $this->moduleLoader->expects($this->once())->method('load')->willReturn($allModules);
 
@@ -1851,9 +1915,9 @@ namespace Magento\Setup\Test\Unit\Model {
                     'modules' => [
                         'Bar_Two' => 0,
                         'Foo_One' => 1,
-                        'New_Module' => 1
-                    ]
-                ]
+                        'New_Module' => 1,
+                    ],
+                ],
             ];
 
             $this->config->expects($this->atLeastOnce())
@@ -1870,7 +1934,7 @@ namespace Magento\Setup\Test\Unit\Model {
         }
 
         /**
-         * Sets a new ModuleResource object to the installer
+         * Sets a new ModuleResource object to the installer.
          *
          * @return void
          */
@@ -1883,9 +1947,8 @@ namespace Magento\Setup\Test\Unit\Model {
 }
 
 namespace Magento\Setup\Model {
-
     /**
-     * Mocking autoload function
+     * Mocking autoload function.
      *
      * @returns array
      */

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,7 +10,6 @@ namespace Magento\Setup\Test\Unit\Module\Di\App\Task;
 
 use Magento\Setup\Module\Di\App\Task\Operation\ApplicationCodeGenerator;
 use Magento\Setup\Module\Di\Code\Reader\ClassesScanner;
-use Magento\Setup\Module\Di\Code\Scanner;
 use Magento\Setup\Module\Di\Code\Scanner\DirectoryScanner;
 use Magento\Setup\Module\Di\Code\Scanner\PhpScanner;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -18,12 +18,12 @@ use PHPUnit\Framework\TestCase;
 class ApplicationCodeGeneratorTest extends TestCase
 {
     /**
-     * @var Scanner\DirectoryScanner|MockObject
+     * @var DirectoryScanner|MockObject
      */
     private $directoryScannerMock;
 
     /**
-     * @var Scanner\PhpScanner|MockObject
+     * @var PhpScanner|MockObject
      */
     private $phpScannerMock;
 
@@ -32,32 +32,20 @@ class ApplicationCodeGeneratorTest extends TestCase
      */
     private $classesScannerMock;
 
-    protected function setUp(): void
-    {
-        $this->directoryScannerMock = $this->getMockBuilder(
-            DirectoryScanner::class
-        )->disableOriginalConstructor()
-            ->getMock();
-        $this->phpScannerMock = $this->getMockBuilder(PhpScanner::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->classesScannerMock = $this->getMockBuilder(ClassesScanner::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
-
     /**
      * @param array $data
      *
      * @dataProvider doOperationWrongDataDataProvider
+     *
+     * @test
      */
-    public function testDoOperationWrongData($data)
+    public function doOperationWrongData($data)
     {
         $model = new ApplicationCodeGenerator(
             $this->classesScannerMock,
             $this->phpScannerMock,
             $this->directoryScannerMock,
-            $data
+            $data,
         );
 
         $this->classesScannerMock->expects($this->never())
@@ -82,19 +70,22 @@ class ApplicationCodeGeneratorTest extends TestCase
         ];
     }
 
-    public function testDoOperation()
+    /**
+     * @test
+     */
+    public function doOperation()
     {
         $data = [
             'paths' => ['path/to/app'],
             'filePatterns' => ['php' => '.php'],
-            'excludePatterns' => ['/\/Test\//']
+            'excludePatterns' => ['/\/Test\//'],
         ];
         $files = ['php' => []];
         $model = new ApplicationCodeGenerator(
             $this->classesScannerMock,
             $this->phpScannerMock,
             $this->directoryScannerMock,
-            $data
+            $data,
         );
 
         $this->classesScannerMock->expects($this->once())
@@ -105,7 +96,7 @@ class ApplicationCodeGeneratorTest extends TestCase
             ->with(
                 $data['paths'][0],
                 $data['filePatterns'],
-                $data['excludePatterns']
+                $data['excludePatterns'],
             )->willReturn($files);
         $this->phpScannerMock->expects($this->once())
             ->method('collectEntities')
@@ -113,5 +104,19 @@ class ApplicationCodeGeneratorTest extends TestCase
             ->willReturn([]);
 
         $this->assertEmpty($model->doOperation());
+    }
+
+    protected function setUp(): void
+    {
+        $this->directoryScannerMock = $this->getMockBuilder(
+            DirectoryScanner::class,
+        )->disableOriginalConstructor()
+            ->getMock();
+        $this->phpScannerMock = $this->getMockBuilder(PhpScanner::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->classesScannerMock = $this->getMockBuilder(ClassesScanner::class)
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

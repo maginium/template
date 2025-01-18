@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,7 +18,10 @@ use PHPUnit\Framework\TestCase;
 
 class AdminAccountFactoryTest extends TestCase
 {
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $serviceLocatorMock =
             $this->getMockBuilder(ServiceLocatorInterface::class)
@@ -31,7 +35,7 @@ class AdminAccountFactoryTest extends TestCase
         $adminAccountFactory = new AdminAccountFactory($serviceLocatorMock);
         $adminAccount = $adminAccountFactory->create(
             $this->getMockForAbstractClass(AdapterInterface::class),
-            []
+            [],
         );
         $this->assertInstanceOf(AdminAccount::class, $adminAccount);
     }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,28 +13,34 @@ use PHPUnit\Framework\TestCase;
 
 class PreferencesResolvingTest extends TestCase
 {
-    public function testEmptyConfigModify()
+    /**
+     * @test
+     */
+    public function emptyConfigModify()
     {
         $inputConfig = [
-            'data' => []
+            'data' => [],
         ];
 
-        $modification = new PreferencesResolving();
+        $modification = new PreferencesResolving;
         $this->assertSame($inputConfig, $modification->modify($inputConfig));
     }
 
-    public function testPreferencesResolvingModify()
+    /**
+     * @test
+     */
+    public function preferencesResolvingModify()
     {
         $inputConfig = [
             'arguments' => $this->getInputArguments(),
-            'preferences' => $this->getPreferences()
+            'preferences' => $this->getPreferences(),
         ];
         $outputConfig = [
             'arguments' => $this->getOutputArguments(),
-            'preferences' => $this->getPreferences()
+            'preferences' => $this->getPreferences(),
         ];
 
-        $modification = new PreferencesResolving();
+        $modification = new PreferencesResolving;
         $this->assertEquals($outputConfig, $modification->modify($inputConfig));
     }
 
@@ -60,8 +67,8 @@ class PreferencesResolvingTest extends TestCase
                     '_vn_' => true,
                 ],
                 'virtual_preferece' => [
-                    '_i_' => 'Type\DependencyInterface2'
-                ]
+                    '_i_' => 'Type\DependencyInterface2',
+                ],
             ],
             'ComplexClass' => [
                 'type_dependency_configured' => [
@@ -72,11 +79,11 @@ class PreferencesResolvingTest extends TestCase
                 ],
                 'global_argument' => [
                     '_a_' => 'global_argument_configured',
-                    '_d_' => null
+                    '_d_' => null,
                 ],
                 'global_argument_def' => [
                     '_a_' => 'global_argument_configured',
-                    '_d_' => []
+                    '_d_' => [],
                 ],
                 'value_configured' => [
                     '_v_' => 'value_configured',
@@ -95,14 +102,14 @@ class PreferencesResolvingTest extends TestCase
                         ],
                         'array_global_argument' => [
                             '_a_' => 'global_argument_configured',
-                            '_d_' => null
-                        ]
+                            '_d_' => null,
+                        ],
                     ],
                 ],
                 'value_null' => [
                     '_vn_' => true,
                 ],
-            ]
+            ],
         ];
     }
 
@@ -129,8 +136,8 @@ class PreferencesResolvingTest extends TestCase
                     '_vn_' => true,
                 ],
                 'virtual_preferece' => [
-                    '_i_' => 'Type\DependencyVirtual3'
-                ]
+                    '_i_' => 'Type\DependencyVirtual3',
+                ],
             ],
             'ComplexClass' => [
                 'type_dependency_configured' => [
@@ -141,11 +148,11 @@ class PreferencesResolvingTest extends TestCase
                 ],
                 'global_argument' => [
                     '_a_' => 'global_argument_configured',
-                    '_d_' => null
+                    '_d_' => null,
                 ],
                 'global_argument_def' => [
                     '_a_' => 'global_argument_configured',
-                    '_d_' => []
+                    '_d_' => [],
                 ],
                 'value_configured' => [
                     '_v_' => 'value_configured',
@@ -164,14 +171,14 @@ class PreferencesResolvingTest extends TestCase
                         ],
                         'array_global_argument' => [
                             '_a_' => 'global_argument_configured',
-                            '_d_' => null
-                        ]
+                            '_d_' => null,
+                        ],
                     ],
                 ],
                 'value_null' => [
                     '_vn_' => true,
                 ],
-            ]
+            ],
         ];
     }
 
@@ -188,7 +195,7 @@ class PreferencesResolvingTest extends TestCase
             'Type\Dependency\Shared\Configured' => 'Type\Dependency\Shared\ConfiguredPreference',
             'Type\DependencyInterface2' => 'Type\DependencyVirtual',
             'Type\DependencyVirtual' => 'Type\DependencyVirtual2',
-            'Type\DependencyVirtual2' => 'Type\DependencyVirtual3'
+            'Type\DependencyVirtual2' => 'Type\DependencyVirtual3',
         ];
     }
 }

@@ -1,15 +1,19 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model\FixtureGenerator;
 
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\App\ResourceConnection;
 
 /**
- * Generate specified amount of bundle products based on passed fixture
+ * Generate specified amount of bundle products based on passed fixture.
  *
  * See ProductGenerator for fixture arguments
  * Fixture must return some specific options for generate bundle product:
@@ -18,6 +22,7 @@ use Magento\Framework\App\ResourceConnection;
  *      '_bundle_options' => amount of options per bundle product,
  *      '_bundle_products_per_option' => amount of simple products per each option,
  * ]
+ *
  * @see ProductGenerator
  * @see BundleProductTemplateGenerator
  */
@@ -28,7 +33,7 @@ class BundleProductGenerator
      */
     private $sequenceValues = [
         'sequence_product_bundle_option' => null,
-        'sequence_product_bundle_selection' => null
+        'sequence_product_bundle_selection' => null,
     ];
 
     /**
@@ -47,12 +52,12 @@ class BundleProductGenerator
      */
     public function __construct(
         ProductGeneratorFactory $productGeneratorFactory,
-        ResourceConnection $resource = null
+        ?ResourceConnection $resource = null,
     ) {
         $this->productGeneratorFactory = $productGeneratorFactory;
 
         $this->resource = $resource ?: ObjectManager::getInstance()->get(
-            ResourceConnection::class
+            ResourceConnection::class,
         );
     }
 
@@ -72,12 +77,12 @@ class BundleProductGenerator
             'customTableMap' => [
                 'catalog_product_bundle_option' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['option_id'] = $this->generateOptionId(
                                 $entityNumber,
                                 $bind['option_id'],
-                                $fixture
+                                $fixture,
                             );
 
                             $bind['parent_id'] = $productId;
@@ -88,10 +93,10 @@ class BundleProductGenerator
                 ],
                 'sequence_product_bundle_option' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['sequence_value'] = $this->generateSequenceId(
-                                'sequence_product_bundle_option'
+                                'sequence_product_bundle_option',
                             );
                         }
 
@@ -100,12 +105,12 @@ class BundleProductGenerator
                 ],
                 'catalog_product_bundle_option_value' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['option_id'] = $this->generateOptionId(
                                 $entityNumber,
                                 $bind['option_id'],
-                                $fixture
+                                $fixture,
                             );
 
                             $bind['parent_product_id'] = $productId;
@@ -116,12 +121,12 @@ class BundleProductGenerator
                 ],
                 'catalog_product_bundle_selection' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['selection_id'] = $this->generateSelectionId(
                                 $entityNumber,
                                 $bind['selection_id'],
-                                $fixture
+                                $fixture,
                             );
 
                             $bind['parent_product_id'] = $productId;
@@ -129,13 +134,13 @@ class BundleProductGenerator
                             $bind['option_id'] = $this->generateOptionId(
                                 $entityNumber,
                                 $bind['option_id'],
-                                $fixture
+                                $fixture,
                             );
 
                             $bind['product_id'] = $this->generateSimpleProductId(
                                 $bind['product_id'],
                                 $entityNumber,
-                                $fixture
+                                $fixture,
                             );
 
                             $bind['selection_price_type'] = $fixture['priceType']($bind['product_id']);
@@ -147,10 +152,10 @@ class BundleProductGenerator
                 ],
                 'sequence_product_bundle_selection' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['sequence_value'] = $this->generateSequenceId(
-                                'sequence_product_bundle_selection'
+                                'sequence_product_bundle_selection',
                             );
                         }
 
@@ -159,19 +164,20 @@ class BundleProductGenerator
                 ],
                 'catalog_product_relation' => [
                     'entity_id_field' => EntityGenerator::SKIP_ENTITY_ID_BINDING,
-                    'handler' => function ($productId, $entityNumber, $fixture, $binds) {
+                    'handler' => function($productId, $entityNumber, $fixture, $binds) {
                         foreach ($binds as &$bind) {
                             $bind['parent_id'] = $productId;
                             $bind['child_id'] = $this->generateSimpleProductId(
                                 $bind['child_id'],
                                 $entityNumber,
-                                $fixture
+                                $fixture,
                             );
                         }
+
                         return $binds;
                     },
                 ],
-            ]
+            ],
         ])->generate($products, $fixtureMap);
     }
 
@@ -222,14 +228,14 @@ class BundleProductGenerator
      */
     private function generateSequenceId($tableName)
     {
-        if (!$this->sequenceValues[$tableName]) {
+        if (! $this->sequenceValues[$tableName]) {
             $connection = $this->resource->getConnection();
 
             $this->sequenceValues[$tableName] = $connection->fetchOne(
                 $connection->select()->from(
                     $this->resource->getTableName($tableName),
-                    'MAX(`sequence_value`)'
-                )
+                    'MAX(`sequence_value`)',
+                ),
             );
         }
 
@@ -237,11 +243,12 @@ class BundleProductGenerator
     }
 
     /**
-     * Generate value of simple product id which is used for $entityNumber bundle product as option item
+     * Generate value of simple product id which is used for $entityNumber bundle product as option item.
      *
      * @param int $previousProductId
      * @param int $entityNumber
      * @param array $fixture
+     *
      * @return mixed
      */
     private function generateSimpleProductId($previousProductId, $entityNumber, array $fixture)

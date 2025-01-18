@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,6 +14,7 @@ use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\Component\ComponentRegistrarInterface;
 use Magento\Framework\DB\Logger\Quiet;
 use Magento\Framework\DB\LoggerInterface;
+use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Filesystem\DriverInterface;
 use Magento\Framework\Locale\Config;
 use Magento\Framework\Locale\ConfigInterface;
@@ -24,7 +28,7 @@ return [
                 ServiceLocatorInterface::class => ServiceManager::class,
                 LoggerInterface::class => Quiet::class,
                 ConfigInterface::class => Config::class,
-                DriverInterface::class => \Magento\Framework\Filesystem\Driver\File::class,
+                DriverInterface::class => File::class,
                 ComponentRegistrarInterface::class => ComponentRegistrar::class,
             ],
             'types' => [
@@ -33,9 +37,9 @@ return [
                         'connectionScopes' => [
                             'default',
                             'checkout',
-                            'sales'
-                        ]
-                    ]
+                            'sales',
+                        ],
+                    ],
                 ],
             ],
         ],

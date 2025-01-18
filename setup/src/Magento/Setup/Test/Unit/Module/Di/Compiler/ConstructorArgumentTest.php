@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,7 +13,10 @@ use PHPUnit\Framework\TestCase;
 
 class ConstructorArgumentTest extends TestCase
 {
-    public function testInterface()
+    /**
+     * @test
+     */
+    public function interface()
     {
         $argument = ['configuration', 'array', true, null];
         $model = new ConstructorArgument($argument);

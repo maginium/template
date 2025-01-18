@@ -1,12 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 /**
- * Default description generator for product
+ * Default description generator for product.
  */
 class DefaultDescriptionGenerator implements DescriptionGeneratorInterface
 {
@@ -25,6 +29,7 @@ class DefaultDescriptionGenerator implements DescriptionGeneratorInterface
 
     /**
      * @param int $entityIndex
+     *
      * @return string
      */
     public function generate($entityIndex)

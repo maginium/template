@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -20,13 +21,10 @@ class SearchConfigOptionsListTest extends TestCase
      */
     private $searchConfigOptionsList;
 
-    protected function setup(): void
-    {
-        $objectManager = new ObjectManager($this);
-        $this->searchConfigOptionsList = $objectManager->getObject(SearchConfigOptionsList::class);
-    }
-
-    public function testGetOptionsList()
+    /**
+     * @test
+     */
+    public function getOptionsList()
     {
         $optionsList = $this->searchConfigOptionsList->getOptionsList();
         $this->assertCount(15, $optionsList);
@@ -96,5 +94,11 @@ class SearchConfigOptionsListTest extends TestCase
         $this->assertArrayHasKey(14, $optionsList);
         $this->assertInstanceOf(TextConfigOption::class, $optionsList[14]);
         $this->assertEquals('opensearch-timeout', $optionsList[14]->getName());
+    }
+
+    protected function setup(): void
+    {
+        $objectManager = new ObjectManager($this);
+        $this->searchConfigOptionsList = $objectManager->getObject(SearchConfigOptionsList::class);
     }
 }

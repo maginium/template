@@ -1,12 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Circular\Data;
 
 /**
- * Chain
+ * Chain.
  */
 class Chain
 {
@@ -16,7 +20,7 @@ class Chain
     private $modules;
 
     /**
-     * Chain construct
+     * Chain construct.
      *
      * @param array $modules
      */
@@ -26,7 +30,7 @@ class Chain
     }
 
     /**
-     * Get modules
+     * Get modules.
      *
      * @return array
      */

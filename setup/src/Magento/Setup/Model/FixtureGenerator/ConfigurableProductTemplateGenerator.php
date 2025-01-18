@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -16,7 +19,7 @@ use Magento\Framework\App\ResourceConnection;
 
 /**
  * Configurable product template generator. Return newly created configurable product for specified attribute set
- * with default values for product attributes
+ * with default values for product attributes.
  */
 class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInterface
 {
@@ -50,7 +53,7 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
         ProductFactory $productFactory,
         array $fixture,
         OptionFactory $optionFactory,
-        ResourceConnection $resourceConnection
+        ResourceConnection $resourceConnection,
     ) {
         $this->fixture = $fixture;
         $this->productFactory = $productFactory;
@@ -71,9 +74,10 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
     }
 
     /**
-     * Get product template
+     * Get product template.
      *
      * @param int $attributeSet
+     *
      * @return ProductInterface
      */
     private function getProductTemplate($attributeSet)
@@ -102,22 +106,24 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
                     'use_config_manage_stock' => 1,
                     'qty' => 100500,
                     'is_qty_decimal' => 0,
-                    'is_in_stock' => 1
+                    'is_in_stock' => 1,
                 ],
                 // Need for set "has_options" field
                 'can_save_configurable_attributes' => true,
                 'configurable_attributes_data' => $this->fixture['_attributes'],
-            ]
+            ],
         ]);
 
         $attributes = [];
+
         foreach ($this->fixture['_attributes'] as $index => $attribute) {
             $attributeValues = [];
+
             foreach ($attribute['values'] as $value) {
                 $attributeValues[] = [
                     'label' => $attribute['name'],
                     'attribute_id' => $attribute['id'],
-                    'value_index' => $value
+                    'value_index' => $value,
                 ];
             }
             $attributes[] = [
@@ -126,7 +132,7 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
                 'label' => $attribute['name'],
                 'position' => $index,
                 'values' => $attributeValues,
-             ];
+            ];
         }
         $configurableOptions = $this->optionFactory->create($attributes);
         $extensionConfigurableAttributes = $product->getExtensionAttributes();
@@ -139,7 +145,7 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
 
     /**
      * Get configurable variation ids. Retrieve first simple product id by sku pattern from DB and generate next values
-     * for all variations
+     * for all variations.
      *
      * @return array
      */
@@ -150,7 +156,7 @@ class ConfigurableProductTemplateGenerator implements TemplateEntityGeneratorInt
         $firstSimpleProductId = $connection->fetchRow(
             $connection->select()
                 ->from($this->resourceConnection->getTableName('catalog_product_entity'))
-                ->where('sku = ?', $this->fixture['_variation_sku_pattern'])
+                ->where('sku = ?', $this->fixture['_variation_sku_pattern']),
         )['entity_id'];
 
         for ($i = 0; $i < $this->fixture['_variation_count']; $i++) {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -64,36 +65,10 @@ class ModuleUninstallerTest extends TestCase
      */
     private $patchApplierMock;
 
-    protected function setUp(): void
-    {
-        $this->objectManager = $this->getMockForAbstractClass(
-            ObjectManagerInterface::class,
-            [],
-            '',
-            false
-        );
-        $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
-        $objectManagerProvider->expects($this->once())->method('get')->willReturn($this->objectManager);
-
-        $this->remove = $this->createMock(Remove::class);
-        $this->collector = $this->createMock(UninstallCollector::class);
-
-        $this->setup = $this->createMock(Setup::class);
-        $this->patchApplierMock = $this->createMock(PatchApplier::class);
-        $setupFactory = $this->createMock(SetupFactory::class);
-        $setupFactory->expects($this->any())->method('create')->willReturn($this->setup);
-
-        $this->uninstaller = new ModuleUninstaller(
-            $objectManagerProvider,
-            $this->remove,
-            $this->collector,
-            $setupFactory
-        );
-
-        $this->output = $this->getMockForAbstractClass(OutputInterface::class);
-    }
-
-    public function testUninstallRemoveData()
+    /**
+     * @test
+     */
+    public function uninstallRemoveData()
     {
         $uninstall = $this->getMockForAbstractClass(UninstallInterface::class, [], '', false);
         $uninstall->expects($this->atLeastOnce())
@@ -113,19 +88,22 @@ class ModuleUninstallerTest extends TestCase
             ->willReturnMap(
                 [
                     [ModuleResource::class, $resource],
-                    [PatchApplier::class, $this->patchApplierMock]
-                ]
+                    [PatchApplier::class, $this->patchApplierMock],
+                ],
             );
         $this->patchApplierMock->expects($this->exactly(2))->method('revertDataPatches')->willReturnMap(
             [
                 ['moduleA'],
-                ['moduleB']
-            ]
+                ['moduleB'],
+            ],
         );
         $this->uninstaller->uninstallData($this->output, ['moduleA', 'moduleB']);
     }
 
-    public function testUninstallRemoveCode()
+    /**
+     * @test
+     */
+    public function uninstallRemoveCode()
     {
         $this->output->expects($this->once())->method('writeln');
         $packageInfoFactory = $this->createMock(PackageInfoFactory::class);
@@ -138,5 +116,34 @@ class ModuleUninstallerTest extends TestCase
             ->willReturn($packageInfoFactory);
         $this->remove->expects($this->once())->method('remove');
         $this->uninstaller->uninstallCode($this->output, ['moduleA', 'moduleB']);
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManager = $this->getMockForAbstractClass(
+            ObjectManagerInterface::class,
+            [],
+            '',
+            false,
+        );
+        $objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
+        $objectManagerProvider->expects($this->once())->method('get')->willReturn($this->objectManager);
+
+        $this->remove = $this->createMock(Remove::class);
+        $this->collector = $this->createMock(UninstallCollector::class);
+
+        $this->setup = $this->createMock(Setup::class);
+        $this->patchApplierMock = $this->createMock(PatchApplier::class);
+        $setupFactory = $this->createMock(SetupFactory::class);
+        $setupFactory->expects($this->any())->method('create')->willReturn($this->setup);
+
+        $this->uninstaller = new ModuleUninstaller(
+            $objectManagerProvider,
+            $this->remove,
+            $this->collector,
+            $setupFactory,
+        );
+
+        $this->output = $this->getMockForAbstractClass(OutputInterface::class);
     }
 }

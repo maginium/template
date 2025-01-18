@@ -1,28 +1,32 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Parser\Adapter;
 
 use Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector;
 
 /**
- * Php parser adapter
+ * Php parser adapter.
  */
 class Php extends AbstractAdapter
 {
     /**
-     * Phrase collector
+     * Phrase collector.
      *
-     * @var \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector
+     * @var PhraseCollector
      */
     protected $_phraseCollector;
 
     /**
-     * Adapter construct
+     * Adapter construct.
      *
-     * @param \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector $phraseCollector
+     * @param PhraseCollector $phraseCollector
      */
     public function __construct(PhraseCollector $phraseCollector)
     {

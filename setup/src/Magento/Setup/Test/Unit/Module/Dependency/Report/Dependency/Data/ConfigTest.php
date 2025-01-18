@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,19 +31,10 @@ class ConfigTest extends TestCase
      */
     protected $config;
 
-    protected function setUp(): void
-    {
-        $this->moduleFirst = $this->createMock(Module::class);
-        $this->moduleSecond = $this->createMock(Module::class);
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->config = $objectManagerHelper->getObject(
-            Config::class,
-            ['modules' => [$this->moduleFirst, $this->moduleSecond]]
-        );
-    }
-
-    public function testGetDependenciesCount()
+    /**
+     * @test
+     */
+    public function getDependenciesCount()
     {
         $this->moduleFirst->expects($this->once())->method('getHardDependenciesCount')->willReturn(1);
         $this->moduleFirst->expects($this->once())->method('getSoftDependenciesCount')->willReturn(2);
@@ -53,7 +45,10 @@ class ConfigTest extends TestCase
         $this->assertEquals(10, $this->config->getDependenciesCount());
     }
 
-    public function testGetHardDependenciesCount()
+    /**
+     * @test
+     */
+    public function getHardDependenciesCount()
     {
         $this->moduleFirst->expects($this->once())->method('getHardDependenciesCount')->willReturn(1);
         $this->moduleFirst->expects($this->never())->method('getSoftDependenciesCount');
@@ -64,7 +59,10 @@ class ConfigTest extends TestCase
         $this->assertEquals(3, $this->config->getHardDependenciesCount());
     }
 
-    public function testGetSoftDependenciesCount()
+    /**
+     * @test
+     */
+    public function getSoftDependenciesCount()
     {
         $this->moduleFirst->expects($this->never())->method('getHardDependenciesCount');
         $this->moduleFirst->expects($this->once())->method('getSoftDependenciesCount')->willReturn(1);
@@ -73,5 +71,17 @@ class ConfigTest extends TestCase
         $this->moduleSecond->expects($this->once())->method('getSoftDependenciesCount')->willReturn(3);
 
         $this->assertEquals(4, $this->config->getSoftDependenciesCount());
+    }
+
+    protected function setUp(): void
+    {
+        $this->moduleFirst = $this->createMock(Module::class);
+        $this->moduleSecond = $this->createMock(Module::class);
+
+        $objectManagerHelper = new ObjectManager($this);
+        $this->config = $objectManagerHelper->getObject(
+            Config::class,
+            ['modules' => [$this->moduleFirst, $this->moduleSecond]],
+        );
     }
 }

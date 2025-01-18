@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 class DataGeneratorTest extends TestCase
 {
-    const PATH_TO_CSV_FILE = '/_files/dictionary.csv';
+    public const PATH_TO_CSV_FILE = '/_files/dictionary.csv';
 
     /**
      * @test
@@ -27,14 +28,18 @@ class DataGeneratorTest extends TestCase
         $result = $model->generate($wordCount, $wordCount);
 
         $found = false;
+
         foreach ($data as $word) {
-            $found = (strpos($result, $word[0]) !== false) || $found;
+            $found = str_contains($result, $word[0]) || $found;
         }
         $this->assertTrue($found);
-        $this->assertCount($wordCount, explode(" ", $result));
+        $this->assertCount($wordCount, explode(' ', $result));
     }
 
-    public function testGenerateWithKey()
+    /**
+     * @test
+     */
+    public function generateWithKey()
     {
         $key = 'generate-test';
 
@@ -45,7 +50,7 @@ class DataGeneratorTest extends TestCase
 
         $foundResult = $model->generate($wordCount, $wordCount, $key);
 
-        $this->assertCount($wordCount, explode(" ", $result));
+        $this->assertCount($wordCount, explode(' ', $result));
         $this->assertEquals($result, $foundResult);
     }
 }

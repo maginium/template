@@ -1,27 +1,32 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Parser\Adapter;
 
+use InvalidArgumentException;
 use Magento\Setup\Module\I18n\Dictionary\Phrase;
 use Magento\Setup\Module\I18n\Parser\AdapterInterface;
 
 /**
- * Abstract parser adapter
+ * Abstract parser adapter.
  */
 abstract class AbstractAdapter implements AdapterInterface
 {
     /**
-     * Processed file
+     * Processed file.
      *
      * @var string
      */
     protected $_file;
 
     /**
-     * Parsed phrases
+     * Parsed phrases.
      *
      * @var array
      */
@@ -38,13 +43,6 @@ abstract class AbstractAdapter implements AdapterInterface
     }
 
     /**
-     * Template method
-     *
-     * @return void
-     */
-    abstract protected function _parse();
-
-    /**
      * {@inheritdoc}
      */
     public function getPhrases()
@@ -53,21 +51,32 @@ abstract class AbstractAdapter implements AdapterInterface
     }
 
     /**
-     * Add phrase
+     * Template method.
+     *
+     * @return void
+     */
+    abstract protected function _parse();
+
+    /**
+     * Add phrase.
      *
      * @param string $phrase
      * @param string|int $line
+     *
+     * @throws InvalidArgumentException
+     *
      * @return void
-     * @throws \InvalidArgumentException
      */
     protected function _addPhrase($phrase, $line = '')
     {
-        if (!$phrase) {
+        if (! $phrase) {
             return;
         }
-        if (!isset($this->_phrases[$phrase])) {
+
+        if (! isset($this->_phrases[$phrase])) {
             $enclosureCharacter = $this->getEnclosureCharacter($phrase);
-            if (!empty($enclosureCharacter)) {
+
+            if (! empty($enclosureCharacter)) {
                 $phrase = $this->trimEnclosure($phrase);
             }
 
@@ -81,38 +90,43 @@ abstract class AbstractAdapter implements AdapterInterface
     }
 
     /**
-     * Prepare phrase
+     * Prepare phrase.
      *
      * @param string $phrase
+     *
      * @return string
      */
     protected function _stripFirstAndLastChar($phrase)
     {
-        return substr($phrase, 1, strlen($phrase) - 2);
+        return mb_substr($phrase, 1, mb_strlen($phrase) - 2);
     }
 
     /**
-     * Check if first and last char is quote
+     * Check if first and last char is quote.
      *
      * @param string $phrase
+     *
      * @return bool
      */
     protected function _isFirstAndLastCharIsQuote($phrase)
     {
         $firstCharacter = $phrase[0];
-        $lastCharacter = $phrase[strlen($phrase) - 1];
-        return $this->isQuote($firstCharacter) && $firstCharacter == $lastCharacter;
+        $lastCharacter = $phrase[mb_strlen($phrase) - 1];
+
+        return $this->isQuote($firstCharacter) && $firstCharacter === $lastCharacter;
     }
 
     /**
-     * Get enclosing character if any
+     * Get enclosing character if any.
      *
      * @param string $phrase
+     *
      * @return string
      */
     protected function getEnclosureCharacter($phrase)
     {
         $quote = '';
+
         if ($this->_isFirstAndLastCharIsQuote($phrase)) {
             $quote = $phrase[0];
         }
@@ -122,6 +136,7 @@ abstract class AbstractAdapter implements AdapterInterface
 
     /**
      * @param string $phrase
+     *
      * @return string
      */
     protected function trimEnclosure($phrase)
@@ -131,6 +146,7 @@ abstract class AbstractAdapter implements AdapterInterface
 
     /**
      * @param string $char
+     *
      * @return bool
      */
     protected function isQuote($char)

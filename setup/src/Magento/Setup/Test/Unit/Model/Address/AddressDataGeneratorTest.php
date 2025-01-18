@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -24,12 +25,10 @@ class AddressDataGeneratorTest extends TestCase
      */
     private $addressGenerator;
 
-    protected function setUp(): void
-    {
-        $this->addressGenerator = new AddressDataGenerator();
-    }
-
-    public function testPostcode()
+    /**
+     * @test
+     */
+    public function postcode()
     {
         // phpcs:ignore
         mt_srand(42);
@@ -42,12 +41,20 @@ class AddressDataGeneratorTest extends TestCase
         $this->assertNotEquals($address1['postcode'], $address2['postcode']);
     }
 
-    public function testAddressStructure()
+    /**
+     * @test
+     */
+    public function addressStructure()
     {
         $address = $this->addressGenerator->generateAddress();
 
         foreach ($this->addressStructure as $addressField) {
             $this->assertArrayHasKey($addressField, $address);
         }
+    }
+
+    protected function setUp(): void
+    {
+        $this->addressGenerator = new AddressDataGenerator;
     }
 }

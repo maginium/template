@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,23 +31,15 @@ class OperationFactoryTest extends TestCase
      */
     private $objectManagerMock;
 
-    protected function setUp(): void
-    {
-        $this->objectManagerMock = $this->getMockBuilder(ObjectManagerInterface::class)
-            ->getMockForAbstractClass();
-        $objectManagerProviderMock = $this->createMock(ObjectManagerProvider::class);
-        $objectManagerProviderMock->expects($this->once())->method('get')->willReturn($this->objectManagerMock);
-        $this->factory = new OperationFactory(
-            $objectManagerProviderMock
-        );
-    }
-
     /**
      * @param string $alias
      * @param mixed $arguments
+     *
      * @dataProvider aliasesDataProvider
+     *
+     * @test
      */
-    public function testCreateSuccess($alias, $arguments, $instanceName)
+    public function createSuccess($alias, $arguments, $instanceName)
     {
         $operationInstance = $this->getMockBuilder(OperationInterface::class)
             ->getMock();
@@ -59,12 +52,15 @@ class OperationFactoryTest extends TestCase
         $this->assertSame($operationInstance, $this->factory->create($alias, $arguments));
     }
 
-    public function testCreateException()
+    /**
+     * @test
+     */
+    public function createException()
     {
         $notRegisteredOperation = 'coffee';
         $this->expectException(OperationException::class);
         $this->expectExceptionMessage(
-            sprintf('Unrecognized operation "%s"', $notRegisteredOperation)
+            sprintf('Unrecognized operation "%s"', $notRegisteredOperation),
         );
         $this->factory->create($notRegisteredOperation);
     }
@@ -74,14 +70,25 @@ class OperationFactoryTest extends TestCase
      */
     public function aliasesDataProvider()
     {
-        return  [
+        return [
             [OperationFactory::AREA_CONFIG_GENERATOR, [], Area::class],
             [OperationFactory::INTERCEPTION, null, Interception::class],
             [
                 OperationFactory::INTERCEPTION_CACHE,
                 1,
-                InterceptionCache::class
+                InterceptionCache::class,
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManagerMock = $this->getMockBuilder(ObjectManagerInterface::class)
+            ->getMockForAbstractClass();
+        $objectManagerProviderMock = $this->createMock(ObjectManagerProvider::class);
+        $objectManagerProviderMock->expects($this->once())->method('get')->willReturn($this->objectManagerMock);
+        $this->factory = new OperationFactory(
+            $objectManagerProviderMock,
+        );
     }
 }

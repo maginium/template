@@ -1,12 +1,16 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 /**
- * Class SearchTermManager
+ * Class SearchTermManager.
  *
  * Class responsible for applying search terms to description
  * based on search terms description
@@ -35,15 +39,16 @@ class SearchTermManager
     public function __construct(array $searchTerms, $totalProductsCount)
     {
         $this->searchTerms = $searchTerms;
-        $this->totalProductsCount = (int) $totalProductsCount;
+        $this->totalProductsCount = (int)$totalProductsCount;
     }
 
     /**
      * Apply search terms to product description
-     * based on search terms use distribution
+     * based on search terms use distribution.
      *
      * @param string $description
      * @param int $currentProductIndex
+     *
      * @return void
      */
     public function applySearchTermsToDescription(&$description, $currentProductIndex)
@@ -66,7 +71,7 @@ class SearchTermManager
     /**
      * Calculates search terms use distribution
      * based on total amount of products that will be generated
-     * and number of each search term
+     * and number of each search term.
      *
      * @return void;
      */
@@ -75,7 +80,7 @@ class SearchTermManager
         foreach ($this->searchTerms as $searchTerm) {
             $this->searchTermsUseRate[$searchTerm['term']] = [
                 'use_rate' => floor($this->totalProductsCount / $searchTerm['count']),
-                'used' => 0
+                'used' => 0,
             ];
         }
     }

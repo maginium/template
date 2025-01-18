@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -10,11 +11,16 @@ namespace Magento\Setup\Test\Unit\Module\Di\Code\Scanner;
 use Magento\Framework\Reflection\TypeProcessor;
 
 require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/Helper/TestHelper.php';
+
 require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/ElementFactory.php';
+
 require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/Model/DoubleColon.php';
+
 require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/Api/Data/SomeInterface.php';
+
 require_once __DIR__ . '/../../_files/app/code/Magento/SomeModule/Model/StubWithAnonymousClass.php';
 
+use Magento\Eav\Api\Data\AttributeExtensionInterface;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Setup\Module\Di\Code\Scanner\PhpScanner;
 use Magento\Setup\Module\Di\Compiler\Log\Log;
@@ -40,7 +46,43 @@ class PhpScannerTest extends TestCase
     private $log;
 
     /**
-     * @inheritdoc
+     * @return void
+     *
+     * @test
+     */
+    public function collectEntities(): void
+    {
+        $testFiles = [
+            $this->testDir . '/app/code/Magento/SomeModule/Helper/TestHelper.php',
+            $this->testDir . '/app/code/Magento/SomeModule/Model/DoubleColon.php',
+            $this->testDir . '/app/code/Magento/SomeModule/Api/Data/SomeInterface.php',
+            $this->testDir . '/app/code/Magento/SomeModule/Model/StubWithAnonymousClass.php',
+        ];
+
+        $this->log
+            ->method('add')
+            ->willReturnCallback(
+                function($arg1, $arg2, $arg3) {
+                    if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Module\Factory') {
+                        return;
+                    }
+
+                    if ($arg1 === 4 && $arg2 === 'Magento\SomeModule\Element\Factory') {
+                        return;
+                    }
+                },
+            );
+
+        $result = $this->scanner->collectEntities($testFiles);
+
+        self::assertEquals(
+            ['\\' . AttributeExtensionInterface::class],
+            $result,
+        );
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -48,44 +90,12 @@ class PhpScannerTest extends TestCase
         $objects = [
             [
                 LoggerInterface::class,
-                $this->createMock(LoggerInterface::class)
+                $this->createMock(LoggerInterface::class),
             ],
         ];
         $objectManagerHelper->prepareObjectManager($objects);
         $this->log = $this->createMock(Log::class);
-        $this->scanner = new PhpScanner($this->log, new TypeProcessor());
+        $this->scanner = new PhpScanner($this->log, new TypeProcessor);
         $this->testDir = str_replace('\\', '/', realpath(__DIR__ . '/../../') . '/_files');
-    }
-
-    /**
-     * @return void
-     */
-    public function testCollectEntities(): void
-    {
-        $testFiles = [
-            $this->testDir . '/app/code/Magento/SomeModule/Helper/TestHelper.php',
-            $this->testDir . '/app/code/Magento/SomeModule/Model/DoubleColon.php',
-            $this->testDir . '/app/code/Magento/SomeModule/Api/Data/SomeInterface.php',
-            $this->testDir . '/app/code/Magento/SomeModule/Model/StubWithAnonymousClass.php'
-        ];
-
-        $this->log
-            ->method('add')
-            ->willReturnCallback(
-                function ($arg1, $arg2, $arg3) {
-                    if ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Module\Factory') {
-                        return null;
-                    } elseif ($arg1 == 4 && $arg2 == 'Magento\SomeModule\Element\Factory') {
-                        return null;
-                    }
-                }
-            );
-
-        $result = $this->scanner->collectEntities($testFiles);
-
-        self::assertEquals(
-            ['\\' . \Magento\Eav\Api\Data\AttributeExtensionInterface::class],
-            $result
-        );
     }
 }

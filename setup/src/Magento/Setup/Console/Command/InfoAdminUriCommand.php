@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,41 +9,31 @@
 
 namespace Magento\Setup\Console\Command;
 
+use Magento\Backend\Setup\ConfigOptionsList as BackendConfigOptionsList;
+use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\Console\Cli;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Command\Command;
-use \Magento\Backend\Setup\ConfigOptionsList as BackendConfigOptionsList;
 
 class InfoAdminUriCommand extends Command
 {
     /**
-     * @var \Magento\Framework\App\DeploymentConfig
+     * @var DeploymentConfig
      */
     private $deploymentConfig;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param \Magento\Framework\App\DeploymentConfig $deploymentConfig
+     * @param DeploymentConfig $deploymentConfig
      *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
-    public function __construct(\Magento\Framework\App\DeploymentConfig $deploymentConfig)
+    public function __construct(DeploymentConfig $deploymentConfig)
     {
         $this->deploymentConfig = $deploymentConfig;
         parent::__construct();
-    }
-
-    /**
-     * Initialization of the command
-     *
-     * @return void
-     */
-    protected function configure()
-    {
-        $this->setName('info:adminuri')
-            ->setDescription('Displays the Magento Admin URI');
-        parent::configure();
     }
 
     /**
@@ -51,8 +44,21 @@ class InfoAdminUriCommand extends Command
         $output->writeln(
             "\nAdmin URI: /"
             . $this->deploymentConfig->get(BackendConfigOptionsList::CONFIG_PATH_BACKEND_FRONTNAME)
-            . "\n"
+            . "\n",
         );
-        return \Magento\Framework\Console\Cli::RETURN_SUCCESS;
+
+        return Cli::RETURN_SUCCESS;
+    }
+
+    /**
+     * Initialization of the command.
+     *
+     * @return void
+     */
+    protected function configure()
+    {
+        $this->setName('info:adminuri')
+            ->setDescription('Displays the Magento Admin URI');
+        parent::configure();
     }
 }

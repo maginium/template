@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,39 +9,41 @@
 
 namespace Magento\Setup\Model;
 
+use Exception;
+use InvalidArgumentException;
 use Magento\Framework\App\DeploymentConfig;
-use Magento\Framework\Config\Data\ConfigData;
 use Magento\Framework\App\DeploymentConfig\Writer;
-use Magento\Framework\Setup\Option\AbstractConfigOption;
+use Magento\Framework\Config\Data\ConfigData;
 use Magento\Framework\Setup\FilePermissions;
+use Magento\Framework\Setup\Option\AbstractConfigOption;
 use Magento\Setup\Exception as SetupException;
 
 class ConfigModel
 {
     /**
-     * @var \Magento\Setup\Model\ConfigOptionsListCollector
+     * @var ConfigOptionsListCollector
      */
     protected $collector;
 
     /**
-     * @var \Magento\Framework\App\DeploymentConfig\Writer
+     * @var Writer
      */
     protected $writer;
 
     /**
-     * File permissions checker
+     * @var DeploymentConfig
+     */
+    protected $deploymentConfig;
+
+    /**
+     * File permissions checker.
      *
      * @var FilePermissions
      */
     private $filePermissions;
 
     /**
-     * @var \Magento\Framework\App\DeploymentConfig
-     */
-    protected $deploymentConfig;
-
-    /**
-     * Constructor
+     * Constructor.
      *
      * @param ConfigOptionsListCollector $collector
      * @param Writer $writer
@@ -49,7 +54,7 @@ class ConfigModel
         ConfigOptionsListCollector $collector,
         Writer $writer,
         DeploymentConfig $deploymentConfig,
-        FilePermissions $filePermissions
+        FilePermissions $filePermissions,
     ) {
         $this->collector = $collector;
         $this->writer = $writer;
@@ -58,7 +63,7 @@ class ConfigModel
     }
 
     /**
-     * Gets available config options
+     * Gets available config options.
      *
      * @return AbstractConfigOption[]
      */
@@ -76,6 +81,7 @@ class ConfigModel
 
         foreach ($optionCollection as $option) {
             $currentValue = $this->deploymentConfig->get($option->getConfigPath());
+
             if ($currentValue !== null) {
                 $option->setDefault();
             }
@@ -85,11 +91,13 @@ class ConfigModel
     }
 
     /**
-     * Process input options
+     * Process input options.
      *
      * @param array $inputOptions
+     *
+     * @throws Exception
+     *
      * @return void
-     * @throws \Exception
      */
     public function process($inputOptions)
     {
@@ -102,18 +110,19 @@ class ConfigModel
 
             foreach ($configData as $config) {
                 $fileConfigStorage = [];
-                if (!$config instanceof ConfigData) {
+
+                if (! $config instanceof ConfigData) {
                     throw new SetupException(
                         'In module : '
                         . $moduleName
-                        . 'ConfigOption::createConfig should return an array of ConfigData instances'
+                        . 'ConfigOption::createConfig should return an array of ConfigData instances',
                     );
                 }
 
                 if (isset($fileConfigStorage[$config->getFileKey()])) {
                     $fileConfigStorage[$config->getFileKey()] = array_replace_recursive(
                         $fileConfigStorage[$config->getFileKey()],
-                        $config->getData()
+                        $config->getData(),
                     );
                 } else {
                     $fileConfigStorage[$config->getFileKey()] = $config->getData();
@@ -124,9 +133,10 @@ class ConfigModel
     }
 
     /**
-     * Validates Input Options
+     * Validates Input Options.
      *
      * @param array $inputOptions
+     *
      * @return array
      */
     public function validate(array $inputOptions)
@@ -135,6 +145,7 @@ class ConfigModel
 
         //Basic types validation
         $options = $this->getAvailableOptions();
+
         foreach ($options as $option) {
             try {
                 $inputValue = $inputOptions[$option->getName()] ?? null;
@@ -142,7 +153,7 @@ class ConfigModel
                 if ($inputValue !== null) {
                     $option->validate($inputValue);
                 }
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 $errors[] = [$e->getMessage()];
             }
         }
@@ -158,16 +169,19 @@ class ConfigModel
     }
 
     /**
-     * Check permissions of directories that are expected to be writable for installation
+     * Check permissions of directories that are expected to be writable for installation.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Exception
      */
     private function checkInstallationFilePermissions()
     {
         $results = $this->filePermissions->getMissingWritablePathsForInstallation();
+
         if ($results) {
-            $errorMsg = "Missing write permissions to the following paths:" . PHP_EOL . implode(PHP_EOL, $results);
+            $errorMsg = 'Missing write permissions to the following paths:' . PHP_EOL . implode(PHP_EOL, $results);
+
             throw new SetupException($errorMsg);
         }
     }

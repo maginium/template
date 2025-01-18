@@ -1,10 +1,15 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 
 namespace Magento\Setup\Fixtures\Quote;
+
+use Magento\Framework\ObjectManagerInterface;
 
 /**
  * Factory class for @see \Magento\Setup\Fixtures\Quote\Configuration.
@@ -14,7 +19,7 @@ class QuoteGeneratorFactory
     /**
      * Object Manager instance.
      *
-     * @var \Magento\Framework\ObjectManagerInterface
+     * @var ObjectManagerInterface
      */
     private $objectManager = null;
 
@@ -26,12 +31,12 @@ class QuoteGeneratorFactory
     private $instanceName = null;
 
     /**
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
+     * @param ObjectManagerInterface $objectManager
      * @param string $instanceName [optional]
      */
     public function __construct(
-        \Magento\Framework\ObjectManagerInterface $objectManager,
-        $instanceName = \Magento\Setup\Fixtures\Quote\QuoteGenerator::class
+        ObjectManagerInterface $objectManager,
+        $instanceName = QuoteGenerator::class,
     ) {
         $this->objectManager = $objectManager;
         $this->instanceName = $instanceName;
@@ -41,6 +46,7 @@ class QuoteGeneratorFactory
      * Create class instance with specified parameters.
      *
      * @param array $data [optional]
+     *
      * @return mixed
      */
     public function create(array $data = [])

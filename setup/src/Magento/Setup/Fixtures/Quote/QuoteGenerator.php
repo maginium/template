@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,8 +9,23 @@
 
 namespace Magento\Setup\Fixtures\Quote;
 
+use Exception;
+use Generator;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Type;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\ConfigurableProduct\Api\LinkManagementInterface;
+use Magento\ConfigurableProduct\Api\OptionRepositoryInterface;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Framework\Stdlib\DateTime;
+use Magento\Quote\Model\ResourceModel\Quote;
+use Magento\Quote\Model\ResourceModel\Quote\Item;
+use Magento\Setup\Fixtures\FixtureModel;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Fixture generator for Quote entities.
@@ -21,7 +39,7 @@ class QuoteGenerator
      *
      * @var string
      */
-    const BATCH_SIZE = 1000;
+    public const BATCH_SIZE = 1000;
 
     /**
      * INSERT query templates.
@@ -33,37 +51,37 @@ class QuoteGenerator
     /**
      * Array of resource connections ordered by tables.
      *
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface[]
+     * @var AdapterInterface[]
      */
     private $resourceConnections;
 
     /**
-     * @var \Magento\Store\Model\StoreManagerInterface
+     * @var StoreManagerInterface
      */
     private $storeManager;
 
     /**
-     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     * @var ProductRepositoryInterface
      */
     private $productRepository;
 
     /**
-     * @var \Magento\ConfigurableProduct\Api\OptionRepositoryInterface
+     * @var OptionRepositoryInterface
      */
     private $optionRepository;
 
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     * @var CollectionFactory
      */
     private $productCollectionFactory;
 
     /**
-     * @var \Magento\ConfigurableProduct\Api\LinkManagementInterface
+     * @var LinkManagementInterface
      */
     private $linkManagement;
 
     /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -78,29 +96,29 @@ class QuoteGenerator
     private $config;
 
     /**
-     * @var \Magento\Setup\Fixtures\FixtureModel
+     * @var FixtureModel
      */
     private $fixtureModel;
 
     /**
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Magento\Catalog\Api\ProductRepositoryInterface $productRepository
-     * @param \Magento\ConfigurableProduct\Api\OptionRepositoryInterface $optionRepository
-     * @param \Magento\ConfigurableProduct\Api\LinkManagementInterface $linkManagement
-     * @param \Magento\Framework\Serialize\SerializerInterface $serializer
+     * @param StoreManagerInterface $storeManager
+     * @param CollectionFactory $productCollectionFactory
+     * @param ProductRepositoryInterface $productRepository
+     * @param OptionRepositoryInterface $optionRepository
+     * @param LinkManagementInterface $linkManagement
+     * @param SerializerInterface $serializer
      * @param QuoteConfiguration $config
-     * @param \Magento\Setup\Fixtures\FixtureModel $fixtureModel
+     * @param FixtureModel $fixtureModel
      */
     public function __construct(
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
-        \Magento\ConfigurableProduct\Api\OptionRepositoryInterface $optionRepository,
-        \Magento\ConfigurableProduct\Api\LinkManagementInterface $linkManagement,
-        \Magento\Framework\Serialize\SerializerInterface $serializer,
+        StoreManagerInterface $storeManager,
+        CollectionFactory $productCollectionFactory,
+        ProductRepositoryInterface $productRepository,
+        OptionRepositoryInterface $optionRepository,
+        LinkManagementInterface $linkManagement,
+        SerializerInterface $serializer,
         QuoteConfiguration $config,
-        \Magento\Setup\Fixtures\FixtureModel $fixtureModel
+        FixtureModel $fixtureModel,
     ) {
         $this->storeManager = $storeManager;
         $this->productCollectionFactory = $productCollectionFactory;
@@ -113,9 +131,32 @@ class QuoteGenerator
     }
 
     /**
+     * Build and execute query.
+     *
+     * Builds a database query by replacing placeholder values in the cached queries and executes query in appropriate
+     * DB connection (if setup). Additionally filters out quote-related queries, if appropriate flag is set.
+     *
+     * @param string $table
+     * @param array $replacements
+     *
+     * @return void
+     */
+    protected function query($table, ...$replacements)
+    {
+        $query = $this->queryTemplates[$table];
+
+        foreach ($replacements as $data) {
+            $query = str_replace(array_keys($data), array_values($data), $query);
+        }
+
+        $this->resourceConnections[$table]->query($query);
+    }
+
+    /**
      * Prepare and save quotes in database.
      *
-     * @throws \Exception
+     * @throws Exception
+     *
      * @return void
      */
     public function generateQuotes()
@@ -125,21 +166,23 @@ class QuoteGenerator
 
         $maxItemId = $this->getMaxEntityId(
             'quote_item',
-            \Magento\Quote\Model\ResourceModel\Quote\Item::class,
-            'item_id'
+            Item::class,
+            'item_id',
         );
-        /** @var \Generator $itemIdSequence */
+
+        /** @var Generator $itemIdSequence */
         $itemIdSequence = $this->getItemIdSequence(
             $maxItemId,
             $this->config->getRequiredQuoteQuantity(),
-            $maxItemsPerOrder
+            $maxItemsPerOrder,
         );
         $this->productStubData = $this->prepareProductsForQuote();
         $this->prepareQueryTemplates();
 
-        $entityId = $this->getMaxEntityId('quote', \Magento\Quote\Model\ResourceModel\Quote::class, 'entity_id');
+        $entityId = $this->getMaxEntityId('quote', Quote::class, 'entity_id');
         $quoteQty = $this->config->getExistsQuoteQuantity();
         $batchNumber = 0;
+
         while ($quoteQty < $this->config->getRequiredQuoteQuantity()) {
             $entityId++;
             $batchNumber++;
@@ -147,12 +190,13 @@ class QuoteGenerator
 
             try {
                 $this->saveQuoteWithQuoteItems($entityId, $itemIdSequence);
-            } catch (\Exception $lastException) {
+            } catch (Exception $lastException) {
                 foreach ($this->resourceConnections as $connection) {
                     if ($connection->getTransactionLevel() > 0) {
                         $connection->rollBack();
                     }
                 }
+
                 throw $lastException;
             }
 
@@ -173,30 +217,31 @@ class QuoteGenerator
      * Save quote and quote items.
      *
      * @param int $entityId
-     * @param \Generator $itemIdSequence
+     * @param Generator $itemIdSequence
+     *
      * @return void
      */
-    private function saveQuoteWithQuoteItems($entityId, \Generator $itemIdSequence)
+    private function saveQuoteWithQuoteItems($entityId, Generator $itemIdSequence)
     {
         $productCount = [
             Type::TYPE_SIMPLE => random_int(
                 $this->config->getSimpleCountFrom(),
-                $this->config->getSimpleCountTo()
+                $this->config->getSimpleCountTo(),
             ),
             Configurable::TYPE_CODE => random_int(
                 $this->config->getConfigurableCountFrom(),
-                $this->config->getConfigurableCountTo()
+                $this->config->getConfigurableCountTo(),
             ),
             QuoteConfiguration::BIG_CONFIGURABLE_TYPE => random_int(
                 $this->config->getBigConfigurableCountFrom(),
-                $this->config->getBigConfigurableCountTo()
-            )
+                $this->config->getBigConfigurableCountTo(),
+            ),
         ];
         $quote = [
             '%itemsPerOrder%' => array_sum($productCount),
             '%orderNumber%' => 100000000 * $this->getStubProductStoreId($entityId) + $entityId,
             '%email%' => "quote_{$entityId}@example.com",
-            '%time%' => date(\Magento\Framework\Stdlib\DateTime::DATETIME_PHP_FORMAT),
+            '%time%' => date(DateTime::DATETIME_PHP_FORMAT),
             '%productStoreId%' => $this->getStubProductStoreId($entityId),
             '%productStoreName%' => $this->getStubProductStoreName($entityId),
             '%entityId%' => $entityId,
@@ -236,6 +281,7 @@ class QuoteGenerator
      * @param int $index
      * @param int $itemId
      * @param array $quote
+     *
      * @return void
      */
     private function saveItemSimpleData($entityId, $index, $itemId, array $quote)
@@ -254,9 +300,9 @@ class QuoteGenerator
             '%code%' => 'info_buyRequest',
             '%value%' => $this->serializer->serialize([
                 'product' => $this->getStubProductId($entityId, $index, Type::TYPE_SIMPLE),
-                'qty' => "1",
-                'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw'
-            ])
+                'qty' => '1',
+                'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw',
+            ]),
         ]);
     }
 
@@ -268,6 +314,7 @@ class QuoteGenerator
      * @param int $parentItemId
      * @param string $productType
      * @param array $quote
+     *
      * @return void
      */
     private function saveParentItemConfigurableData($entityId, $index, $parentItemId, $productType, array $quote)
@@ -279,25 +326,25 @@ class QuoteGenerator
             '%productOptions%' => $this->getStubProductBuyRequest($entityId, $index, $productType)['order'],
             '%itemId%' => $parentItemId,
             '%parentItemId%' => 'null',
-            '%productType%' => Configurable::TYPE_CODE
+            '%productType%' => Configurable::TYPE_CODE,
         ];
         $this->query('quote_item', $quote, $itemData);
         $this->query('quote_item_option', $quote, $itemData, [
             '%code%' => 'info_buyRequest',
-            '%value%' => $this->getStubProductBuyRequest($entityId, $index, $productType)['quote']
+            '%value%' => $this->getStubProductBuyRequest($entityId, $index, $productType)['quote'],
         ]);
         $this->query('quote_item_option', $quote, $itemData, [
             '%code%' => 'attributes',
-            '%value%' => $this->getStubProductBuyRequest($entityId, $index, $productType)['super_attribute']
+            '%value%' => $this->getStubProductBuyRequest($entityId, $index, $productType)['super_attribute'],
         ]);
         $itemData['%productId%'] = $this->getStubProductChildId($entityId, $index, $productType);
         $this->query('quote_item_option', $itemData, [
-            '%code%' => "product_qty_" . $this->getStubProductChildId($entityId, $index, $productType),
-            '%value%' => "1"
+            '%code%' => 'product_qty_' . $this->getStubProductChildId($entityId, $index, $productType),
+            '%value%' => '1',
         ]);
         $this->query('quote_item_option', $itemData, [
-            '%code%' => "simple_product",
-            '%value%' => $this->getStubProductChildId($entityId, $index, $productType)
+            '%code%' => 'simple_product',
+            '%value%' => $this->getStubProductChildId($entityId, $index, $productType),
         ]);
     }
 
@@ -310,6 +357,7 @@ class QuoteGenerator
      * @param int $parentItemId
      * @param string $productType
      * @param array $quote
+     *
      * @return void
      */
     private function saveChildItemConfigurable($entityId, $index, $itemId, $parentItemId, $productType, array $quote)
@@ -321,17 +369,17 @@ class QuoteGenerator
             '%productOptions%' => $this->getStubProductChildBuyRequest($entityId, $index, $productType)['order'],
             '%itemId%' => $itemId,
             '%parentItemId%' => $parentItemId,
-            '%productType%' => Type::TYPE_SIMPLE
+            '%productType%' => Type::TYPE_SIMPLE,
         ];
 
         $this->query('quote_item', $quote, $itemData);
         $this->query('quote_item_option', $itemData, [
-            '%code%' => "info_buyRequest",
-            '%value%' => $this->getStubProductChildBuyRequest($entityId, $index, $productType)['quote']
+            '%code%' => 'info_buyRequest',
+            '%value%' => $this->getStubProductChildBuyRequest($entityId, $index, $productType)['quote'],
         ]);
         $this->query('quote_item_option', $itemData, [
-            '%code%' => "parent_product_id",
-            '%value%' => $this->getStubProductId($entityId, $index, $productType)
+            '%code%' => 'parent_product_id',
+            '%value%' => $this->getStubProductId($entityId, $index, $productType),
         ]);
     }
 
@@ -339,6 +387,7 @@ class QuoteGenerator
      * Get store id for quote item by product index.
      *
      * @param int $entityId
+     *
      * @return int
      */
     private function getStubProductStoreId($entityId)
@@ -350,6 +399,7 @@ class QuoteGenerator
      * Get store name for quote item by product index.
      *
      * @param int $entityId
+     *
      * @return string
      */
     private function getStubProductStoreName($entityId)
@@ -363,6 +413,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return int
      */
     private function getStubProductId($entityId, $index, $type)
@@ -376,6 +427,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return string
      */
     private function getStubProductSku($entityId, $index, $type)
@@ -389,6 +441,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return string
      */
     private function getStubProductName($entityId, $index, $type)
@@ -402,6 +455,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return string
      */
     private function getStubProductBuyRequest($entityId, $index, $type)
@@ -415,6 +469,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return string
      */
     private function getStubProductChildBuyRequest($entityId, $index, $type)
@@ -428,6 +483,7 @@ class QuoteGenerator
      * @param int $entityId
      * @param int $index
      * @param string $type
+     *
      * @return int
      */
     private function getStubProductChildId($entityId, $index, $type)
@@ -439,12 +495,14 @@ class QuoteGenerator
      * Get index of item in product stub array.
      *
      * @param int $entityId
+     *
      * @return int
      */
     private function getProductStubIndex($entityId)
     {
         $storeCount = count($this->productStubData);
         $qty = intdiv($this->config->getRequiredQuoteQuantity(), $storeCount);
+
         return intdiv($entityId, $qty) % $storeCount;
     }
 
@@ -464,7 +522,7 @@ class QuoteGenerator
             '%state%' => 'Alabama',
             '%country%' => 'US',
             '%zip%' => '11111',
-            '%phone%' => '911'
+            '%phone%' => '911',
         ];
     }
 
@@ -483,7 +541,7 @@ class QuoteGenerator
 
             if ($this->config->getSimpleCountTo() > 0) {
                 $productsResult[Type::TYPE_SIMPLE] = $this->prepareSimpleProducts(
-                    $this->getProductIds($store, Type::TYPE_SIMPLE, $this->config->getSimpleCountTo())
+                    $this->getProductIds($store, Type::TYPE_SIMPLE, $this->config->getSimpleCountTo()),
                 );
             }
             $configurables = [
@@ -497,8 +555,8 @@ class QuoteGenerator
                         $this->getProductIds(
                             $store,
                             $type,
-                            $qty
-                        )
+                            $qty,
+                        ),
                     );
                 }
             }
@@ -508,9 +566,9 @@ class QuoteGenerator
                 implode(PHP_EOL, [
                     $this->storeManager->getWebsite($store->getWebsiteId())->getName(),
                     $this->storeManager->getGroup($store->getStoreGroupId())->getName(),
-                    $store->getName()
+                    $store->getName(),
                 ]),
-                $productsResult
+                $productsResult,
             ];
         }
 
@@ -532,28 +590,32 @@ class QuoteGenerator
         $fileName = $this->config->getFixtureDataFilename();
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
         $templateData = json_decode(file_get_contents(realpath($fileName)), true);
+
         foreach ($templateData as $table => $template) {
             if (isset($template['_table'])) {
                 $table = $template['_table'];
                 unset($template['_table']);
             }
+
             if (isset($template['_resource'])) {
                 $resource = $template['_resource'];
                 unset($template['_resource']);
             } else {
-                $resource = explode("_", $table);
+                $resource = explode('_', $table);
+
                 foreach ($resource as &$item) {
                     $item = ucfirst($item);
                 }
-                $resource = "Magento\\"
+                $resource = 'Magento\\'
                     . array_shift($resource)
-                    . "\\Model\\ResourceModel\\"
-                    . implode("\\", $resource);
+                    . '\\Model\\ResourceModel\\'
+                    . implode('\\', $resource);
             }
 
             $tableName = $this->getTableName($table, $resource);
 
-            $querySuffix = "";
+            $querySuffix = '';
+
             if (isset($template['_query_suffix'])) {
                 $querySuffix = $template['_query_suffix'];
                 unset($template['_query_suffix']);
@@ -563,7 +625,8 @@ class QuoteGenerator
             $values = implode(', ', array_values($template));
 
             $connection = $this->getConnection($resource);
-            if ($connection->getTransactionLevel() == 0) {
+
+            if ($connection->getTransactionLevel() === 0) {
                 $connection->beginTransaction();
             }
 
@@ -571,26 +634,6 @@ class QuoteGenerator
             $this->queryTemplates[$table] = "INSERT INTO `{$tableName}` ({$fields}) VALUES ({$values}){$querySuffix};";
             $this->resourceConnections[$table] = $connection;
         }
-    }
-
-    /**
-     * Build and execute query.
-     *
-     * Builds a database query by replacing placeholder values in the cached queries and executes query in appropriate
-     * DB connection (if setup). Additionally filters out quote-related queries, if appropriate flag is set.
-     *
-     * @param string $table
-     * @param array $replacements
-     * @return void
-     */
-    protected function query($table, ...$replacements)
-    {
-        $query = $this->queryTemplates[$table];
-        foreach ($replacements as $data) {
-            $query = str_replace(array_keys($data), array_values($data), $query);
-        }
-
-        $this->resourceConnections[$table]->query($query);
     }
 
     /**
@@ -602,12 +645,14 @@ class QuoteGenerator
      * @param string $tableName
      * @param string $resourceName
      * @param string $column [optional]
+     *
      * @return int
      */
     private function getMaxEntityId($tableName, $resourceName, $column = 'entity_id')
     {
         $tableName = $this->getTableName($tableName, $resourceName);
         $connection = $this->getConnection($resourceName);
+
         // phpcs:ignore Magento2.SQL.RawQuery
         return (int)$connection->query("SELECT MAX(`{$column}`) FROM `{$tableName}`;")->fetchColumn(0);
     }
@@ -615,12 +660,13 @@ class QuoteGenerator
     /**
      * Get a limited amount of product id's from a collection filtered by store and specific product type.
      *
-     * @param \Magento\Store\Api\Data\StoreInterface $store
+     * @param StoreInterface $store
      * @param string $typeId
      * @param int $limit [optional]
+     *
      * @return array
      */
-    private function getProductIds(\Magento\Store\Api\Data\StoreInterface $store, $typeId, $limit = null)
+    private function getProductIds(StoreInterface $store, $typeId, $limit = null)
     {
         /** @var $productCollection \Magento\Catalog\Model\ResourceModel\Product\Collection */
         $productCollection = $this->productCollectionFactory->create();
@@ -632,7 +678,7 @@ class QuoteGenerator
             $productCollection->getSelect()->where(" type_id = '" . Configurable::TYPE_CODE . "' ");
             $productCollection->getSelect()->where(" sku LIKE 'Big%' ");
         } else {
-            $productCollection->getSelect()->where(" type_id = '$typeId' ");
+            $productCollection->getSelect()->where(" type_id = '{$typeId}' ");
             $productCollection->getSelect()->where(" sku NOT LIKE 'Big%' ");
         }
 
@@ -645,24 +691,27 @@ class QuoteGenerator
      * Based on the Product Id's load data, which is required to replace placeholders in queries.
      *
      * @param array $productIds [optional]
+     *
      * @return array
      */
     private function prepareSimpleProducts(array $productIds = [])
     {
         $productsResult = [];
+
         foreach ($productIds as $key => $simpleId) {
             $simpleProduct = $this->productRepository->getById($simpleId);
             $productsResult[$key]['id'] = $simpleId;
             $productsResult[$key]['sku'] = $simpleProduct->getSku();
             $productsResult[$key]['name'] = $simpleProduct->getName();
             $productsResult[$key]['buyRequest'] = $this->serializer->serialize([
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,",
-                    "product" => $simpleId,
-                    "qty" => "1"
-                ]
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,',
+                    'product' => $simpleId,
+                    'qty' => '1',
+                ],
             ]);
         }
+
         return $productsResult;
     }
 
@@ -672,11 +721,13 @@ class QuoteGenerator
      * Based on the Product Id's load data, which is required to replace placeholders in queries.
      *
      * @param array $productIds [optional]
+     *
      * @return array
      */
     private function prepareConfigurableProducts(array $productIds = [])
     {
         $productsResult = [];
+
         foreach ($productIds as $key => $configurableId) {
             $configurableProduct = $this->productRepository->getById($configurableId);
             $options = $this->optionRepository->getList($configurableProduct->getSku());
@@ -686,44 +737,44 @@ class QuoteGenerator
 
             $attributesInfo = [];
             $superAttribute = [];
+
             foreach ($options as $option) {
                 $attributesInfo[] = [
-                    "label" => $option->getLabel(),
-                    "value" => $option['options']['0']['label'] ?? null,
-                    "option_id" => $option->getAttributeId(),
-                    "option_value" => $option->getValues()[0]->getValueIndex()
+                    'label' => $option->getLabel(),
+                    'value' => $option['options']['0']['label'] ?? null,
+                    'option_id' => $option->getAttributeId(),
+                    'option_value' => $option->getValues()[0]->getValueIndex(),
                 ];
                 $superAttribute[$option->getAttributeId()] = $option->getValues()[0]->getValueIndex();
             }
 
             $configurableBuyRequest = [
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw",
-                    "product" => $configurableId,
-                    "selected_configurable_option" => $simpleId,
-                    "related_product" => "",
-                    "super_attribute" => $superAttribute,
-                    "qty" => 1
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2UyLmNvbS9jYXRlZ29yeS0xLmh0bWw',
+                    'product' => $configurableId,
+                    'selected_configurable_option' => $simpleId,
+                    'related_product' => '',
+                    'super_attribute' => $superAttribute,
+                    'qty' => 1,
                 ],
-                "attributes_info" => $attributesInfo,
-                "simple_name" => $configurableChild->getName(),
-                "simple_sku" => $configurableChild->getSku(),
+                'attributes_info' => $attributesInfo,
+                'simple_name' => $configurableChild->getName(),
+                'simple_sku' => $configurableChild->getSku(),
             ];
             $simpleBuyRequest = [
-                "info_buyRequest" => [
-                    "uenc" => "aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,",
-                    "product" => $configurableId,
-                    "selected_configurable_option" => $simpleId,
-                    "related_product" => "",
-                    "super_attribute" => $superAttribute,
-                    "qty" => "1"
-                ]
+                'info_buyRequest' => [
+                    'uenc' => 'aHR0cDovL21hZ2VudG8uZGV2L2NvbmZpZ3VyYWJsZS1wcm9kdWN0LTEuaHRtbA,,',
+                    'product' => $configurableId,
+                    'selected_configurable_option' => $simpleId,
+                    'related_product' => '',
+                    'super_attribute' => $superAttribute,
+                    'qty' => '1',
+                ],
             ];
 
             $quoteConfigurableBuyRequest = $configurableBuyRequest['info_buyRequest'];
             $quoteSimpleBuyRequest = $simpleBuyRequest['info_buyRequest'];
-            unset($quoteConfigurableBuyRequest['selected_configurable_option']);
-            unset($quoteSimpleBuyRequest['selected_configurable_option']);
+            unset($quoteConfigurableBuyRequest['selected_configurable_option'], $quoteSimpleBuyRequest['selected_configurable_option']);
 
             $productsResult[$key]['id'] = $configurableId;
             $productsResult[$key]['sku'] = $simpleSku;
@@ -732,13 +783,14 @@ class QuoteGenerator
             $productsResult[$key]['buyRequest'] = [
                 'order' => $this->serializer->serialize($configurableBuyRequest),
                 'quote' => $this->serializer->serialize($quoteConfigurableBuyRequest),
-                'super_attribute' => $this->serializer->serialize($superAttribute)
+                'super_attribute' => $this->serializer->serialize($superAttribute),
             ];
             $productsResult[$key]['childBuyRequest'] = [
                 'order' => $this->serializer->serialize($simpleBuyRequest),
                 'quote' => $this->serializer->serialize($quoteSimpleBuyRequest),
             ];
         }
+
         return $productsResult;
     }
 
@@ -765,11 +817,13 @@ class QuoteGenerator
      * @param int $maxItemId
      * @param int $requestedOrders
      * @param int $maxItemsPerOrder
-     * @return \Generator
+     *
+     * @return Generator
      */
     private function getItemIdSequence($maxItemId, $requestedOrders, $maxItemsPerOrder)
     {
         $requestedItems = $maxItemId + ($requestedOrders + 1) * $maxItemsPerOrder;
+
         for ($i = $maxItemId + 1; $i <= $requestedItems; $i++) {
             yield $i;
         }
@@ -782,12 +836,14 @@ class QuoteGenerator
      *
      * @param string $tableName
      * @param string $resourceName
+     *
      * @return string
      */
     private function getTableName($tableName, $resourceName)
     {
-        /** @var \Magento\Framework\Model\ResourceModel\Db\AbstractDb $resource */
+        /** @var AbstractDb $resource */
         $resource = $this->fixtureModel->getObjectManager()->get($resourceName);
+
         return $this->getConnection($resourceName)->getTableName($resource->getTable($tableName));
     }
 
@@ -795,11 +851,13 @@ class QuoteGenerator
      * Get connection to database for specified resource.
      *
      * @param string $resourceName
+     *
      * @return \Magento\Framework\DB\Adapter\AdapterInterface
      */
     private function getConnection($resourceName)
     {
         $resource = $this->fixtureModel->getObjectManager()->get($resourceName);
+
         return $resource->getConnection();
     }
 }

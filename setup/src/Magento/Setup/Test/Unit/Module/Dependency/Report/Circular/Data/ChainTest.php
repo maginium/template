@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -13,15 +14,19 @@ use PHPUnit\Framework\TestCase;
 
 class ChainTest extends TestCase
 {
-    public function testGetModules()
+    /**
+     * @test
+     */
+    public function getModules()
     {
         $modules = ['foo', 'baz', 'bar'];
 
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var Chain $chain */
         $chain = $objectManagerHelper->getObject(
             Chain::class,
-            ['modules' => $modules]
+            ['modules' => $modules],
         );
 
         $this->assertEquals($modules, $chain->getModules());

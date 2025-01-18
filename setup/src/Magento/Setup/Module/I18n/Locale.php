@@ -1,43 +1,50 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n;
 
+use InvalidArgumentException;
+
 /**
- *  Locale
+ *  Locale.
  */
 class Locale
 {
     /**
-     * Default system locale
+     * Default system locale.
      */
-    const DEFAULT_SYSTEM_LOCALE = 'en_US';
+    public const DEFAULT_SYSTEM_LOCALE = 'en_US';
 
     /**
-     * Locale name
+     * Locale name.
      *
      * @var string
      */
     protected $_locale;
 
     /**
-     * Locale construct
+     * Locale construct.
      *
      * @param string $locale
-     * @throws \InvalidArgumentException
+     *
+     * @throws InvalidArgumentException
      */
     public function __construct($locale)
     {
-        if (!preg_match('/[a-z]{2}_[A-Z]{2}/', $locale)) {
-            throw new \InvalidArgumentException('Target locale must match the following format: "aa_AA".');
+        if (! preg_match('/[a-z]{2}_[A-Z]{2}/', $locale)) {
+            throw new InvalidArgumentException('Target locale must match the following format: "aa_AA".');
         }
         $this->_locale = $locale;
     }
 
     /**
-     * Return locale string
+     * Return locale string.
      *
      * @return string
      */

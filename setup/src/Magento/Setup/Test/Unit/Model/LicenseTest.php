@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,17 +26,10 @@ class LicenseTest extends TestCase
      */
     private $filesystemMock;
 
-    protected function setUp(): void
-    {
-        $this->directoryReadMock = $this->createMock(Read::class);
-        $this->filesystemMock = $this->createMock(Filesystem::class);
-        $this->filesystemMock
-            ->expects($this->once())
-            ->method('getDirectoryRead')
-            ->willReturn($this->directoryReadMock);
-    }
-
-    public function testGetContents()
+    /**
+     * @test
+     */
+    public function getContents()
     {
         $this->directoryReadMock
             ->expects($this->atLeastOnce())
@@ -50,7 +44,10 @@ class LicenseTest extends TestCase
         $this->assertSame('License text', $license->getContents());
     }
 
-    public function testGetContentsNoFile()
+    /**
+     * @test
+     */
+    public function getContentsNoFile()
     {
         $this->directoryReadMock
             ->expects($this->atLeastOnce())
@@ -59,5 +56,15 @@ class LicenseTest extends TestCase
 
         $license = new License($this->filesystemMock);
         $this->assertFalse($license->getContents());
+    }
+
+    protected function setUp(): void
+    {
+        $this->directoryReadMock = $this->createMock(Read::class);
+        $this->filesystemMock = $this->createMock(Filesystem::class);
+        $this->filesystemMock
+            ->expects($this->once())
+            ->method('getDirectoryRead')
+            ->willReturn($this->directoryReadMock);
     }
 }

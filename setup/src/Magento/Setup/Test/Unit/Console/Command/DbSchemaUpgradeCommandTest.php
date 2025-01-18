@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -27,18 +28,34 @@ class DbSchemaUpgradeCommandTest extends TestCase
      */
     private $deploymentConfig;
 
-    protected function setUp(): void
+    /**
+     * @return array
+     */
+    public static function executeDataProvider()
     {
-        $this->installerFactory = $this->createMock(InstallerFactory::class);
-        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
+        return [
+            [
+                'options' => [
+                    '--magento-init-params' => '',
+                    '--convert-old-scripts' => false,
+                ],
+                'expectedOptions' => [
+                    'convert-old-scripts' => false,
+                    'magento-init-params' => '',
+                ],
+            ],
+        ];
     }
 
     /**
      * @dataProvider executeDataProvider
+     *
      * @param $options
      * @param $expectedOptions
+     *
+     * @test
      */
-    public function testExecute($options, $expectedOptions)
+    public function execute($options, $expectedOptions)
     {
         $this->deploymentConfig->expects($this->once())->method('isAvailable')->willReturn(true);
         $installer = $this->createMock(Installer::class);
@@ -49,42 +66,32 @@ class DbSchemaUpgradeCommandTest extends TestCase
             ->with($expectedOptions);
 
         $commandTester = new CommandTester(
-            new DbSchemaUpgradeCommand($this->installerFactory, $this->deploymentConfig)
+            new DbSchemaUpgradeCommand($this->installerFactory, $this->deploymentConfig),
         );
         $commandTester->execute($options);
     }
 
     /**
-     * @return array
+     * @test
      */
-    public static function executeDataProvider()
-    {
-        return [
-            [
-                'options' => [
-                    '--magento-init-params' => '',
-                    '--convert-old-scripts' => false
-                ],
-                'expectedOptions' => [
-                    'convert-old-scripts' => false,
-                    'magento-init-params' => '',
-                ]
-            ],
-        ];
-    }
-
-    public function testExecuteNoConfig()
+    public function executeNoConfig()
     {
         $this->deploymentConfig->expects($this->once())->method('isAvailable')->willReturn(false);
         $this->installerFactory->expects($this->never())->method('create');
 
         $commandTester = new CommandTester(
-            new DbSchemaUpgradeCommand($this->installerFactory, $this->deploymentConfig)
+            new DbSchemaUpgradeCommand($this->installerFactory, $this->deploymentConfig),
         );
         $commandTester->execute([]);
         $this->assertStringMatchesFormat(
             'No information is available: the Magento application is not installed.%w',
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
+    }
+
+    protected function setUp(): void
+    {
+        $this->installerFactory = $this->createMock(InstallerFactory::class);
+        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
     }
 }

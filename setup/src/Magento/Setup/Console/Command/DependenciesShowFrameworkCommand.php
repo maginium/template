@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
 use Magento\Framework\App\Utility\Files;
@@ -12,7 +16,7 @@ use Magento\Setup\Model\ObjectManagerProvider;
 use Magento\Setup\Module\Dependency\ServiceLocator;
 
 /**
- * Command for showing numbers of dependencies on Magento Framework
+ * Command for showing numbers of dependencies on Magento Framework.
  */
 class DependenciesShowFrameworkCommand extends AbstractDependenciesCommand
 {
@@ -22,7 +26,7 @@ class DependenciesShowFrameworkCommand extends AbstractDependenciesCommand
     private $registrar;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param ComponentRegistrarInterface $registrar
      * @param ObjectManagerProvider $objectManagerProvider
@@ -44,7 +48,7 @@ class DependenciesShowFrameworkCommand extends AbstractDependenciesCommand
     }
 
     /**
-     * Return default output filename for framework dependencies report
+     * Return default output filename for framework dependencies report.
      *
      * @return string
      */
@@ -54,9 +58,10 @@ class DependenciesShowFrameworkCommand extends AbstractDependenciesCommand
     }
 
     /**
-     * Build Framework dependencies report
+     * Build Framework dependencies report.
      *
      * @param string $outputPath
+     *
      * @return void
      */
     protected function buildReport($outputPath)
@@ -74,7 +79,7 @@ class DependenciesShowFrameworkCommand extends AbstractDependenciesCommand
                     'declared_namespaces' => Files::init()->getNamespaces(),
                 ],
                 'write' => ['report_filename' => $outputPath],
-            ]
+            ],
         );
     }
 }

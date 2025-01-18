@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -16,13 +17,16 @@ use PHPUnit\Framework\TestCase;
 
 class SetupFactoryTest extends TestCase
 {
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $objectManager = $this->getMockForAbstractClass(
             ObjectManagerInterface::class,
             [],
             '',
-            false
+            false,
         );
         $objectManager->expects($this->once())
             ->method('get')
@@ -34,13 +38,16 @@ class SetupFactoryTest extends TestCase
         $this->assertInstanceOf(Setup::class, $factory->create());
     }
 
-    public function testCreateWithParam()
+    /**
+     * @test
+     */
+    public function createWithParam()
     {
         $objectManager = $this->getMockForAbstractClass(
             ObjectManagerInterface::class,
             [],
             '',
-            false
+            false,
         );
         $objectManager->expects($this->never())->method('get');
         $resource = $this->createMock(ResourceConnection::class);

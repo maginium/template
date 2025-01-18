@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,6 +26,26 @@ class PhpTest extends TestCase
      */
     protected $_adapter;
 
+    /**
+     * @test
+     */
+    public function parse()
+    {
+        $expectedResult = [['phrase' => 'phrase1', 'file' => 'file1', 'line' => 15, 'quote' => '']];
+
+        $this->_phraseCollectorMock->expects($this->once())->method('parse')->with('file1');
+        $this->_phraseCollectorMock->expects(
+            $this->once(),
+        )->method(
+            'getPhrases',
+        )->willReturn(
+            [['phrase' => 'phrase1', 'file' => 'file1', 'line' => 15]],
+        );
+
+        $this->_adapter->parse('file1');
+        $this->assertEquals($expectedResult, $this->_adapter->getPhrases());
+    }
+
     protected function setUp(): void
     {
         $this->_phraseCollectorMock =
@@ -33,24 +54,7 @@ class PhpTest extends TestCase
         $objectManagerHelper = new ObjectManager($this);
         $this->_adapter = $objectManagerHelper->getObject(
             Php::class,
-            ['phraseCollector' => $this->_phraseCollectorMock]
+            ['phraseCollector' => $this->_phraseCollectorMock],
         );
-    }
-
-    public function testParse()
-    {
-        $expectedResult = [['phrase' => 'phrase1', 'file' => 'file1', 'line' => 15, 'quote' => '']];
-
-        $this->_phraseCollectorMock->expects($this->once())->method('parse')->with('file1');
-        $this->_phraseCollectorMock->expects(
-            $this->once()
-        )->method(
-            'getPhrases'
-        )->willReturn(
-            [['phrase' => 'phrase1', 'file' => 'file1', 'line' => 15]]
-        );
-
-        $this->_adapter->parse('file1');
-        $this->assertEquals($expectedResult, $this->_adapter->getPhrases());
     }
 }

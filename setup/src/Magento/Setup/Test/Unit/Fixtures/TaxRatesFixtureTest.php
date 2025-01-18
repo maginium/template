@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,7 +19,6 @@ use PHPUnit\Framework\TestCase;
 
 class TaxRatesFixtureTest extends TestCase
 {
-
     /**
      * @var MockObject|FixtureModel
      */
@@ -29,14 +29,10 @@ class TaxRatesFixtureTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-
-        $this->model = new TaxRatesFixture($this->fixtureModelMock);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $rateMock = $this->createPartialMock(Rate::class, ['setId', 'delete']);
 
@@ -50,7 +46,7 @@ class TaxRatesFixtureTest extends TestCase
 
         $valueMap = [
             [Rate::class, $rateMock],
-            [Collection::class, $collectionMock]
+            [Collection::class, $collectionMock],
         ];
 
         $objectManagerMock = $this->createMock(ObjectManager::class);
@@ -73,7 +69,10 @@ class TaxRatesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testNoFixtureConfigValue()
+    /**
+     * @test
+     */
+    public function noFixtureConfigValue()
     {
         $csvImportHandlerMock = $this->createMock(CsvImportHandler::class);
         $csvImportHandlerMock->expects($this->never())->method('importFromCsvFile');
@@ -95,13 +94,26 @@ class TaxRatesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating tax rates', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([], $this->model->introduceParamLabels());
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+
+        $this->model = new TaxRatesFixture($this->fixtureModelMock);
     }
 }

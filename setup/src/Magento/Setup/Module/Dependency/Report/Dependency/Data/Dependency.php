@@ -1,36 +1,40 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Dependency\Data;
 
 /**
- * Dependency
+ * Dependency.
  */
 class Dependency
 {
     /**#@+
      * Dependencies types
      */
-    const TYPE_HARD = 'hard';
+    public const TYPE_HARD = 'hard';
 
-    const TYPE_SOFT = 'soft';
+    public const TYPE_SOFT = 'soft';
 
-    /**#@-*/
+    // #@-
 
-    /**#@-*/
+    // #@-
     protected $module;
 
     /**
-     * Dependency type
+     * Dependency type.
      *
      * @var string
      */
     protected $type;
 
     /**
-     * Dependency construct
+     * Dependency construct.
      *
      * @param string $module
      * @param string $type One of self::TYPE_* constants
@@ -39,11 +43,11 @@ class Dependency
     {
         $this->module = $module;
 
-        $this->type = self::TYPE_SOFT == $type ? self::TYPE_SOFT : self::TYPE_HARD;
+        $this->type = $type === self::TYPE_SOFT ? self::TYPE_SOFT : self::TYPE_HARD;
     }
 
     /**
-     * Get module
+     * Get module.
      *
      * @return string
      */
@@ -53,7 +57,7 @@ class Dependency
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -63,22 +67,22 @@ class Dependency
     }
 
     /**
-     * Check is hard dependency
+     * Check is hard dependency.
      *
      * @return bool
      */
     public function isHard()
     {
-        return self::TYPE_HARD == $this->getType();
+        return $this->getType() === self::TYPE_HARD;
     }
 
     /**
-     * Check is soft dependency
+     * Check is soft dependency.
      *
      * @return bool
      */
     public function isSoft()
     {
-        return self::TYPE_SOFT == $this->getType();
+        return $this->getType() === self::TYPE_SOFT;
     }
 }

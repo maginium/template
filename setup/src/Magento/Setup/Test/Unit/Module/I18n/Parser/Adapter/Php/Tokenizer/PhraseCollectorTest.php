@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,12 +8,15 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Test\Unit\Module\I18n\Parser\Adapter\Php\Tokenizer;
 
+use const T_CONSTANT_ENCAPSED_STRING;
+
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer;
 use Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector;
 use Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\Token;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 /**
  * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector
@@ -34,20 +38,6 @@ class PhraseCollectorTest extends TestCase
      */
     protected $tokenizerMock;
 
-    protected function setUp(): void
-    {
-        $this->objectManager = new ObjectManager($this);
-        $this->tokenizerMock = $this->getMockBuilder(Tokenizer::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->phraseCollector = $this->objectManager->getObject(
-            PhraseCollector::class,
-            [
-                'tokenizer' => $this->tokenizerMock
-            ]
-        );
-    }
-
     /**
      * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\PhraseCollector::parse
      *
@@ -57,15 +47,18 @@ class PhraseCollectorTest extends TestCase
      * @param array $getFunctionArgumentsTokensReturnValues
      * @param array $isMatchingClassReturnValues
      * @param array $result
+     *
      * @dataProvider testParseDataProvider
+     *
+     * @test
      */
-    public function testParse(
+    public function parse(
         $file,
         array $isEndOfLoopReturnValues,
         array $getNextRealTokenReturnValues,
         array $getFunctionArgumentsTokensReturnValues,
         array $isMatchingClassReturnValues,
-        array $result
+        array $result,
     ) {
         $matchingClass = 'Phrase';
 
@@ -76,26 +69,26 @@ class PhraseCollectorTest extends TestCase
             ->method('isEndOfLoop')
             ->will(call_user_func_array(
                 [$this, 'onConsecutiveCalls'],
-                $isEndOfLoopReturnValues
+                $isEndOfLoopReturnValues,
             ));
         $this->tokenizerMock->expects($this->any())
             ->method('getNextRealToken')
             ->will(call_user_func_array(
                 [$this, 'onConsecutiveCalls'],
-                $getNextRealTokenReturnValues
+                $getNextRealTokenReturnValues,
             ));
         $this->tokenizerMock->expects($this->any())
             ->method('getFunctionArgumentsTokens')
             ->will(call_user_func_array(
                 [$this, 'onConsecutiveCalls'],
-                $getFunctionArgumentsTokensReturnValues
+                $getFunctionArgumentsTokensReturnValues,
             ));
         $this->tokenizerMock->expects($this->any())
             ->method('isMatchingClass')
             ->with($matchingClass)
             ->will(call_user_func_array(
                 [$this, 'onConsecutiveCalls'],
-                $isMatchingClassReturnValues
+                $isMatchingClassReturnValues,
             ));
 
         $this->phraseCollector->setIncludeObjects();
@@ -105,11 +98,14 @@ class PhraseCollectorTest extends TestCase
 
     /**
      * @return array
+     *
+     * @test
      */
-    public function testParseDataProvider()
+    public function parseDataProvider()
     {
         $file = 'path/to/file.php';
         $line = 110;
+
         return [
             /* Test simulates parsing of the following code:
              *
@@ -128,7 +124,7 @@ class PhraseCollectorTest extends TestCase
                     false, //at =
                     false, //at __
                     false, //at ;
-                    true //after ;
+                    true, //after ;
                 ],
                 'getNextRealTokenReturnValues' => [
                     $this->createToken(false, false, false, false, '$phrase1'),
@@ -140,31 +136,67 @@ class PhraseCollectorTest extends TestCase
                     $this->createToken(true, false, false, false, '__', $line),
                     $this->createToken(false, true, false, false, '('),
                     $this->createToken(false, false, false, false, ';'),
-                    false
+                    false,
                 ],
                 'getFunctionArgumentsTokensReturnValues' => [
                     [[$this->createToken(false, false, false, true, '\'Testing\'')]], // 'Testing')
-                    [[$this->createToken(false, false, false, true, '\'More testing\'')]] // 'More testing')
+                    [[$this->createToken(false, false, false, true, '\'More testing\'')]], // 'More testing')
                 ],
                 'isMatchingClassReturnValues' => [
-                    true // \Magento\Framework\Phrase(
+                    true, // \Magento\Framework\Phrase(
                 ],
                 'result' => [
                     [
                         'phrase' => '\'Testing\'',
                         'arguments' => 0,
                         'file' => $file,
-                        'line' => $line
+                        'line' => $line,
                     ],
                     [
                         'phrase' => '\'More testing\'',
                         'arguments' => 0,
                         'file' => $file,
-                        'line' => $line
-                    ]
-                ]
-            ]
+                        'line' => $line,
+                    ],
+                ],
+            ],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function collectPhrases()
+    {
+        $firstPart = "'first part'";
+        $firstPartToken = new Token(T_CONSTANT_ENCAPSED_STRING, $firstPart);
+        $concatenationToken = new Token('.', '.');
+        $secondPart = "' second part'";
+        $secondPartToken = new Token(T_CONSTANT_ENCAPSED_STRING, $secondPart);
+        $phraseTokens = [$firstPartToken, $concatenationToken, $secondPartToken];
+        $phraseString = "'first part' . ' second part'";
+
+        $reflectionMethod = new ReflectionMethod(
+            PhraseCollector::class,
+            '_collectPhrase',
+        );
+
+        $reflectionMethod->setAccessible(true);
+        $this->assertSame($phraseString, $reflectionMethod->invoke($this->phraseCollector, $phraseTokens));
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManager = new ObjectManager($this);
+        $this->tokenizerMock = $this->getMockBuilder(Tokenizer::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->phraseCollector = $this->objectManager->getObject(
+            PhraseCollector::class,
+            [
+                'tokenizer' => $this->tokenizerMock,
+            ],
+        );
     }
 
     /**
@@ -174,6 +206,7 @@ class PhraseCollectorTest extends TestCase
      * @param bool $isConstantEncapsedString
      * @param string $value
      * @param int|null $line
+     *
      * @return Token|MockObject
      */
     protected function createToken(
@@ -182,7 +215,7 @@ class PhraseCollectorTest extends TestCase
         $isNewReturnValue,
         $isConstantEncapsedString,
         $value,
-        $line = null
+        $line = null,
     ) {
         $token = $this->getMockBuilder(Token::class)
             ->disableOriginalConstructor()
@@ -206,25 +239,7 @@ class PhraseCollectorTest extends TestCase
         $token->expects($this->any())
             ->method('getLine')
             ->willReturn($line);
+
         return $token;
-    }
-
-    public function testCollectPhrases()
-    {
-        $firstPart = "'first part'";
-        $firstPartToken = new Token(\T_CONSTANT_ENCAPSED_STRING, $firstPart);
-        $concatenationToken = new Token('.', '.');
-        $secondPart = "' second part'";
-        $secondPartToken = new Token(\T_CONSTANT_ENCAPSED_STRING, $secondPart);
-        $phraseTokens = [$firstPartToken, $concatenationToken, $secondPartToken];
-        $phraseString = "'first part' . ' second part'";
-
-        $reflectionMethod = new \ReflectionMethod(
-            PhraseCollector::class,
-            '_collectPhrase'
-        );
-
-        $reflectionMethod->setAccessible(true);
-        $this->assertSame($phraseString, $reflectionMethod->invoke($this->phraseCollector, $phraseTokens));
     }
 }

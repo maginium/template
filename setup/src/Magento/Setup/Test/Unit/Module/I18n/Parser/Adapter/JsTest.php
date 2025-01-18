@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,15 +31,10 @@ class JsTest extends TestCase
      */
     protected $_adapter;
 
-    protected function setUp(): void
-    {
-        $this->_testFile = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/file.js';
-        $this->_stringsCount = count(file($this->_testFile));
-        $filesystem = new File();
-        $this->_adapter = (new ObjectManager($this))->getObject(Js::class, ['filesystem' => $filesystem]);
-    }
-
-    public function testParse()
+    /**
+     * @test
+     */
+    public function parse()
     {
         $expectedResult = [
             [
@@ -51,30 +47,38 @@ class JsTest extends TestCase
                 'phrase' => 'Phrase 2 %1',
                 'file' => $this->_testFile,
                 'line' => 1,
-                'quote' => Phrase::QUOTE_DOUBLE
+                'quote' => Phrase::QUOTE_DOUBLE,
             ],
             [
                 'phrase' => 'Field ',
                 'file' => $this->_testFile,
                 'line' => 1,
-                'quote' => Phrase::QUOTE_SINGLE
+                'quote' => Phrase::QUOTE_SINGLE,
             ],
             [
                 'phrase' => ' is required.',
                 'file' => $this->_testFile,
                 'line' => 1,
-                'quote' => Phrase::QUOTE_SINGLE
+                'quote' => Phrase::QUOTE_SINGLE,
             ],
             [
                 'phrase' => 'Welcome, %1!',
                 'file' => $this->_testFile,
                 'line' => 1,
-                'quote' => Phrase::QUOTE_SINGLE
-            ]
+                'quote' => Phrase::QUOTE_SINGLE,
+            ],
         ];
 
         $this->_adapter->parse($this->_testFile);
 
         $this->assertEquals($expectedResult, $this->_adapter->getPhrases());
+    }
+
+    protected function setUp(): void
+    {
+        $this->_testFile = str_replace('\\', '/', realpath(dirname(__FILE__))) . '/_files/file.js';
+        $this->_stringsCount = count(file($this->_testFile));
+        $filesystem = new File;
+        $this->_adapter = (new ObjectManager($this))->getObject(Js::class, ['filesystem' => $filesystem]);
     }
 }

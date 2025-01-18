@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -8,6 +11,7 @@ namespace Magento\Setup\Fixtures;
 
 use Magento\Authorization\Model\Acl\Role\Group;
 use Magento\Authorization\Model\RoleFactory;
+use Magento\Authorization\Model\Rules;
 use Magento\Authorization\Model\RulesFactory;
 use Magento\Authorization\Model\UserContextInterface;
 use Magento\Framework\Acl\RootResource;
@@ -15,7 +19,7 @@ use Magento\User\Model\ResourceModel\User\CollectionFactory as UserCollectionFac
 use Magento\User\Model\UserFactory;
 
 /**
- * Generate admin users
+ * Generate admin users.
  *
  * Support the following format:
  * <!-- Number of admin users -->
@@ -67,7 +71,7 @@ class AdminUsersFixture extends Fixture
         UserCollectionFactory $userCollectionFactory,
         RoleFactory $roleFactory,
         RulesFactory $rulesFactory,
-        RootResource $rootResource
+        RootResource $rootResource,
     ) {
         parent::__construct($fixtureModel);
         $this->userFactory = $userFactory;
@@ -118,7 +122,7 @@ class AdminUsersFixture extends Fixture
     public function introduceParamLabels()
     {
         return [
-            'admin_users' => 'Admin Users'
+            'admin_users' => 'Admin Users',
         ];
     }
 
@@ -139,7 +143,7 @@ class AdminUsersFixture extends Fixture
             ->setRoleName('Example Administrator');
         $role->save();
 
-        /** @var \Magento\Authorization\Model\Rules $rule */
+        /** @var Rules $rule */
         $rule = $this->rulesFactory->create();
         $rule->setRoleId($role->getId())
             ->setResourceId($this->rootResource->getId())

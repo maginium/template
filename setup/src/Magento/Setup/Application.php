@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup;
 
 use Laminas\Mvc\Application as LaminasApplication;
@@ -10,7 +14,7 @@ use Laminas\Mvc\Service\ServiceManagerConfig;
 use Laminas\ServiceManager\ServiceManager;
 
 /**
- * This class is wrapper on \Laminas\Mvc\Application
+ * This class is wrapper on \Laminas\Mvc\Application.
  *
  * It allows to do more customization like services loading, which
  * cannot be loaded via configuration.
@@ -23,21 +27,22 @@ class Application
      * Magento specific services.
      *
      * @param array $configuration
+     *
      * @return LaminasApplication
      */
     public function bootstrap(array $configuration)
     {
-        $managerConfig = isset($configuration['service_manager']) ? $configuration['service_manager'] : [];
+        $managerConfig = $configuration['service_manager'] ?? [];
         $managerConfig = new ServiceManagerConfig($managerConfig);
 
-        $serviceManager = new ServiceManager();
+        $serviceManager = new ServiceManager;
         $managerConfig->configureServiceManager($serviceManager);
         $serviceManager->setService('ApplicationConfig', $configuration);
 
         $serviceManager->get('ModuleManager')->loadModules();
 
         // load specific services
-        if (!empty($configuration['required_services'])) {
+        if (! empty($configuration['required_services'])) {
             $this->loadServices($serviceManager, $configuration['required_services']);
         }
 
@@ -46,9 +51,10 @@ class Application
             $serviceManager,
             $serviceManager->get('EventManager'),
             $serviceManager->get('Request'),
-            $serviceManager->get('Response')
+            $serviceManager->get('Response'),
         );
         $application->bootstrap($listeners);
+
         return $application;
     }
 
@@ -59,6 +65,7 @@ class Application
      *
      * @param ServiceManager $serviceManager
      * @param array $services
+     *
      * @return void
      */
     private function loadServices(ServiceManager $serviceManager, array $services)
@@ -73,13 +80,14 @@ class Application
      *
      * @param ServiceManager $serviceManager
      * @param array $configuration
+     *
      * @return array
      */
     private function getListeners(ServiceManager $serviceManager, array $configuration)
     {
-        $appConfigListeners = isset($configuration['listeners']) ? $configuration['listeners'] : [];
+        $appConfigListeners = $configuration['listeners'] ?? [];
         $config = $serviceManager->get('config');
-        $serviceConfigListeners = isset($config['listeners']) ? $config['listeners'] : [];
+        $serviceConfigListeners = $config['listeners'] ?? [];
 
         return array_unique(array_merge($serviceConfigListeners, $appConfigListeners));
     }

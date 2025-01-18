@@ -1,34 +1,39 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model\DateTime;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Stdlib\DateTime\Timezone;
 use Magento\Setup\Model\ObjectManagerProvider;
 
 /**
- * Provider of Timezone instance
+ * Provider of Timezone instance.
  */
 class TimeZoneProvider
 {
     /**
-     * Object Manager provider
+     * Object Manager provider.
      *
      * @var ObjectManagerProvider
      */
     private $objectManagerProvider;
 
     /**
-     * Instance of Timezone
+     * Instance of Timezone.
      *
-     * @var \Magento\Framework\Stdlib\DateTime\Timezone
+     * @var Timezone
      */
     private $timezone;
 
     /**
-     * Init
+     * Init.
      *
      * @param ObjectManagerProvider $objectManagerProvider
      */
@@ -38,18 +43,19 @@ class TimeZoneProvider
     }
 
     /**
-     * Get instance of Timezone
+     * Get instance of Timezone.
      *
      * @return \Magento\Framework\Stdlib\DateTime\Timezone
      */
     public function get()
     {
-        if (!$this->timezone) {
+        if (! $this->timezone) {
             $this->timezone = $this->objectManagerProvider->get()->create(
-                \Magento\Framework\Stdlib\DateTime\Timezone::class,
-                ['scopeType' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT]
+                Timezone::class,
+                ['scopeType' => ScopeConfigInterface::SCOPE_TYPE_DEFAULT],
             );
         }
+
         return $this->timezone;
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,19 +26,16 @@ class MixinManagerTest extends TestCase
      */
     private $mixinFactoryMock;
 
-    protected function setUp(): void
-    {
-        $this->mixinFactoryMock = $this->createMock(MixinFactory::class);
-        $this->mixinManager = new MixinManager($this->mixinFactoryMock);
-    }
-
-    public function testApply()
+    /**
+     * @test
+     */
+    public function apply()
     {
         $description = '>o<';
         $mixinList = ['x', 'y', 'z'];
 
         $xMixinMock = $this->getMockForAbstractClass(
-            DescriptionMixinInterface::class
+            DescriptionMixinInterface::class,
         );
         $xMixinMock->expects($this->once())
             ->method('apply')
@@ -45,7 +43,7 @@ class MixinManagerTest extends TestCase
             ->willReturn($description . 'x');
 
         $yMixinMock = $this->getMockForAbstractClass(
-            DescriptionMixinInterface::class
+            DescriptionMixinInterface::class,
         );
         $yMixinMock->expects($this->once())
             ->method('apply')
@@ -53,7 +51,7 @@ class MixinManagerTest extends TestCase
             ->willReturn($description . 'xy');
 
         $zMixinMock = $this->getMockForAbstractClass(
-            DescriptionMixinInterface::class
+            DescriptionMixinInterface::class,
         );
         $zMixinMock->expects($this->once())
             ->method('apply')
@@ -63,19 +61,29 @@ class MixinManagerTest extends TestCase
         $this->mixinFactoryMock
             ->expects($this->exactly(count($mixinList)))
             ->method('create')
-            ->willReturnCallback(function ($arg1) use ($mixinList, $xMixinMock, $yMixinMock, $zMixinMock) {
-                if ($arg1 == $mixinList[0]) {
+            ->willReturnCallback(function($arg1) use ($mixinList, $xMixinMock, $yMixinMock, $zMixinMock) {
+                if ($arg1 === $mixinList[0]) {
                     return $xMixinMock;
-                } elseif ($arg1 == $mixinList[1]) {
+                }
+
+                if ($arg1 === $mixinList[1]) {
                     return $yMixinMock;
-                } elseif ($arg1 == $mixinList[2]) {
+                }
+
+                if ($arg1 === $mixinList[2]) {
                     return $zMixinMock;
                 }
             });
 
         $this->assertEquals(
             $description . 'xyz',
-            $this->mixinManager->apply($description, $mixinList)
+            $this->mixinManager->apply($description, $mixinList),
         );
+    }
+
+    protected function setUp(): void
+    {
+        $this->mixinFactoryMock = $this->createMock(MixinFactory::class);
+        $this->mixinManager = new MixinManager($this->mixinFactoryMock);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -7,12 +8,16 @@ declare(strict_types=1);
 
 namespace Magento\Setup\Module\Di\Code\Reader;
 
+use FilesystemIterator;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Phrase;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
- * Class ClassesScanner
+ * Class ClassesScanner.
  */
 class ClassesScanner implements ClassesScannerInterface
 {
@@ -34,11 +39,13 @@ class ClassesScanner implements ClassesScannerInterface
     /**
      * @param array $excludePatterns
      * @param DirectoryList|null $directoryList
+     *
      * @throws FileSystemException
      */
-    public function __construct(array $excludePatterns = [], DirectoryList $directoryList = null)
+    public function __construct(array $excludePatterns = [], ?DirectoryList $directoryList = null)
     {
         $this->excludePatterns = $excludePatterns;
+
         if ($directoryList === null) {
             $directoryList = ObjectManager::getInstance()->get(DirectoryList::class);
         }
@@ -46,9 +53,51 @@ class ClassesScanner implements ClassesScannerInterface
     }
 
     /**
-     * Adds exclude patterns
+     * Retrieves list of classes for given path.
+     *
+     * @param string $path
+     *
+     * @throws FileSystemException
+     *
+     * @return array
+     *
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    public function getList($path)
+    {
+        // phpcs:ignore
+        $realPath = realpath($path);
+        $isGeneration = str_starts_with($realPath, $this->generationDirectory);
+
+        // Generation folders should not have their results cached since they may actually change during compile
+        if (! $isGeneration && isset($this->fileResults[$realPath])) {
+            return $this->fileResults[$realPath];
+        }
+
+        if (! (bool)$realPath) {
+            throw new FileSystemException(
+                new Phrase('The "%1" path is invalid. Verify the path and try again.', [$path]),
+            );
+        }
+        $recursiveIterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($realPath, FilesystemIterator::FOLLOW_SYMLINKS),
+            RecursiveIteratorIterator::SELF_FIRST,
+        );
+
+        $classes = $this->extract($recursiveIterator);
+
+        if (! $isGeneration) {
+            $this->fileResults[$realPath] = $classes;
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Adds exclude patterns.
      *
      * @param array $excludePatterns
+     *
      * @return void
      */
     public function addExcludePatterns(array $excludePatterns)
@@ -57,55 +106,23 @@ class ClassesScanner implements ClassesScannerInterface
     }
 
     /**
-     * Retrieves list of classes for given path
+     * Extracts all the classes from the recursive iterator.
      *
-     * @param string $path
-     * @return array
-     * @throws FileSystemException
-     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     */
-    public function getList($path)
-    {
-        // phpcs:ignore
-        $realPath = realpath($path);
-        $isGeneration = strpos($realPath, $this->generationDirectory) === 0;
-
-        // Generation folders should not have their results cached since they may actually change during compile
-        if (!$isGeneration && isset($this->fileResults[$realPath])) {
-            return $this->fileResults[$realPath];
-        }
-        if (!(bool)$realPath) {
-            throw new FileSystemException(
-                new \Magento\Framework\Phrase('The "%1" path is invalid. Verify the path and try again.', [$path])
-            );
-        }
-        $recursiveIterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($realPath, \FilesystemIterator::FOLLOW_SYMLINKS),
-            \RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        $classes = $this->extract($recursiveIterator);
-        if (!$isGeneration) {
-            $this->fileResults[$realPath] = $classes;
-        }
-        return $classes;
-    }
-
-    /**
-     * Extracts all the classes from the recursive iterator
+     * @param RecursiveIteratorIterator $recursiveIterator
      *
-     * @param \RecursiveIteratorIterator $recursiveIterator
      * @return array
      */
-    private function extract(\RecursiveIteratorIterator $recursiveIterator)
+    private function extract(RecursiveIteratorIterator $recursiveIterator)
     {
         $classes = [];
+
         foreach ($recursiveIterator as $fileItem) {
             /** @var $fileItem \SplFileInfo */
-            if ($fileItem->isDir() || $fileItem->getExtension() !== 'php' || $fileItem->getBasename()[0] == '.') {
+            if ($fileItem->isDir() || $fileItem->getExtension() !== 'php' || $fileItem->getBasename()[0] === '.') {
                 continue;
             }
             $fileItemPath = $fileItem->getRealPath();
+
             foreach ($this->excludePatterns as $excludePatterns) {
                 if ($this->isExclude($fileItemPath, $excludePatterns)) {
                     continue 2;
@@ -113,7 +130,8 @@ class ClassesScanner implements ClassesScannerInterface
             }
             $fileScanner = new FileClassScanner($fileItemPath);
             $className = $fileScanner->getClassName();
-            if (!empty($className)) {
+
+            if (! empty($className)) {
                 $this->includeClass($className, $fileItemPath);
                 $classes[] = $className;
             }
@@ -127,35 +145,41 @@ class ClassesScanner implements ClassesScannerInterface
      *
      * @param string $className
      * @param string $fileItemPath
+     *
      * @return bool Whether the class is included or not
      */
     private function includeClass(string $className, string $fileItemPath): bool
     {
-        if (!class_exists($className)) {
+        if (! class_exists($className)) {
             // phpcs:ignore
             require_once $fileItemPath;
+
             return true;
         }
+
         return false;
     }
 
     /**
-     * Find out if file should be excluded
+     * Find out if file should be excluded.
      *
      * @param string $fileItemPath
      * @param string $patterns
+     *
      * @return bool
      */
     private function isExclude($fileItemPath, $patterns)
     {
-        if (!is_array($patterns)) {
+        if (! is_array($patterns)) {
             $patterns = (array)$patterns;
         }
+
         foreach ($patterns as $pattern) {
             if (preg_match($pattern, str_replace('\\', '/', $fileItemPath))) {
                 return true;
             }
         }
+
         return false;
     }
 }

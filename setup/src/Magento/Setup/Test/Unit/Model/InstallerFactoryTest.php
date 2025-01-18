@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -49,7 +50,10 @@ class InstallerFactoryTest extends TestCase
      */
     private $objectManagerProviderMock;
 
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $this->objectManagerProviderMock = $this->getMockBuilder(ObjectManagerProvider::class)
             ->disableOriginalConstructor()
@@ -66,22 +70,24 @@ class InstallerFactoryTest extends TestCase
                 [
                     [DeclarationInstaller::class, $this->createMock(DeclarationInstaller::class)],
                     [SchemaPersistor::class, $this->createMock(SchemaPersistor::class)],
-                ]
+                ],
             );
         $this->objectManagerProviderMock->expects($this->any())
             ->method('get')
             ->willReturn($objectManagerMock);
+
         /** @var ServiceLocatorInterface|MockObject $serviceLocatorMock */
         $serviceLocatorMock = $this->getMockBuilder(
-            ServiceLocatorInterface::class
+            ServiceLocatorInterface::class,
         )->onlyMethods(
-            ['get']
+            ['get'],
         )->getMockForAbstractClass();
         $serviceLocatorMock->expects($this->any())->method('get')
             ->willReturnMap($this->getReturnValueMap());
 
         /** @var ConsoleLoggerInterface|MockObject $log */
         $log = $this->getMockForAbstractClass(ConsoleLoggerInterface::class);
+
         /** @var ResourceFactory|MockObject $resourceFactoryMock */
         $resourceFactoryMock = $this->createMock(ResourceFactory::class);
         $resourceFactoryMock
@@ -141,7 +147,7 @@ class InstallerFactoryTest extends TestCase
             ],
             [
                 ObjectManagerProvider::class,
-                $this->objectManagerProviderMock
+                $this->objectManagerProviderMock,
             ],
             [
                 TransactionManager::class,

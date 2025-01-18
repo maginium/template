@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,14 +13,20 @@ use PHPUnit\Framework\TestCase;
 
 class LocaleTest extends TestCase
 {
-    public function testWrongLocaleFormatException()
+    /**
+     * @test
+     */
+    public function wrongLocaleFormatException()
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Target locale must match the following format: "aa_AA".');
         new Locale('wrong_locale');
     }
 
-    public function testToStringConvert()
+    /**
+     * @test
+     */
+    public function toStringConvert()
     {
         $locale = new Locale('de_DE');
 

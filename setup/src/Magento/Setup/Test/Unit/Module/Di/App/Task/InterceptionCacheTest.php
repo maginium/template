@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,19 +26,10 @@ class InterceptionCacheTest extends TestCase
      */
     private $interceptionsListMock;
 
-    protected function setUp(): void
-    {
-        $this->configMock = $this->getMockBuilder(Config::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->interceptionsListMock = $this->getMockBuilder(
-            Interceptions::class
-        )
-            ->disableOriginalConstructor()
-            ->getMock();
-    }
-
-    public function testDoOperationEmptyData()
+    /**
+     * @test
+     */
+    public function doOperationEmptyData()
     {
         $data = [];
 
@@ -48,20 +40,23 @@ class InterceptionCacheTest extends TestCase
         $this->assertNull($operation->doOperation());
     }
 
-    public function testDoOperationInitializeWithDefinitions()
+    /**
+     * @test
+     */
+    public function doOperationInitializeWithDefinitions()
     {
         $definitions = [
             'Library\Class',
             'Application\Class',
             'VarGeneration\Class',
-            'AppGeneration\Class'
+            'AppGeneration\Class',
         ];
 
         $data = [
             'lib',
             'app',
             'generation',
-            'appgeneration'
+            'appgeneration',
         ];
 
         $this->interceptionsListMock->expects($this->any())
@@ -71,8 +66,8 @@ class InterceptionCacheTest extends TestCase
                     ['lib', ['Library\Class']],
                     ['app', ['Application\Class']],
                     ['generation', ['VarGeneration\Class']],
-                    ['appgeneration', ['AppGeneration\Class']]
-                ]
+                    ['appgeneration', ['AppGeneration\Class']],
+                ],
             );
 
         $operation = new InterceptionCache($this->configMock, $this->interceptionsListMock, $data);
@@ -81,5 +76,17 @@ class InterceptionCacheTest extends TestCase
             ->with($definitions);
 
         $this->assertNull($operation->doOperation());
+    }
+
+    protected function setUp(): void
+    {
+        $this->configMock = $this->getMockBuilder(Config::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->interceptionsListMock = $this->getMockBuilder(
+            Interceptions::class,
+        )
+            ->disableOriginalConstructor()
+            ->getMock();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,30 +26,23 @@ class AbstractWriterTest extends TestCase
      */
     protected $csvMock;
 
-    protected function setUp(): void
-    {
-        $this->csvMock = $this->createMock(Csv::class);
-
-        $this->writer = $this->getMockForAbstractClass(
-            AbstractWriter::class,
-            ['writer' => $this->csvMock]
-        );
-    }
-
-    public function testWrite()
+    /**
+     * @test
+     */
+    public function write()
     {
         $options = ['report_filename' => 'some_filename'];
         $configMock = $this->getMockForAbstractClass(ConfigInterface::class);
         $preparedData = ['foo', 'baz', 'bar'];
 
         $this->writer->expects(
-            $this->once()
+            $this->once(),
         )->method(
-            'prepareData'
+            'prepareData',
         )->with(
-            $configMock
+            $configMock,
         )->willReturn(
-            $preparedData
+            $preparedData,
         );
         $this->csvMock->expects($this->once())->method('saveData')->with($options['report_filename'], $preparedData);
 
@@ -57,9 +51,12 @@ class AbstractWriterTest extends TestCase
 
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongOptionReportFilename
+     *
+     * @test
      */
-    public function testWriteWithWrongOptionReportFilename($options)
+    public function writeWithWrongOptionReportFilename($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Writing error: Passed option "report_filename" is wrong.');
@@ -75,7 +72,17 @@ class AbstractWriterTest extends TestCase
     {
         return [
             [['report_filename' => '']],
-            [['there_are_no_report_filename' => 'some_name']]
+            [['there_are_no_report_filename' => 'some_name']],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->csvMock = $this->createMock(Csv::class);
+
+        $this->writer = $this->getMockForAbstractClass(
+            AbstractWriter::class,
+            ['writer' => $this->csvMock],
+        );
     }
 }

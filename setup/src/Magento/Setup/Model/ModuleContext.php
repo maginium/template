@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model;
 
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -15,14 +19,14 @@ use Magento\Framework\Setup\ModuleContextInterface;
 class ModuleContext implements ModuleContextInterface
 {
     /**
-     * Current version of a module
+     * Current version of a module.
      *
      * @var string
      */
     private $version;
 
     /**
-     * Init
+     * Init.
      *
      * @param string $version Current version of a module
      */

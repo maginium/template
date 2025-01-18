@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -21,6 +22,17 @@ class ResourceFactoryTest extends TestCase
      */
     private $resourceFactory;
 
+    /**
+     * @test
+     */
+    public function create()
+    {
+        $resource = $this->resourceFactory->create(
+            $this->createMock(DeploymentConfig::class),
+        );
+        $this->assertInstanceOf(ResourceConnection::class, $resource);
+    }
+
     protected function setUp(): void
     {
         $serviceLocatorMock = $this->getMockBuilder(ServiceLocatorInterface::class)
@@ -33,13 +45,5 @@ class ResourceFactoryTest extends TestCase
             ->with(ConnectionFactory::class)
             ->willReturn($connectionFactory);
         $this->resourceFactory = new ResourceFactory($serviceLocatorMock);
-    }
-
-    public function testCreate()
-    {
-        $resource = $this->resourceFactory->create(
-            $this->createMock(DeploymentConfig::class)
-        );
-        $this->assertInstanceOf(ResourceConnection::class, $resource);
     }
 }

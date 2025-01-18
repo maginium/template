@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -39,26 +40,10 @@ class AttributeSetsFixtureTest extends TestCase
      */
     private $patternMock;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->attributeSetsFixtureMock = $this->getMockBuilder(AttributeSetFixture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->patternMock = $this->getMockBuilder(Pattern::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->model = new AttributeSetsFixture(
-            $this->fixtureModelMock,
-            $this->attributeSetsFixtureMock,
-            $this->patternMock
-        );
-    }
-
-    public function testCreateAttributeSet()
+    /**
+     * @test
+     */
+    public function createAttributeSet()
     {
         $valueMap = [
             ['attribute_sets', null, ['attribute_set' => [['some-data']]]],
@@ -76,7 +61,10 @@ class AttributeSetsFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testCreateProductAttributeSet()
+    /**
+     * @test
+     */
+    public function createProductAttributeSet()
     {
         $valueMap = [
             ['attribute_sets', null, null],
@@ -85,7 +73,7 @@ class AttributeSetsFixtureTest extends TestCase
             ['product_attribute_sets_attributes_values', 3, 3],
         ];
 
-        $closure = function () {
+        $closure = function() {
         };
         $this->patternMock->expects($this->once())
             ->method('generateAttributeSet')
@@ -102,16 +90,41 @@ class AttributeSetsFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Generating attribute sets', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([
             'attribute_sets' => 'Attribute Sets (Default)',
-            'product_attribute_sets' => 'Attribute Sets (Extra)'
+            'product_attribute_sets' => 'Attribute Sets (Extra)',
         ], $this->model->introduceParamLabels());
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->attributeSetsFixtureMock = $this->getMockBuilder(AttributeSetFixture::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->patternMock = $this->getMockBuilder(Pattern::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->model = new AttributeSetsFixture(
+            $this->fixtureModelMock,
+            $this->attributeSetsFixtureMock,
+            $this->patternMock,
+        );
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -29,6 +30,103 @@ class ConfigGeneratorTest extends TestCase
      * @var ConfigGenerator
      */
     private $configGeneratorObject;
+
+    /**
+     * @test
+     */
+    public function createCryptConfigWithInput()
+    {
+        $testData = [ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => 'some-test_key'];
+        $returnValue = $this->configGeneratorObject->createCryptConfig($testData);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $this->assertEquals(['crypt' => ['key' => 'some-test_key']], $returnValue->getData());
+    }
+
+    /**
+     * @test
+     */
+    public function createCryptConfigWithoutInput()
+    {
+        $returnValue = $this->configGeneratorObject->createCryptConfig([]);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        // phpcs:ignore Magento2.Security.InsecureFunction
+        $this->assertEquals([
+            'crypt' => [
+                'key' => ConfigOptionsListConstants::STORE_KEY_ENCODED_RANDOM_STRING_PREFIX . 'randombytes',
+            ],
+        ], $returnValue->getData());
+    }
+
+    /**
+     * @test
+     */
+    public function createSessionConfigWithInput()
+    {
+        $testData = [ConfigOptionsListConstants::INPUT_KEY_SESSION_SAVE => 'files'];
+        $returnValue = $this->configGeneratorObject->createSessionConfig($testData);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $this->assertEquals(
+            ['session' => ['save' => ConfigOptionsListConstants::SESSION_SAVE_FILES]],
+            $returnValue->getData(),
+        );
+
+        $testData = [ConfigOptionsListConstants::INPUT_KEY_SESSION_SAVE => 'db'];
+        $returnValue = $this->configGeneratorObject->createSessionConfig($testData);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $this->assertEquals(
+            ['session' => ['save' => ConfigOptionsListConstants::SESSION_SAVE_DB]],
+            $returnValue->getData(),
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function createSessionConfigWithoutInput()
+    {
+        $returnValue = $this->configGeneratorObject->createSessionConfig([]);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $this->assertEquals([], $returnValue->getData());
+    }
+
+    /**
+     * @test
+     */
+    public function createDbConfig()
+    {
+        $testData = [
+            ConfigOptionsListConstants::INPUT_KEY_DB_HOST => 'testLocalhost',
+            ConfigOptionsListConstants::INPUT_KEY_DB_NAME => 'testDbName',
+            ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'testDbUser',
+            ConfigOptionsListConstants::INPUT_KEY_DB_PREFIX => 'testSomePrefix',
+        ];
+        $returnValue = $this->configGeneratorObject->createDbConfig($testData);
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $dbData = $returnValue->getData();
+        $dbData = $dbData['db'];
+        $this->assertArrayHasKey('table_prefix', $dbData);
+        $this->assertSame('testSomePrefix', $dbData['table_prefix']);
+        $this->assertArrayHasKey('connection', $dbData);
+        $this->assertArrayHasKey('default', $dbData['connection']);
+        $this->assertArrayHasKey('host', $dbData['connection']['default']);
+        $this->assertSame('testLocalhost', $dbData['connection']['default']['host']);
+        $this->assertArrayHasKey('dbname', $dbData['connection']['default']);
+        $this->assertSame('testDbName', $dbData['connection']['default']['dbname']);
+        $this->assertArrayHasKey('username', $dbData['connection']['default']);
+        $this->assertSame('testDbUser', $dbData['connection']['default']['username']);
+        $this->assertArrayHasKey('active', $dbData['connection']['default']);
+        $this->assertSame('1', $dbData['connection']['default']['active']);
+    }
+
+    /**
+     * @test
+     */
+    public function createResourceConfig()
+    {
+        $returnValue = $this->configGeneratorObject->createResourceConfig();
+        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
+        $this->assertEquals(['resource' => ['default_setup' => ['connection' => 'default']]], $returnValue->getData());
+    }
 
     protected function setUp(): void
     {
@@ -62,86 +160,7 @@ class ConfigGeneratorTest extends TestCase
             $deployConfig,
             $configDataFactoryMock,
             $cryptKeyGenerator,
-            $driverOptions
+            $driverOptions,
         );
-    }
-
-    public function testCreateCryptConfigWithInput()
-    {
-        $testData = [ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => 'some-test_key'];
-        $returnValue = $this->configGeneratorObject->createCryptConfig($testData);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $this->assertEquals(['crypt' => ['key' => 'some-test_key']], $returnValue->getData());
-    }
-
-    public function testCreateCryptConfigWithoutInput()
-    {
-        $returnValue = $this->configGeneratorObject->createCryptConfig([]);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        // phpcs:ignore Magento2.Security.InsecureFunction
-        $this->assertEquals([
-                'crypt' => [
-                    'key' => ConfigOptionsListConstants::STORE_KEY_ENCODED_RANDOM_STRING_PREFIX . 'randombytes'
-                ]
-            ], $returnValue->getData());
-    }
-
-    public function testCreateSessionConfigWithInput()
-    {
-        $testData = [ConfigOptionsListConstants::INPUT_KEY_SESSION_SAVE => 'files'];
-        $returnValue = $this->configGeneratorObject->createSessionConfig($testData);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $this->assertEquals(
-            ['session' => ['save' => ConfigOptionsListConstants::SESSION_SAVE_FILES]],
-            $returnValue->getData()
-        );
-
-        $testData = [ConfigOptionsListConstants::INPUT_KEY_SESSION_SAVE => 'db'];
-        $returnValue = $this->configGeneratorObject->createSessionConfig($testData);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $this->assertEquals(
-            ['session' => ['save' => ConfigOptionsListConstants::SESSION_SAVE_DB]],
-            $returnValue->getData()
-        );
-    }
-
-    public function testCreateSessionConfigWithoutInput()
-    {
-        $returnValue = $this->configGeneratorObject->createSessionConfig([]);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $this->assertEquals([], $returnValue->getData());
-    }
-
-    public function testCreateDbConfig()
-    {
-        $testData = [
-            ConfigOptionsListConstants::INPUT_KEY_DB_HOST => 'testLocalhost',
-            ConfigOptionsListConstants::INPUT_KEY_DB_NAME => 'testDbName',
-            ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'testDbUser',
-            ConfigOptionsListConstants::INPUT_KEY_DB_PREFIX => 'testSomePrefix',
-        ];
-        $returnValue = $this->configGeneratorObject->createDbConfig($testData);
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $dbData = $returnValue->getData();
-        $dbData = $dbData['db'];
-        $this->assertArrayHasKey('table_prefix', $dbData);
-        $this->assertSame('testSomePrefix', $dbData['table_prefix']);
-        $this->assertArrayHasKey('connection', $dbData);
-        $this->assertArrayHasKey('default', $dbData['connection']);
-        $this->assertArrayHasKey('host', $dbData['connection']['default']);
-        $this->assertSame('testLocalhost', $dbData['connection']['default']['host']);
-        $this->assertArrayHasKey('dbname', $dbData['connection']['default']);
-        $this->assertSame('testDbName', $dbData['connection']['default']['dbname']);
-        $this->assertArrayHasKey('username', $dbData['connection']['default']);
-        $this->assertSame('testDbUser', $dbData['connection']['default']['username']);
-        $this->assertArrayHasKey('active', $dbData['connection']['default']);
-        $this->assertSame('1', $dbData['connection']['default']['active']);
-    }
-
-    public function testCreateResourceConfig()
-    {
-        $returnValue = $this->configGeneratorObject->createResourceConfig();
-        $this->assertEquals(ConfigFilePool::APP_ENV, $returnValue->getFileKey());
-        $this->assertEquals(['resource' => ['default_setup' => ['connection' => 'default']]], $returnValue->getData());
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,21 +19,13 @@ class FileScannerTest extends TestCase
     private $fileScanner;
 
     /**
-     * @inheirtDoc
-     */
-    protected function setUp(): void
-    {
-        $this->fileScanner = new FileScanner(
-            __DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'TestClass.php'
-        );
-    }
-
-    /**
      * Check that all uses are found.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGetUses(): void
+    public function getUses(): void
     {
         $actualResult = $this->fileScanner->getUses();
         $expectedResult = $this->getExpectedResultForTestClass();
@@ -44,8 +37,10 @@ class FileScannerTest extends TestCase
      * Check that all uses are found with correct namespace provided.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGetUsesWithCorrectNamespace(): void
+    public function getUsesWithCorrectNamespace(): void
     {
         $actualResult = $this->fileScanner->getUses('Some\TestNamespace');
         $expectedResult = $this->getExpectedResultForTestClass();
@@ -57,8 +52,10 @@ class FileScannerTest extends TestCase
      * Check that function returns null with wrong namespace provided.
      *
      * @return void
+     *
+     * @test
      */
-    public function testGetUsesWithAnotherNamespace(): void
+    public function getUsesWithAnotherNamespace(): void
     {
         $result = $this->fileScanner->getUses('Another\WrongNamespace');
 
@@ -66,7 +63,17 @@ class FileScannerTest extends TestCase
     }
 
     /**
-     * Data provider for getUses test
+     * @inheirtDoc
+     */
+    protected function setUp(): void
+    {
+        $this->fileScanner = new FileScanner(
+            __DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'TestClass.php',
+        );
+    }
+
+    /**
+     * Data provider for getUses test.
      *
      * @return array
      */
@@ -75,12 +82,12 @@ class FileScannerTest extends TestCase
         return [
             [
                 'use' => 'Some\OtherNamespace\OtherClass',
-                'as' => null
+                'as' => null,
             ],
             [
                 'use' => 'Some\TestNamespace\TestInteface',
-                'as' => 'TestAlias'
-            ]
+                'as' => 'TestAlias',
+            ],
         ];
     }
 }

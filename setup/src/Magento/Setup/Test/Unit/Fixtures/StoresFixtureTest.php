@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -23,7 +24,6 @@ use PHPUnit\Framework\TestCase;
 
 class StoresFixtureTest extends TestCase
 {
-
     /**
      * @var MockObject|FixtureModel
      */
@@ -61,8 +61,10 @@ class StoresFixtureTest extends TestCase
 
     /**
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
+     *
+     * @test
      */
-    public function testExecute()
+    public function execute()
     {
         $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
             ->disableOriginalConstructor()
@@ -78,7 +80,7 @@ class StoresFixtureTest extends TestCase
                     'getDefaultStoreView',
                     'getStore',
                     'getStores',
-                ]
+                ],
             )->getMock();
 
         $this->eventManagerMock = $this->getMockBuilder(ManagerInterface::class)
@@ -100,7 +102,7 @@ class StoresFixtureTest extends TestCase
                     'setLevel',
                     'setAvailableSortBy',
                     'setIsActive',
-                ]
+                ],
             )
             ->getMockForAbstractClass();
 
@@ -165,7 +167,7 @@ class StoresFixtureTest extends TestCase
 
         $storeMock->expects($this->exactly(11))
             ->method('addData')
-            ->willReturnCallback(function ($arg) use ($storeMock) {
+            ->willReturnCallback(function($arg) use ($storeMock) {
                 if (isset($arg['code'])) {
                     return $storeMock;
                 }
@@ -183,8 +185,8 @@ class StoresFixtureTest extends TestCase
 
         $storeGroupMock->expects($this->exactly(5))
             ->method('addData')
-            ->willReturnCallback(function ($arg) use ($storeGroupMock) {
-                if ($arg['code'] == 'store_group_2' || $arg['code'] == 'store_group_3') {
+            ->willReturnCallback(function($arg) use ($storeGroupMock) {
+                if ($arg['code'] === 'store_group_2' || $arg['code'] === 'store_group_3') {
                     return $storeGroupMock;
                 }
             });
@@ -201,8 +203,8 @@ class StoresFixtureTest extends TestCase
 
         $websiteMock->expects($this->exactly(2))
             ->method('addData')
-            ->willReturnCallback(function ($arg) use ($storeGroupMock) {
-                if ($arg['code'] == 'website_2' || $arg['code'] == 'website_3') {
+            ->willReturnCallback(function($arg) use ($storeGroupMock) {
+                if ($arg['code'] === 'website_2' || $arg['code'] === 'website_3') {
                     return $storeGroupMock;
                 }
             });
@@ -234,7 +236,7 @@ class StoresFixtureTest extends TestCase
                 ['websites', 1, 3],
                 ['store_groups', 1, 6],
                 ['store_views', 1, 12],
-                ['assign_entities_to_all_websites', false]
+                ['assign_entities_to_all_websites', false],
             ]);
 
         $this->model = new StoresFixture(
@@ -243,7 +245,7 @@ class StoresFixtureTest extends TestCase
             $this->eventManagerMock,
             $this->categoryFactoryMock,
             $this->localeConfigMock,
-            $this->scopeConfigMock
+            $this->scopeConfigMock,
         );
 
         $this->model->execute();

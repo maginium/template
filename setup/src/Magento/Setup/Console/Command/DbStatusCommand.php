@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
 use Magento\Framework\App\DeploymentConfig;
@@ -17,24 +21,24 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Command for checking if DB version is in sync with the code base version
+ * Command for checking if DB version is in sync with the code base version.
  */
 class DbStatusCommand extends AbstractSetupCommand
 {
     /**
      * Code for error when application upgrade is required.
      */
-    const EXIT_CODE_UPGRADE_REQUIRED = 2;
+    public const EXIT_CODE_UPGRADE_REQUIRED = 2;
 
     /**
-     * Object manager provider
+     * Object manager provider.
      *
      * @var ObjectManagerProvider
      */
     private $objectManagerProvider;
 
     /**
-     * Deployment configuration
+     * Deployment configuration.
      *
      * @var DeploymentConfig
      */
@@ -46,7 +50,7 @@ class DbStatusCommand extends AbstractSetupCommand
     private $upToDateValidators = [];
 
     /**
-     * Inject dependencies
+     * Inject dependencies.
      *
      * @param ObjectManagerProvider $objectManagerProvider
      * @param DeploymentConfig $deploymentConfig
@@ -55,7 +59,7 @@ class DbStatusCommand extends AbstractSetupCommand
     {
         $this->objectManagerProvider = $objectManagerProvider;
         $this->deploymentConfig = $deploymentConfig;
-        /**
+        /*
          * As DbStatucCommand is in setup and all validators are part of the framework, we can`t configure
          * this command with dependency injection and we need to inject each validator manually
          */
@@ -71,29 +75,20 @@ class DbStatusCommand extends AbstractSetupCommand
     /**
      * {@inheritdoc}
      */
-    protected function configure()
-    {
-        $this->setName('setup:db:status')
-            ->setDescription('Checks if DB schema or data requires upgrade');
-        parent::configure();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (!$this->deploymentConfig->isAvailable()) {
+        if (! $this->deploymentConfig->isAvailable()) {
             $output->writeln(
-                "<info>No information is available: the Magento application is not installed.</info>"
+                '<info>No information is available: the Magento application is not installed.</info>',
             );
+
             return Cli::RETURN_FAILURE;
         }
 
         $outDated = false;
 
         foreach ($this->upToDateValidators as $validator) {
-            if (!$validator->isUpToDate()) {
+            if (! $validator->isUpToDate()) {
                 $output->writeln(sprintf('<info>%s</info>', $validator->getNotUpToDateMessage()));
                 $outDated = true;
             }
@@ -101,12 +96,24 @@ class DbStatusCommand extends AbstractSetupCommand
 
         if ($outDated) {
             $output->writeln('<info>Run \'setup:upgrade\' to update your DB schema and data.</info>');
+
             return self::EXIT_CODE_UPGRADE_REQUIRED;
         }
 
         $output->writeln(
-            '<info>All modules are up to date.</info>'
+            '<info>All modules are up to date.</info>',
         );
+
         return Cli::RETURN_SUCCESS;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this->setName('setup:db:status')
+            ->setDescription('Checks if DB schema or data requires upgrade');
+        parent::configure();
     }
 }

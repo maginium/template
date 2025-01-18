@@ -1,14 +1,20 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module;
 
+use Magento\Framework\Module\Setup\Context;
 use Magento\Setup\Model\ObjectManagerProvider;
 
 /**
- * Factory class to create DataSetup
+ * Factory class to create DataSetup.
+ *
  * @api
  */
 class DataSetupFactory
@@ -19,7 +25,7 @@ class DataSetupFactory
     private $objectManagerProvider;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param ObjectManagerProvider $objectManagerProvider
      */
@@ -29,13 +35,14 @@ class DataSetupFactory
     }
 
     /**
-     * Creates DataSetup
+     * Creates DataSetup.
      *
      * @return DataSetup
      */
     public function create()
     {
         $objectManager = $this->objectManagerProvider->get();
-        return new DataSetup($objectManager->get(\Magento\Framework\Module\Setup\Context::class));
+
+        return new DataSetup($objectManager->get(Context::class));
     }
 }

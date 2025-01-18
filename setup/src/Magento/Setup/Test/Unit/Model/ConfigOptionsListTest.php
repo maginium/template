@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -16,8 +17,13 @@ use Magento\Framework\Setup\Option\TextConfigOption;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Magento\Setup\Model\ConfigGenerator;
 use Magento\Setup\Model\ConfigOptionsList;
+use Magento\Setup\Model\ConfigOptionsList\BackpressureLogger;
+use Magento\Setup\Model\ConfigOptionsList\Cache;
+use Magento\Setup\Model\ConfigOptionsList\Directory;
 use Magento\Setup\Model\ConfigOptionsList\DriverOptions;
 use Magento\Setup\Model\ConfigOptionsList\Lock;
+use Magento\Setup\Model\ConfigOptionsList\PageCache;
+use Magento\Setup\Model\ConfigOptionsList\Session;
 use Magento\Setup\Validator\DbValidator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -53,7 +59,7 @@ class ConfigOptionsListTest extends TestCase
     private $encryptionKeyValidator;
 
     /**
-     * @var ConfigOptionsList\DriverOptions
+     * @var DriverOptions
      */
     private $driverOptionsMock;
 
@@ -61,40 +67,34 @@ class ConfigOptionsListTest extends TestCase
      * @var array
      */
     private $configOptionsListClasses = [
-        \Magento\Setup\Model\ConfigOptionsList\Session::class,
-        \Magento\Setup\Model\ConfigOptionsList\Cache::class,
-        \Magento\Setup\Model\ConfigOptionsList\PageCache::class,
-        \Magento\Setup\Model\ConfigOptionsList\Lock::class,
-        \Magento\Setup\Model\ConfigOptionsList\Directory::class,
-        \Magento\Setup\Model\ConfigOptionsList\BackpressureLogger::class,
+        Session::class,
+        Cache::class,
+        PageCache::class,
+        Lock::class,
+        Directory::class,
+        BackpressureLogger::class,
     ];
 
-    protected function setUp(): void
+    /**
+     * @return array
+     */
+    public static function validateCacheHostsDataProvider()
     {
-        $this->generator = $this->createMock(ConfigGenerator::class);
-        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
-        $this->dbValidator = $this->createMock(DbValidator::class);
-        $this->encryptionKeyValidator = $this->createMock(KeyValidator::class);
-        $this->driverOptionsMock = $this->createMock(DriverOptions::class);
-        $objectManagerHelper = new ObjectManager($this);
-        $objects = [];
-        foreach ($this->configOptionsListClasses as $className) {
-            $configOptionClassMock = $this->getMockBuilder($className)
-                ->disableOriginalConstructor()
-                ->onlyMethods([])
-                ->getMock();
-            $objects[] = [$className,$configOptionClassMock];
-        }
-        $objectManagerHelper->prepareObjectManager($objects);
-        $this->object = new ConfigOptionsList(
-            $this->generator,
-            $this->dbValidator,
-            $this->encryptionKeyValidator,
-            $this->driverOptionsMock
-        );
+        return [
+            ['localhost', false],
+            ['122.11.2.34:800', false],
+            ['122.11.2.34:800,localhost', false],
+            ['website.com:9000', false],
+            ['web-site.com:9000', false],
+            ['website.com/m2ce:9000', true],
+            ['website.com+:9000', true],
+        ];
     }
 
-    public function testGetOptions()
+    /**
+     * @test
+     */
+    public function getOptions()
     {
         $options = $this->object->getOptions();
         $this->assertInstanceOf(TextConfigOption::class, $options[0]);
@@ -118,14 +118,17 @@ class ConfigOptionsListTest extends TestCase
         $this->assertInstanceOf(FlagConfigOption::class, $options[9]);
         $this->assertSame(
             'If specified, then db connection validation will be skipped',
-            $options[9]->getDescription()
+            $options[9]->getDescription(),
         );
         $this->assertInstanceOf(TextConfigOption::class, $options[10]);
         $this->assertSame('http Cache hosts', $options[10]->getDescription());
         $this->assertGreaterThanOrEqual(11, count($options));
     }
 
-    public function testCreateOptions()
+    /**
+     * @test
+     */
+    public function createOptions()
     {
         $configDataMock = $this->createMock(ConfigData::class);
         $this->generator->expects($this->once())->method('createCryptConfig')->willReturn($configDataMock);
@@ -139,7 +142,10 @@ class ConfigOptionsListTest extends TestCase
         $this->assertGreaterThanOrEqual(6, count($configData));
     }
 
-    public function testCreateOptionsWithOptionalNull()
+    /**
+     * @test
+     */
+    public function createOptionsWithOptionalNull()
     {
         $configDataMock = $this->createMock(ConfigData::class);
         $this->generator->expects($this->once())->method('createCryptConfig')->willReturn($configDataMock);
@@ -153,7 +159,10 @@ class ConfigOptionsListTest extends TestCase
         $this->assertGreaterThanOrEqual(6, count($configData));
     }
 
-    public function testValidateSuccess()
+    /**
+     * @test
+     */
+    public function validateSuccess()
     {
         $options = [
             ConfigOptionsListConstants::INPUT_KEY_DB_PREFIX => 'prefix',
@@ -163,14 +172,17 @@ class ConfigOptionsListTest extends TestCase
             ConfigOptionsListConstants::INPUT_KEY_DB_HOST => 'host',
             ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'user',
             ConfigOptionsListConstants::INPUT_KEY_DB_PASSWORD => 'pass',
-            Lock::INPUT_KEY_LOCK_PROVIDER => 'db'
+            Lock::INPUT_KEY_LOCK_PROVIDER => 'db',
         ];
         $this->prepareValidationMocks();
 
         $this->assertEquals([], $this->object->validate($options, $this->deploymentConfig));
     }
 
-    public function testValidateInvalidSessionHandler()
+    /**
+     * @test
+     */
+    public function validateInvalidSessionHandler()
     {
         $invalidSaveHandler = 'clay-tablet';
 
@@ -182,26 +194,80 @@ class ConfigOptionsListTest extends TestCase
             ConfigOptionsListConstants::INPUT_KEY_DB_HOST => 'host',
             ConfigOptionsListConstants::INPUT_KEY_DB_USER => 'user',
             ConfigOptionsListConstants::INPUT_KEY_DB_PASSWORD => 'pass',
-            Lock::INPUT_KEY_LOCK_PROVIDER => 'db'
+            Lock::INPUT_KEY_LOCK_PROVIDER => 'db',
         ];
         $this->prepareValidationMocks();
 
         $this->assertEquals(
             ["Invalid session handler '{$invalidSaveHandler}'"],
-            $this->object->validate($options, $this->deploymentConfig)
+            $this->object->validate($options, $this->deploymentConfig),
         );
     }
 
-    public function testValidateEmptyEncryptionKey()
+    /**
+     * @test
+     */
+    public function validateEmptyEncryptionKey()
     {
         $options = [
             ConfigOptionsListConstants::INPUT_KEY_SKIP_DB_VALIDATION => true,
             ConfigOptionsListConstants::INPUT_KEY_ENCRYPTION_KEY => '',
-            Lock::INPUT_KEY_LOCK_PROVIDER => 'db'
+            Lock::INPUT_KEY_LOCK_PROVIDER => 'db',
         ];
         $this->assertEquals(
             ['Invalid encryption key. Encryption key must be 32 character string without any white space.'],
-            $this->object->validate($options, $this->deploymentConfig)
+            $this->object->validate($options, $this->deploymentConfig),
+        );
+    }
+
+    /**
+     * @param string $hosts
+     * @param bool $expectedError
+     *
+     * @dataProvider validateCacheHostsDataProvider
+     *
+     * @test
+     */
+    public function validateCacheHosts($hosts, $expectedError)
+    {
+        $options = [
+            ConfigOptionsListConstants::INPUT_KEY_SKIP_DB_VALIDATION => true,
+            ConfigOptionsListConstants::INPUT_KEY_CACHE_HOSTS => $hosts,
+            Lock::INPUT_KEY_LOCK_PROVIDER => 'db',
+        ];
+        $result = $this->object->validate($options, $this->deploymentConfig);
+
+        if ($expectedError) {
+            $this->assertCount(1, $result);
+            $this->assertEquals("Invalid http cache hosts '{$hosts}'", $result[0]);
+        } else {
+            $this->assertCount(0, $result);
+        }
+    }
+
+    protected function setUp(): void
+    {
+        $this->generator = $this->createMock(ConfigGenerator::class);
+        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
+        $this->dbValidator = $this->createMock(DbValidator::class);
+        $this->encryptionKeyValidator = $this->createMock(KeyValidator::class);
+        $this->driverOptionsMock = $this->createMock(DriverOptions::class);
+        $objectManagerHelper = new ObjectManager($this);
+        $objects = [];
+
+        foreach ($this->configOptionsListClasses as $className) {
+            $configOptionClassMock = $this->getMockBuilder($className)
+                ->disableOriginalConstructor()
+                ->onlyMethods([])
+                ->getMock();
+            $objects[] = [$className, $configOptionClassMock];
+        }
+        $objectManagerHelper->prepareObjectManager($objects);
+        $this->object = new ConfigOptionsList(
+            $this->generator,
+            $this->dbValidator,
+            $this->encryptionKeyValidator,
+            $this->driverOptionsMock,
         );
     }
 
@@ -218,42 +284,5 @@ class ConfigOptionsListTest extends TestCase
             ->expects($this->once())
             ->method('checkDatabaseConnectionWithDriverOptions')
             ->willReturn($configDataMock);
-    }
-
-    /**
-     * @param string $hosts
-     * @param bool $expectedError
-     * @dataProvider validateCacheHostsDataProvider
-     */
-    public function testValidateCacheHosts($hosts, $expectedError)
-    {
-        $options = [
-            ConfigOptionsListConstants::INPUT_KEY_SKIP_DB_VALIDATION => true,
-            ConfigOptionsListConstants::INPUT_KEY_CACHE_HOSTS => $hosts,
-            Lock::INPUT_KEY_LOCK_PROVIDER => 'db'
-        ];
-        $result = $this->object->validate($options, $this->deploymentConfig);
-        if ($expectedError) {
-            $this->assertCount(1, $result);
-            $this->assertEquals("Invalid http cache hosts '$hosts'", $result[0]);
-        } else {
-            $this->assertCount(0, $result);
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public static function validateCacheHostsDataProvider()
-    {
-        return [
-            ['localhost', false],
-            ['122.11.2.34:800', false],
-            ['122.11.2.34:800,localhost', false],
-            ['website.com:9000', false],
-            ['web-site.com:9000', false],
-            ['website.com/m2ce:9000', true],
-            ['website.com+:9000', true],
-        ];
     }
 }

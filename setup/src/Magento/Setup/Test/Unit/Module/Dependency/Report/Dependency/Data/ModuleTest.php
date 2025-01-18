@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,36 +31,34 @@ class ModuleTest extends TestCase
      */
     protected $module;
 
-    protected function setUp(): void
-    {
-        $this->dependencyFirst =
-            $this->createMock(Dependency::class);
-        $this->dependencySecond =
-            $this->createMock(Dependency::class);
-
-        $objectManagerHelper = new ObjectManager($this);
-        $this->module = $objectManagerHelper->getObject(
-            Module::class,
-            ['name' => 'name', 'dependencies' => [$this->dependencyFirst, $this->dependencySecond]]
-        );
-    }
-
-    public function testGetName()
+    /**
+     * @test
+     */
+    public function getName()
     {
         $this->assertEquals('name', $this->module->getName());
     }
 
-    public function testGetDependencies()
+    /**
+     * @test
+     */
+    public function getDependencies()
     {
         $this->assertEquals([$this->dependencyFirst, $this->dependencySecond], $this->module->getDependencies());
     }
 
-    public function testGetDependenciesCount()
+    /**
+     * @test
+     */
+    public function getDependenciesCount()
     {
         $this->assertEquals(2, $this->module->getDependenciesCount());
     }
 
-    public function testGetHardDependenciesCount()
+    /**
+     * @test
+     */
+    public function getHardDependenciesCount()
     {
         $this->dependencyFirst->expects($this->once())->method('isHard')->willReturn(true);
         $this->dependencyFirst->expects($this->never())->method('isSoft');
@@ -70,7 +69,10 @@ class ModuleTest extends TestCase
         $this->assertEquals(1, $this->module->getHardDependenciesCount());
     }
 
-    public function testGetSoftDependenciesCount()
+    /**
+     * @test
+     */
+    public function getSoftDependenciesCount()
     {
         $this->dependencyFirst->expects($this->never())->method('isHard');
         $this->dependencyFirst->expects($this->once())->method('isSoft')->willReturn(true);
@@ -79,5 +81,19 @@ class ModuleTest extends TestCase
         $this->dependencySecond->expects($this->once())->method('isSoft')->willReturn(false);
 
         $this->assertEquals(1, $this->module->getSoftDependenciesCount());
+    }
+
+    protected function setUp(): void
+    {
+        $this->dependencyFirst =
+            $this->createMock(Dependency::class);
+        $this->dependencySecond =
+            $this->createMock(Dependency::class);
+
+        $objectManagerHelper = new ObjectManager($this);
+        $this->module = $objectManagerHelper->getObject(
+            Module::class,
+            ['name' => 'name', 'dependencies' => [$this->dependencyFirst, $this->dependencySecond]],
+        );
     }
 }

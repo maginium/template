@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -19,9 +20,12 @@ class ResolverTest extends TestCase
      * @param string $directory
      * @param bool $withContext
      * @param array $result
+     *
      * @dataProvider getOptionsDataProvider
+     *
+     * @test
      */
-    public function testGetOptions($directory, $withContext, $result)
+    public function getOptions($directory, $withContext, $result)
     {
         $objectManagerHelper = new ObjectManager($this);
         $componentRegistrar = $this->createMock(ComponentRegistrar::class);
@@ -32,10 +36,11 @@ class ResolverTest extends TestCase
                 [
                     [ComponentRegistrar::MODULE, [$root . '/app/code/module1', $root . '/app/code/module2']],
                     [ComponentRegistrar::THEME, [$root . '/app/design']],
-                ]
+                ],
             );
         $directoryList = $this->createMock(DirectoryList::class);
         $directoryList->expects($this->any())->method('getRoot')->willReturn('root');
+
         /** @var Resolver $resolver */
         $resolver = $objectManagerHelper->getObject(
             Resolver::class,
@@ -43,8 +48,8 @@ class ResolverTest extends TestCase
                 'directory' => $directory,
                 'withContext' => $withContext,
                 'componentRegistrar' => $componentRegistrar,
-                'directoryList' => $directoryList
-            ]
+                'directoryList' => $directoryList,
+            ],
         );
         $this->assertSame($result, $resolver->getOptions());
     }
@@ -56,6 +61,7 @@ class ResolverTest extends TestCase
     {
         $sourceFirst = __DIR__ . '/_files/source';
         $sourceSecond = __DIR__ . '/_files/source';
+
         return [
             [
                 $sourceFirst,
@@ -66,7 +72,7 @@ class ResolverTest extends TestCase
                         'paths' => [
                             $sourceFirst . '/app/code/module1/',
                             $sourceFirst . '/app/code/module2/',
-                            $sourceFirst . '/app/design/'
+                            $sourceFirst . '/app/design/',
                         ],
                         'fileMask' => '/\.(php|phtml)$/',
                     ],
@@ -75,7 +81,7 @@ class ResolverTest extends TestCase
                         'paths' => [
                             $sourceFirst . '/app/code/module1/',
                             $sourceFirst . '/app/code/module2/',
-                            $sourceFirst . '/app/design/'
+                            $sourceFirst . '/app/design/',
                         ],
                         'fileMask' => '/\.html$/',
                     ],
@@ -88,17 +94,17 @@ class ResolverTest extends TestCase
                             $sourceFirst . '/lib/web/mage/',
                             $sourceFirst . '/lib/web/varien/',
                         ],
-                        'fileMask' => '/\.(js|phtml)$/'
+                        'fileMask' => '/\.(js|phtml)$/',
                     ],
                     [
                         'type' => 'xml',
                         'paths' => [
                             $sourceFirst . '/app/code/module1/',
                             $sourceFirst . '/app/code/module2/',
-                            $sourceFirst . '/app/design/'
+                            $sourceFirst . '/app/design/',
                         ],
-                        'fileMask' => '/\.xml$/'
-                    ]
+                        'fileMask' => '/\.xml$/',
+                    ],
                 ],
             ],
             [
@@ -108,8 +114,8 @@ class ResolverTest extends TestCase
                     ['type' => 'php', 'paths' => [$sourceSecond], 'fileMask' => '/\.(php|phtml)$/'],
                     ['type' => 'html', 'paths' => [$sourceSecond], 'fileMask' => '/\.html/'],
                     ['type' => 'js', 'paths' => [$sourceSecond], 'fileMask' => '/\.(js|phtml)$/'],
-                    ['type' => 'xml', 'paths' => [$sourceSecond], 'fileMask' => '/\.xml$/']
-                ]
+                    ['type' => 'xml', 'paths' => [$sourceSecond], 'fileMask' => '/\.xml$/'],
+                ],
             ],
         ];
     }
@@ -118,9 +124,12 @@ class ResolverTest extends TestCase
      * @param string $directory
      * @param bool $withContext
      * @param string $message
+     *
      * @dataProvider getOptionsWrongDirDataProvider
+     *
+     * @test
      */
-    public function testGetOptionsWrongDir($directory, $withContext, $message)
+    public function getOptionsWrongDir($directory, $withContext, $message)
     {
         $componentRegistrar = $this->createMock(ComponentRegistrar::class);
         $root = __DIR__ . '/_files/source';
@@ -129,6 +138,7 @@ class ResolverTest extends TestCase
             ->willReturn([$root . '/app/code/module1', $root . '/app/code/module2']);
         $directoryList = $this->createMock(DirectoryList::class);
         $objectManagerHelper = new ObjectManager($this);
+
         /** @var Resolver $resolver */
         $resolver = $objectManagerHelper->getObject(
             Resolver::class,
@@ -136,8 +146,8 @@ class ResolverTest extends TestCase
                 'directory' => $directory,
                 'withContext' => $withContext,
                 'componentRegistrar' => $componentRegistrar,
-                'directoryList' => $directoryList
-            ]
+                'directoryList' => $directoryList,
+            ],
         );
         $this->expectException('\InvalidArgumentException');
         $this->expectExceptionMessage($message);

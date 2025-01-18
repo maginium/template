@@ -1,14 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Dependency\Data;
 
 use Magento\Setup\Module\Dependency\Report\Data\Config\AbstractConfig;
 
 /**
- * Config
+ * Config.
  *
  * @method \Magento\Setup\Module\Dependency\Report\Dependency\Data\Module[] getModules()
  */
@@ -23,30 +27,34 @@ class Config extends AbstractConfig
     }
 
     /**
-     * Get hard dependencies count
+     * Get hard dependencies count.
      *
      * @return int
      */
     public function getHardDependenciesCount()
     {
         $dependenciesCount = 0;
+
         foreach ($this->getModules() as $module) {
             $dependenciesCount += $module->getHardDependenciesCount();
         }
+
         return $dependenciesCount;
     }
 
     /**
-     * Get soft dependencies count
+     * Get soft dependencies count.
      *
      * @return int
      */
     public function getSoftDependenciesCount()
     {
         $dependenciesCount = 0;
+
         foreach ($this->getModules() as $module) {
             $dependenciesCount += $module->getSoftDependenciesCount();
         }
+
         return $dependenciesCount;
     }
 }

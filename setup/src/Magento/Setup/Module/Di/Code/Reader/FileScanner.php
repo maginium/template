@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,8 +12,10 @@ namespace Magento\Setup\Module\Di\Code\Reader;
 use Laminas\Code\Exception\InvalidArgumentException;
 use Laminas\Code\Exception\RuntimeException;
 
+use function array_key_exists;
+
 /**
- * FileScanner code reader
+ * FileScanner code reader.
  *
  * @SuppressWarnings(PHPMD)
  */
@@ -42,7 +47,7 @@ class FileScanner
     private $tokenType;
 
     /**
-     * copied from laminas-code 3.5.1
+     * copied from laminas-code 3.5.1.
      *
      * @param string $file
      *
@@ -51,11 +56,12 @@ class FileScanner
     public function __construct(string $file)
     {
         $this->file = $file;
+
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             throw new InvalidArgumentException(sprintf(
                 'File "%s" not found',
-                $file
+                $file,
             ));
         }
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
@@ -64,22 +70,31 @@ class FileScanner
     }
 
     /**
-     * @inheritDoc
+     * Copied from laminas-code 3.5.1.
+     *
+     * @param string|null $namespace
+     *
+     * @return array|null
      */
+    public function getUses(?string $namespace = null): ?array
+    {
+        $this->scan();
+
+        return $this->getUsesNoScan($namespace);
+    }
+
     protected function scan()
     {
         if ($this->isScanned) {
             return;
         }
 
-        if (!$this->tokens) {
+        if (! $this->tokens) {
             throw new RuntimeException('No tokens were provided');
         }
 
-        /**
-         * Define PHP 5.4 'trait' token constant.
-         */
-        if (!defined('T_TRAIT')) {
+        // Define PHP 5.4 'trait' token constant.
+        if (! defined('T_TRAIT')) {
             define('T_TRAIT', 42001);
         }
 
@@ -87,13 +102,12 @@ class FileScanner
             T_NS_SEPARATOR => T_NS_SEPARATOR,
             T_STRING => T_STRING,
             T_NAME_QUALIFIED => T_NAME_QUALIFIED,
-            T_NAME_FULLY_QUALIFIED => T_NAME_FULLY_QUALIFIED
+            T_NAME_FULLY_QUALIFIED => T_NAME_FULLY_QUALIFIED,
         ];
 
         /**
-         * Variables & Setup
+         * Variables & Setup.
          */
-
         $tokens = &$this->tokens; // localize
         $infos = &$this->infos; // localize
         $tokenIndex = null;
@@ -105,12 +119,11 @@ class FileScanner
         $docCommentIndex = false;
         $infoIndex = 0;
 
-        /*
-         * MACRO creation
-         */
-        $macroTokenAdvance = function () use (&$tokens, &$tokenIndex, &$token, &$tokenContent, &$tokenLine) {
+        // MACRO creation
+        $macroTokenAdvance = function() use (&$tokens, &$tokenIndex, &$token, &$tokenContent, &$tokenLine) {
             $tokenIndex = ($tokenIndex === null) ? 0 : $tokenIndex + 1;
-            if (!isset($tokens[$tokenIndex])) {
+
+            if (! isset($tokens[$tokenIndex])) {
                 $token = false;
                 $tokenContent = false;
                 $this->tokenType = false;
@@ -118,14 +131,16 @@ class FileScanner
 
                 return false;
             }
+
             if (is_string($tokens[$tokenIndex]) && $tokens[$tokenIndex] === '"') {
                 do {
                     $tokenIndex++;
-                } while (!(is_string($tokens[$tokenIndex]) && $tokens[$tokenIndex] === '"'));
+                } while (! (is_string($tokens[$tokenIndex]) && $tokens[$tokenIndex] === '"'));
             }
             $token = $tokens[$tokenIndex];
+
             if (is_array($token)) {
-                list($this->tokenType, $tokenContent, $tokenLine) = $token;
+                [$this->tokenType, $tokenContent, $tokenLine] = $token;
             } else {
                 $this->tokenType = null;
                 $tokenContent = $token;
@@ -133,26 +148,28 @@ class FileScanner
 
             return $tokenIndex;
         };
-        $macroTokenLogicalStartIndex = function () use (&$tokenIndex, &$docCommentIndex) {
+        $macroTokenLogicalStartIndex = function() use (&$tokenIndex, &$docCommentIndex) {
             return ($docCommentIndex === false) ? $tokenIndex : $docCommentIndex;
         };
-        $macroDocCommentStart = function () use (&$tokenIndex, &$docCommentIndex) {
+        $macroDocCommentStart = function() use (&$tokenIndex, &$docCommentIndex) {
             $docCommentIndex = $tokenIndex;
 
             return $docCommentIndex;
         };
-        $macroDocCommentValidate = function () use (&$docCommentIndex) {
+        $macroDocCommentValidate = function() use (&$docCommentIndex) {
             static $validTrailingTokens = null;
+
             if ($validTrailingTokens === null) {
                 $validTrailingTokens = [T_WHITESPACE, T_FINAL, T_ABSTRACT, T_INTERFACE, T_CLASS, T_FUNCTION];
             }
-            if ($docCommentIndex !== false && !in_array($this->tokenType, $validTrailingTokens)) {
+
+            if ($docCommentIndex !== false && ! in_array($this->tokenType, $validTrailingTokens)) {
                 $docCommentIndex = false;
             }
 
             return $docCommentIndex;
         };
-        $macroInfoAdvance = function () use (&$infoIndex, &$infos, &$tokenIndex, &$tokenLine) {
+        $macroInfoAdvance = function() use (&$infoIndex, &$infos, &$tokenIndex, &$tokenLine) {
             $infos[$infoIndex]['tokenEnd'] = $tokenIndex;
             $infos[$infoIndex]['lineEnd'] = $tokenLine;
             $infoIndex++;
@@ -161,9 +178,7 @@ class FileScanner
         };
 
         // phpcs:disable
-        /**
-         * START FINITE STATE MACHINE FOR SCANNING TOKENS
-         */
+        // START FINITE STATE MACHINE FOR SCANNING TOKENS
 
         // Initialize token
         $macroTokenAdvance();
@@ -180,8 +195,9 @@ class FileScanner
         switch ($this->tokenType) {
             case T_DOC_COMMENT:
                 $macroDocCommentStart();
+
                 goto SCANNER_CONTINUE;
-            //goto no break needed
+                //goto no break needed
 
             case T_NAMESPACE:
                 $infos[$infoIndex] = [
@@ -207,6 +223,7 @@ class FileScanner
                 if ($this->tokenType === T_WHITESPACE) {
                     goto SCANNER_NAMESPACE_CONTINUE;
                 }
+
                 if (isset($namespaceContentTokenTypes[$this->tokenType])) {
                     $infos[$infoIndex]['namespace'] .= $tokenContent;
                 }
@@ -216,6 +233,7 @@ class FileScanner
                 if ($macroTokenAdvance() === false) {
                     goto SCANNER_END;
                 }
+
                 goto SCANNER_NAMESPACE_TOP;
 
                 SCANNER_NAMESPACE_END:
@@ -223,8 +241,9 @@ class FileScanner
                 $namespace = $infos[$infoIndex]['namespace'];
 
                 $macroInfoAdvance();
+
                 goto SCANNER_CONTINUE;
-            //goto no break needed
+                //goto no break needed
 
             case T_USE:
                 $infos[$infoIndex] = [
@@ -250,7 +269,9 @@ class FileScanner
                 if ($this->tokenType === null) {
                     if ($tokenContent === ';') {
                         goto SCANNER_USE_END;
-                    } elseif ($tokenContent === ',') {
+                    }
+
+                    if ($tokenContent === ',') {
                         $useAsContext = false;
                         $useStatementIndex++;
                         $infos[$infoIndex]['statements'][$useStatementIndex] = ['use' => null, 'as' => null];
@@ -259,13 +280,14 @@ class FileScanner
 
                 // ANALYZE
                 if ($this->tokenType !== null) {
-                    if ($this->tokenType == T_AS) {
+                    if ($this->tokenType === T_AS) {
                         $useAsContext = true;
+
                         goto SCANNER_USE_CONTINUE;
                     }
 
-                    if (\array_key_exists($this->tokenType, $namespaceContentTokenTypes)) {
-                        if ($useAsContext == false) {
+                    if (array_key_exists($this->tokenType, $namespaceContentTokenTypes)) {
+                        if ($useAsContext === false) {
                             $infos[$infoIndex]['statements'][$useStatementIndex]['use'] .= $tokenContent;
                         } else {
                             $infos[$infoIndex]['statements'][$useStatementIndex]['as'] = $tokenContent;
@@ -278,13 +300,15 @@ class FileScanner
                 if ($macroTokenAdvance() === false) {
                     goto SCANNER_END;
                 }
+
                 goto SCANNER_USE_TOP;
 
                 SCANNER_USE_END:
 
                 $macroInfoAdvance();
+
                 goto SCANNER_CONTINUE;
-            //goto no break needed
+                //goto no break needed
 
             case T_INCLUDE:
             case T_INCLUDE_ONCE:
@@ -295,7 +319,7 @@ class FileScanner
                     T_INCLUDE => 'include',
                     T_INCLUDE_ONCE => 'include_once',
                     T_REQUIRE => 'require',
-                    T_REQUIRE_ONCE => 'require_once'
+                    T_REQUIRE_ONCE => 'require_once',
                 ];
 
                 $infos[$infoIndex] = [
@@ -326,13 +350,15 @@ class FileScanner
                 if ($macroTokenAdvance() === false) {
                     goto SCANNER_END;
                 }
+
                 goto SCANNER_INCLUDE_TOP;
 
                 SCANNER_INCLUDE_END:
 
                 $macroInfoAdvance();
+
                 goto SCANNER_CONTINUE;
-            //goto no break needed
+                //goto no break needed
 
             case T_FUNCTION:
             case T_FINAL:
@@ -359,11 +385,12 @@ class FileScanner
                 SCANNER_CLASS_TOP:
 
                 // process the name
-                if ($infos[$infoIndex]['shortName'] == ''
-                    && (($this->tokenType === T_CLASS
+                if ($infos[$infoIndex]['shortName'] === ''
+                    && ((
+                        $this->tokenType === T_CLASS
                             || $this->tokenType === T_INTERFACE
                             || $this->tokenType === T_TRAIT
-                        )
+                    )
                         && $infos[$infoIndex]['type'] === 'class' && $tokens[$tokenIndex - 1][0] !== T_DOUBLE_COLON
                         || ($this->tokenType === T_FUNCTION && $infos[$infoIndex]['type'] === 'function'))
                 ) {
@@ -377,8 +404,10 @@ class FileScanner
                     if ($tokenContent === '{') {
                         $classBraceCount++;
                     }
+
                     if ($tokenContent === '}') {
                         $classBraceCount--;
+
                         if ($classBraceCount === 0) {
                             goto SCANNER_CLASS_END;
                         }
@@ -390,11 +419,13 @@ class FileScanner
                 if ($macroTokenAdvance() === false) {
                     goto SCANNER_END;
                 }
+
                 goto SCANNER_CLASS_TOP;
 
                 SCANNER_CLASS_END:
 
                 $macroInfoAdvance();
+
                 goto SCANNER_CONTINUE;
         }
 
@@ -403,41 +434,27 @@ class FileScanner
         if ($macroTokenAdvance() === false) {
             goto SCANNER_END;
         }
+
         goto SCANNER_TOP;
 
         SCANNER_END:
 
-        /**
-         * END FINITE STATE MACHINE FOR SCANNING TOKENS
-         */
+        // END FINITE STATE MACHINE FOR SCANNING TOKENS
         $this->isScanned = true;
         // phpcs:enable
     }
 
     /**
-     * Copied from laminas-code 3.5.1
+     * Copied from laminas-code 3.5.1.
      *
      * @param string|null $namespace
      *
      * @return array|null
      */
-    public function getUses(string $namespace = null): ?array
-    {
-        $this->scan();
-
-        return $this->getUsesNoScan($namespace);
-    }
-
-    /**
-     * Copied from laminas-code 3.5.1
-     *
-     * @param string|null $namespace
-     *
-     * @return array|null
-     */
-    protected function getUsesNoScan(string $namespace = null): ?array
+    protected function getUsesNoScan(?string $namespace = null): ?array
     {
         $namespaces = [];
+
         foreach ($this->infos as $info) {
             if ($info['type'] === 'namespace') {
                 $namespaces[] = $info['namespace'];
@@ -446,15 +463,17 @@ class FileScanner
 
         if ($namespace === null) {
             $namespace = array_shift($namespaces);
-        } elseif (!in_array($namespace, $namespaces, true)) {
+        } elseif (! in_array($namespace, $namespaces, true)) {
             return null;
         }
 
         $uses = [];
+
         foreach ($this->infos as $info) {
             if ($info['type'] !== 'use') {
                 continue;
             }
+
             foreach ($info['statements'] as $statement) {
                 if ($info['namespace'] === $namespace) {
                     $uses[] = $statement;

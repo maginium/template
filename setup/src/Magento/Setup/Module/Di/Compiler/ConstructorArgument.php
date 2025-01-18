@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -41,7 +43,7 @@ class ConstructorArgument
     }
 
     /**
-     * Returns attribute name
+     * Returns attribute name.
      *
      * @return string
      */
@@ -51,7 +53,7 @@ class ConstructorArgument
     }
 
     /**
-     * Returns attribute type
+     * Returns attribute type.
      *
      * @return string
      */
@@ -61,7 +63,7 @@ class ConstructorArgument
     }
 
     /**
-     * Whether attribute is required
+     * Whether attribute is required.
      *
      * @return bool
      */
@@ -71,7 +73,7 @@ class ConstructorArgument
     }
 
     /**
-     * Returns attribute default value
+     * Returns attribute default value.
      *
      * @return mixed
      */

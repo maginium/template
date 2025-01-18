@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -15,16 +18,16 @@ use Magento\Store\Model\StoreManager;
 use Magento\Swatches\Model\Swatch;
 
 /**
- * Generate attributes default attribute set
+ * Generate attributes default attribute set.
  */
 class EavVariationsFixture extends Fixture
 {
+    public const ATTRIBUTE_SET_ID = 4;
+
     /**
      * @var int
      */
     protected $priority = 40;
-
-    const ATTRIBUTE_SET_ID = 4;
 
     /**
      * @var Config
@@ -53,6 +56,7 @@ class EavVariationsFixture extends Fixture
 
     /**
      * EavVariationsFixture constructor.
+     *
      * @param FixtureModel $fixtureModel
      * @param Config $eavConfig
      * @param CacheInterface $cache
@@ -66,7 +70,7 @@ class EavVariationsFixture extends Fixture
         CacheInterface $cache,
         StoreManager $storeManager,
         Set $attributeSet,
-        AttributeFactory $attributeFactory
+        AttributeFactory $attributeFactory,
     ) {
         parent::__construct($fixtureModel);
         $this->eavConfig = $eavConfig;
@@ -77,11 +81,11 @@ class EavVariationsFixture extends Fixture
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function execute()
     {
-        if (!$this->fixtureModel->getValue('configurable_products', [])
+        if (! $this->fixtureModel->getValue('configurable_products', [])
             || in_array($this->getAttributeCode(), $this->eavConfig->getEntityAttributeCodes(Product::ENTITY))) {
             return;
         }
@@ -93,7 +97,7 @@ class EavVariationsFixture extends Fixture
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getActionTitle()
     {
@@ -101,7 +105,7 @@ class EavVariationsFixture extends Fixture
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function introduceParamLabels()
     {
@@ -109,9 +113,10 @@ class EavVariationsFixture extends Fixture
     }
 
     /**
-     * Generate Attribute
+     * Generate Attribute.
      *
      * @param int $optionCount
+     *
      * @return void
      */
     private function generateAttribute($optionCount)
@@ -159,30 +164,32 @@ class EavVariationsFixture extends Fixture
         $data['swatch_input_type'] = Swatch::SWATCH_INPUT_TYPE_VISUAL;
         $data['swatchvisual']['value'] = array_reduce(
             range(1, $optionCount),
-            function ($values, $index) use ($optionCount) {
+            function($values, $index) use ($optionCount) {
                 $values['option_' . $index] = '#'
                     . str_repeat(
                         dechex(255 * $index / $optionCount),
-                        3
+                        3,
                     );
+
                 return $values;
             },
-            []
+            [],
         );
         $data['optionvisual']['value'] = array_reduce(
             range(1, $optionCount),
-            function ($values, $index) {
+            function($values, $index) {
                 $values['option_' . $index] = ['option ' . $index];
+
                 return $values;
             },
-            []
+            [],
         );
 
         /**
          * The logic is not obvious, but looking to the controller logic for configurable products this attribute
          * requires to be saved twice to become a child of Default attribute set and become available for creating
          * and|or importing configurable products.
-         * See MAGETWO-16492
+         * See MAGETWO-16492.
          */
         $model = $this->attributeFactory->create(['data' => $data]);
         $attributeSet = $this->attributeSet->load(self::ATTRIBUTE_SET_ID);
@@ -196,7 +203,7 @@ class EavVariationsFixture extends Fixture
     }
 
     /**
-     * Get attribute code
+     * Get attribute code.
      *
      * @return string
      */

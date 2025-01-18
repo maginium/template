@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -21,12 +22,10 @@ class InfoAdminUriCommandTest extends TestCase
      */
     protected $deploymentConfig;
 
-    protected function setup(): void
-    {
-        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $this->deploymentConfig->expects($this->once())->method('get')->willReturn('admin_qw12er');
 
@@ -39,7 +38,12 @@ class InfoAdminUriCommandTest extends TestCase
         $this->assertMatchesRegularExpression(
             $regexp,
             $commandTester->getDisplay(),
-            'Unexpected Backend Frontname pattern.'
+            'Unexpected Backend Frontname pattern.',
         );
+    }
+
+    protected function setup(): void
+    {
+        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
     }
 }

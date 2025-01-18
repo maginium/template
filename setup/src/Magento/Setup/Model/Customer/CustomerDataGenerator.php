@@ -1,12 +1,19 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Model\Customer;
 
+use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
+use Magento\Setup\Model\Address\AddressDataGenerator;
+
 /**
- * Generate customer data for customer fixture
+ * Generate customer data for customer fixture.
  */
 class CustomerDataGenerator
 {
@@ -16,12 +23,12 @@ class CustomerDataGenerator
     private $config;
 
     /**
-     * @var \Magento\Setup\Model\Address\AddressDataGenerator
+     * @var AddressDataGenerator
      */
     private $addressDataGenerator;
 
     /**
-     * @var \Magento\Customer\Model\ResourceModel\Group\CollectionFactory
+     * @var CollectionFactory
      */
     private $groupCollectionFactory;
 
@@ -31,14 +38,14 @@ class CustomerDataGenerator
     private $customerGroupIds;
 
     /**
-     * @param \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $groupCollectionFactory
-     * @param \Magento\Setup\Model\Address\AddressDataGenerator $addressDataGenerator
+     * @param CollectionFactory $groupCollectionFactory
+     * @param AddressDataGenerator $addressDataGenerator
      * @param array $config
      */
     public function __construct(
-        \Magento\Customer\Model\ResourceModel\Group\CollectionFactory $groupCollectionFactory,
-        \Magento\Setup\Model\Address\AddressDataGenerator $addressDataGenerator,
-        array $config
+        CollectionFactory $groupCollectionFactory,
+        AddressDataGenerator $addressDataGenerator,
+        array $config,
     ) {
         $this->groupCollectionFactory = $groupCollectionFactory;
         $this->addressDataGenerator = $addressDataGenerator;
@@ -46,9 +53,10 @@ class CustomerDataGenerator
     }
 
     /**
-     * Generate customer data by index
+     * Generate customer data by index.
      *
      * @param int $customerId
+     *
      * @return array
      */
     public function generate($customerId)
@@ -56,7 +64,7 @@ class CustomerDataGenerator
         return [
             'customer' => [
                 'email' => sprintf('user_%s@example.com', $customerId),
-                'group_id' => $this->getGroupIdForCustomer($customerId)
+                'group_id' => $this->getGroupIdForCustomer($customerId),
             ],
 
             'addresses' => $this->generateAddresses(),
@@ -64,13 +72,15 @@ class CustomerDataGenerator
     }
 
     /**
-     * Get customer group id for customer
+     * Get customer group id for customer.
+     *
      * @param int $customerId
+     *
      * @return int
      */
     private function getGroupIdForCustomer($customerId)
     {
-        if (!$this->customerGroupIds) {
+        if (! $this->customerGroupIds) {
             $this->customerGroupIds = $this->groupCollectionFactory->create()->getAllIds();
         }
 
@@ -80,7 +90,7 @@ class CustomerDataGenerator
     /**
      * Generate customer addresses with distribution
      * 50% as shipping address
-     * 50% as billing address
+     * 50% as billing address.
      *
      * @return array
      */

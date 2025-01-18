@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,6 +9,7 @@
 
 namespace Magento\Setup\Model\FixtureGenerator;
 
+use DateTime;
 use Magento\Customer\Model\Address;
 use Magento\Customer\Model\AddressFactory;
 use Magento\Customer\Model\Customer;
@@ -15,7 +19,7 @@ use Magento\Framework\App\ObjectManager;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
- * Product template generator
+ * Product template generator.
  */
 class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
 {
@@ -49,18 +53,18 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
         CustomerFactory $customerFactory,
         AddressFactory $addressFactory,
         StoreManagerInterface $storeManager,
-        RegionCollectionFactory $regionsCollectionFactory = null
+        ?RegionCollectionFactory $regionsCollectionFactory = null,
     ) {
         $this->customerFactory = $customerFactory;
         $this->addressFactory = $addressFactory;
         $this->storeManager = $storeManager;
         $this->regionsCollectionFactory = $regionsCollectionFactory ?: ObjectManager::getInstance()->get(
-            RegionCollectionFactory::class
+            RegionCollectionFactory::class,
         );
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function generateEntity()
     {
@@ -73,7 +77,7 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
     }
 
     /**
-     * Get customer template
+     * Get customer template.
      *
      * @return Customer
      */
@@ -81,7 +85,7 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
     {
         $customerRandomizerNumber = crc32(random_int(1, PHP_INT_MAX));
 
-        $now = new \DateTime();
+        $now = new DateTime;
 
         return $this->customerFactory->create([
             'data' => [
@@ -106,7 +110,7 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
                 'taxvat' => null,
                 'website_id' => $this->storeManager->getDefaultStoreView()->getWebsiteId(),
                 'password' => '123123q',
-            ]
+            ],
         ]);
     }
 
@@ -114,6 +118,7 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
      * Get address template.
      *
      * @param int $customerId
+     *
      * @return Address
      */
     private function getAddressTemplate($customerId)
@@ -139,7 +144,7 @@ class CustomerTemplateGenerator implements TemplateEntityGeneratorInterface
                 'vat_id' => '',
                 'default_billing_' => '1',
                 'default_shipping_' => '1',
-            ]
+            ],
         ]);
     }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,9 +10,11 @@ namespace Magento\Setup\Test\Unit\Fixtures;
 
 use Magento\Framework\ObjectManager\ObjectManager;
 use Magento\SalesRule\Model\Coupon;
+use Magento\SalesRule\Model\CouponFactory;
 use Magento\SalesRule\Model\ResourceModel\Coupon\Collection as CouponCollection;
 use Magento\SalesRule\Model\ResourceModel\Coupon\CollectionFactory as CouponCollectionFactory;
 use Magento\SalesRule\Model\Rule;
+use Magento\SalesRule\Model\RuleFactory;
 use Magento\Setup\Fixtures\CartPriceRulesFixture;
 use Magento\Setup\Fixtures\CouponCodesFixture;
 use Magento\Setup\Fixtures\FixtureModel;
@@ -36,12 +39,12 @@ class CouponCodesFixtureTest extends TestCase
     private $fixtureModelMock;
 
     /**
-     * @var \Magento\SalesRule\Model\RuleFactory|MockObject
+     * @var RuleFactory|MockObject
      */
     private $ruleFactoryMock;
 
     /**
-     * @var \Magento\SalesRule\Model\CouponFactory|MockObject
+     * @var CouponFactory|MockObject
      */
     private $couponCodeFactoryMock;
 
@@ -51,29 +54,11 @@ class CouponCodesFixtureTest extends TestCase
     private $couponCollectionFactoryMock;
 
     /**
-     * setUp
+     * testExecute.
+     *
+     * @test
      */
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-        $this->ruleFactoryMock = $this->createPartialMock(\Magento\SalesRule\Model\RuleFactory::class, ['create']);
-        $this->couponCodeFactoryMock = $this->createPartialMock(
-            \Magento\SalesRule\Model\CouponFactory::class,
-            ['create']
-        );
-        $this->couponCollectionFactoryMock = $this->createMock(CouponCollectionFactory::class);
-        $this->model = new CouponCodesFixture(
-            $this->fixtureModelMock,
-            $this->ruleFactoryMock,
-            $this->couponCodeFactoryMock,
-            $this->couponCollectionFactoryMock
-        );
-    }
-
-    /**
-     * testExecute
-     */
-    public function testExecute()
+    public function execute()
     {
         $couponCollectionMock = $this->createMock(CouponCollection::class);
         $this->couponCollectionFactoryMock->expects($this->once())
@@ -99,7 +84,7 @@ class CouponCodesFixtureTest extends TestCase
             ->willReturn($storeManagerMock);
 
         $valueMap = [
-            ['coupon_codes', 0, 1]
+            ['coupon_codes', 0, 1],
         ];
 
         $this->fixtureModelMock
@@ -140,9 +125,11 @@ class CouponCodesFixtureTest extends TestCase
     }
 
     /**
-     * testNoFixtureConfigValue
+     * testNoFixtureConfigValue.
+     *
+     * @test
      */
-    public function testNoFixtureConfigValue()
+    public function noFixtureConfigValue()
     {
         $couponCollectionMock = $this->createMock(CouponCollection::class);
         $this->couponCollectionFactoryMock->expects($this->once())
@@ -173,7 +160,10 @@ class CouponCodesFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testFixtureAlreadyCreated()
+    /**
+     * @test
+     */
+    public function fixtureAlreadyCreated()
     {
         $couponCollectionMock = $this->createMock(CouponCollection::class);
         $this->couponCollectionFactoryMock->expects($this->once())
@@ -196,18 +186,42 @@ class CouponCodesFixtureTest extends TestCase
     }
 
     /**
-     * testGetActionTitle
+     * testGetActionTitle.
+     *
+     * @test
      */
-    public function testGetActionTitle()
+    public function getActionTitle()
     {
         $this->assertSame('Generating coupon codes', $this->model->getActionTitle());
     }
 
     /**
-     * testIntroduceParamLabels
+     * testIntroduceParamLabels.
+     *
+     * @test
      */
-    public function testIntroduceParamLabels()
+    public function introduceParamLabels()
     {
         $this->assertSame(['coupon_codes' => 'Coupon Codes'], $this->model->introduceParamLabels());
+    }
+
+    /**
+     * setUp.
+     */
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+        $this->ruleFactoryMock = $this->createPartialMock(RuleFactory::class, ['create']);
+        $this->couponCodeFactoryMock = $this->createPartialMock(
+            CouponFactory::class,
+            ['create'],
+        );
+        $this->couponCollectionFactoryMock = $this->createMock(CouponCollectionFactory::class);
+        $this->model = new CouponCodesFixture(
+            $this->fixtureModelMock,
+            $this->ruleFactoryMock,
+            $this->couponCodeFactoryMock,
+            $this->couponCollectionFactoryMock,
+        );
     }
 }

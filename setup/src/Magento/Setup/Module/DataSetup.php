@@ -1,72 +1,81 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- * Resource Setup Model
+ * Resource Setup Model.
  *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module;
 
-use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Filesystem;
+use Magento\Framework\Module\Setup;
+use Magento\Framework\Module\Setup\Context;
+use Magento\Framework\Module\Setup\MigrationFactory;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Setup\Module\Setup\SetupCache;
+use Psr\Log\LoggerInterface;
 
 /**
  * @api
  */
-class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSetupInterface
+class DataSetup extends Setup implements ModuleDataSetupInterface
 {
     /**
-     * Tables data cache
+     * Tables data cache.
      *
      * @var SetupCache
      */
     private $setupCache;
 
     /**
-     * Event manager
+     * Event manager.
      *
-     * @var \Magento\Framework\Event\ManagerInterface
+     * @var ManagerInterface
      */
     private $_eventManager;
 
     /**
-     * Logger
+     * Logger.
      *
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $_logger;
 
     /**
-     * Migration factory
+     * Migration factory.
      *
-     * @var \Magento\Framework\Module\Setup\MigrationFactory
+     * @var MigrationFactory
      */
     private $_migrationFactory;
 
     /**
-     * Filesystem instance
+     * Filesystem instance.
      *
-     * @var \Magento\Framework\Filesystem
+     * @var Filesystem
      */
     private $filesystem;
 
     /**
-     * Init
+     * Init.
      *
-     * @param \Magento\Framework\Module\Setup\Context $context
+     * @param Context $context
      * @param string $connectionName
      */
     public function __construct(
-        \Magento\Framework\Module\Setup\Context $context,
-        $connectionName = ModuleDataSetupInterface::DEFAULT_SETUP_CONNECTION
+        Context $context,
+        $connectionName = ModuleDataSetupInterface::DEFAULT_SETUP_CONNECTION,
     ) {
         parent::__construct($context->getResourceModel(), $connectionName);
         $this->_eventManager = $context->getEventManager();
         $this->_logger = $context->getLogger();
         $this->_migrationFactory = $context->getMigrationFactory();
         $this->filesystem = $context->getFilesystem();
-        $this->setupCache = new SetupCache();
+        $this->setupCache = new SetupCache;
     }
 
     /**
@@ -78,26 +87,29 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Retrieve row or field from table by id or string and parent id
+     * Retrieve row or field from table by id or string and parent id.
      *
      * @param string $table
      * @param string $idField
-     * @param string|integer $rowId
+     * @param string|int $rowId
      * @param string|null $field
      * @param string|null $parentField
-     * @param string|integer $parentId
+     * @param string|int $parentId
+     *
      * @return mixed
      */
     public function getTableRow($table, $idField, $rowId, $field = null, $parentField = null, $parentId = 0)
     {
         $table = $this->getTable($table);
-        if (!$this->setupCache->has($table, $parentId, $rowId)) {
+
+        if (! $this->setupCache->has($table, $parentId, $rowId)) {
             $connection = $this->getConnection();
             $bind = ['id_field' => $rowId];
             $select = $connection->select()
                 ->from($table)
                 ->where($connection->quoteIdentifier($idField) . '= :id_field');
-            if (null !== $parentField) {
+
+            if ($parentField !== null) {
                 $select->where($connection->quoteIdentifier($parentField) . '= :parent_id');
                 $bind['parent_id'] = $parentId;
             }
@@ -108,13 +120,14 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Delete table row
+     * Delete table row.
      *
      * @param string $table
      * @param string $idField
      * @param string|int $rowId
      * @param null|string $parentField
      * @param int|string $parentId
+     *
      * @return $this
      */
     public function deleteTableRow($table, $idField, $rowId, $parentField = null, $parentId = 0)
@@ -122,7 +135,8 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
         $table = $this->getTable($table);
         $connection = $this->getConnection();
         $where = [$connection->quoteIdentifier($idField) . '=?' => $rowId];
-        if (null !== $parentField) {
+
+        if ($parentField !== null) {
             $where[$connection->quoteIdentifier($parentField) . '=?'] = $parentId;
         }
 
@@ -134,21 +148,24 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Update one or more fields of table row
+     * Update one or more fields of table row.
      *
      * @param string $table
      * @param string $idField
-     * @param string|integer $rowId
+     * @param string|int $rowId
      * @param string|array $field
      * @param mixed|null $value
      * @param string $parentField
-     * @param string|integer $parentId
+     * @param string|int $parentId
+     *
      * @return $this
+     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function updateTableRow($table, $idField, $rowId, $field, $value = null, $parentField = null, $parentId = 0)
     {
         $table = $this->getTable($table);
+
         if (is_array($field)) {
             $data = $field;
         } else {
@@ -173,7 +190,7 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Gets event manager
+     * Gets event manager.
      *
      * @return \Magento\Framework\Event\ManagerInterface
      */
@@ -183,7 +200,7 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Gets filesystem
+     * Gets filesystem.
      *
      * @return \Magento\Framework\Filesystem
      */
@@ -193,14 +210,16 @@ class DataSetup extends \Magento\Framework\Module\Setup implements ModuleDataSet
     }
 
     /**
-     * Create migration setup
+     * Create migration setup.
      *
      * @param array $data
+     *
      * @return \Magento\Framework\Module\Setup\Migration
      */
     public function createMigrationSetup(array $data = [])
     {
         $data['setup'] = $this;
+
         return $this->_migrationFactory->create($data);
     }
 }

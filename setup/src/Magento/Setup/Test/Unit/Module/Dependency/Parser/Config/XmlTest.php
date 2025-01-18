@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -18,17 +19,14 @@ class XmlTest extends TestCase
      */
     protected $parser;
 
-    protected function setUp(): void
-    {
-        $objectManagerHelper = new ObjectManager($this);
-        $this->parser = $objectManagerHelper->getObject(Xml::class);
-    }
-
     /**
      * @param array $options
+     *
      * @dataProvider dataProviderWrongOptionFilesForParse
+     *
+     * @test
      */
-    public function testParseWithWrongOptionFilesForParse($options)
+    public function parseWithWrongOptionFilesForParse($options)
     {
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('Parse error: Option "files_for_parse" is wrong.');
@@ -43,7 +41,13 @@ class XmlTest extends TestCase
         return [
             [['files_for_parse' => []]],
             [['files_for_parse' => 'sting']],
-            [['there_are_no_files_for_parse' => [1, 3]]]
+            [['there_are_no_files_for_parse' => [1, 3]]],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $objectManagerHelper = new ObjectManager($this);
+        $this->parser = $objectManagerHelper->getObject(Xml::class);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -27,13 +28,10 @@ class DbDataUpgradeCommandTest extends TestCase
      */
     protected $deploymentConfig;
 
-    protected function setup(): void
-    {
-        $this->installerFactory = $this->createMock(InstallerFactory::class);
-        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $this->deploymentConfig->expects($this->once())->method('isAvailable')->willReturn(true);
         $installer = $this->createMock(Installer::class);
@@ -41,23 +39,32 @@ class DbDataUpgradeCommandTest extends TestCase
         $installer->expects($this->once())->method('installDataFixtures');
 
         $commandTester = new CommandTester(
-            new DbDataUpgradeCommand($this->installerFactory, $this->deploymentConfig)
+            new DbDataUpgradeCommand($this->installerFactory, $this->deploymentConfig),
         );
         $commandTester->execute([]);
     }
 
-    public function testExecuteNoConfig()
+    /**
+     * @test
+     */
+    public function executeNoConfig()
     {
         $this->deploymentConfig->expects($this->once())->method('isAvailable')->willReturn(false);
         $this->installerFactory->expects($this->never())->method('create');
 
         $commandTester = new CommandTester(
-            new DbDataUpgradeCommand($this->installerFactory, $this->deploymentConfig)
+            new DbDataUpgradeCommand($this->installerFactory, $this->deploymentConfig),
         );
         $commandTester->execute([]);
         $this->assertStringMatchesFormat(
             'No information is available: the Magento application is not installed.%w',
-            $commandTester->getDisplay()
+            $commandTester->getDisplay(),
         );
+    }
+
+    protected function setup(): void
+    {
+        $this->installerFactory = $this->createMock(InstallerFactory::class);
+        $this->deploymentConfig = $this->createMock(DeploymentConfig::class);
     }
 }

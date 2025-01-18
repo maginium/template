@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -11,19 +12,25 @@ use Magento\Setup\Model\PhpInformation;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests Magento\Setup\Model\PhpInformation
+ * Tests Magento\Setup\Model\PhpInformation.
  */
 class PhpInformationTest extends TestCase
 {
-    public function testGetRequiredMinimumXDebugNestedLevel()
+    /**
+     * @test
+     */
+    public function getRequiredMinimumXDebugNestedLevel()
     {
-        $phpInformation = new PhpInformation();
+        $phpInformation = new PhpInformation;
         $this->assertEquals(200, $phpInformation->getRequiredMinimumXDebugNestedLevel());
     }
 
-    public function testGetCurrent()
+    /**
+     * @test
+     */
+    public function getCurrent()
     {
-        $phpInformation = new PhpInformation();
+        $phpInformation = new PhpInformation;
 
         $actualExtensions = $phpInformation->getCurrent();
         $this->assertIsArray($actualExtensions);

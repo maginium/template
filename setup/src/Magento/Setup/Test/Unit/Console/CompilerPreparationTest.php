@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -46,42 +47,16 @@ class CompilerPreparationTest extends TestCase
     private $generationDirectoryAccessMock;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $this->serviceManagerMock = $this->getMockBuilder(ServiceManager::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->inputMock = $this->getMockBuilder(ArgvInput::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->filesystemDriverMock = $this->getMockBuilder(File::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->generationDirectoryAccessMock = $this->getMockBuilder(GenerationDirectoryAccess::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $this->model = (new ObjectManager($this))->getObject(
-            CompilerPreparation::class,
-            [
-                'serviceManager' => $this->serviceManagerMock,
-                'input' => $this->inputMock,
-                'filesystemDriver' => $this->filesystemDriverMock,
-                'generationDirectoryAccess' => $this->generationDirectoryAccessMock,
-            ]
-        );
-    }
-
-    /**
      * @dataProvider commandNameDataProvider
+     *
      * @param $commandName
      * @param $isCompileCommand
      * @param $isHelpOption
      * @param bool|null $dirExists
+     *
+     * @test
      */
-    public function testClearGenerationDirWhenNeeded($commandName, $isCompileCommand, $isHelpOption, $dirExists = false)
+    public function clearGenerationDirWhenNeeded($commandName, $isCompileCommand, $isHelpOption, $dirExists = false)
     {
         $this->inputMock->expects($this->once())
             ->method('getFirstArgument')
@@ -91,7 +66,7 @@ class CompilerPreparationTest extends TestCase
             ->with($this->logicalOr('--help', '-h'))
             ->willReturn($isHelpOption);
 
-        if ($isCompileCommand && !$isHelpOption) {
+        if ($isCompileCommand && ! $isHelpOption) {
             $this->filesystemDriverMock->expects($this->exactly(2))
                 ->method('isExists')
                 ->willReturn($dirExists);
@@ -121,19 +96,19 @@ class CompilerPreparationTest extends TestCase
                 'commandName' => DiCompileCommand::NAME,
                 'isCompileCommand' => true,
                 'isHelpOption' => false,
-                'dirExists' => true
+                'dirExists' => true,
             ],
             'ST compiler, directory does not exist' => [
                 'commandName' => DiCompileCommand::NAME,
                 'isCompileCommand' => true,
                 'isHelpOption' => false,
-                'dirExists' => false
+                'dirExists' => false,
             ],
             'ST compiler, help option' => [
                 'commandName' => DiCompileCommand::NAME,
                 'isCompileCommand' => true,
                 'isHelpOption' => true,
-                'dirExists' => false
+                'dirExists' => false,
             ],
             'Other command' => [
                 'commandName' => 'not:a:compiler',
@@ -144,24 +119,27 @@ class CompilerPreparationTest extends TestCase
                 'commandName' => 's:d:c',
                 'isCompileCommand' => true,
                 'isHelpOption' => false,
-                'dirExists' => true
+                'dirExists' => true,
             ],
             'ST compiler, directory exists, abbreviation 2' => [
                 'commandName' => 'se:di:co',
                 'isCompileCommand' => true,
                 'isHelpOption' => false,
-                'dirExists' => true
+                'dirExists' => true,
             ],
             'ST compiler, directory exists, abbreviation ambiguous' => [
                 'commandName' => 'se:di',
                 'isCompileCommand' => false,
                 'isHelpOption' => false,
-                'dirExists' => true
+                'dirExists' => true,
             ],
         ];
     }
 
-    public function testGenerationDirectoryFromInitParams()
+    /**
+     * @test
+     */
+    public function generationDirectoryFromInitParams()
     {
         $customGenerationDirectory = '/custom/generated/code/directory';
         $defaultDiDirectory = '/custom/di/directory';
@@ -169,12 +147,12 @@ class CompilerPreparationTest extends TestCase
         $dirValueMap = [
             [
                 $customGenerationDirectory,
-                $defaultDiDirectory
+                $defaultDiDirectory,
             ],
             [
                 true,
-                true
-            ]
+                true,
+            ],
         ];
 
         $this->inputMock->expects($this->once())
@@ -197,19 +175,22 @@ class CompilerPreparationTest extends TestCase
         $this->model->handleCompilerEnvironment();
     }
 
-    public function testGenerationDirectoryFromCliOption()
+    /**
+     * @test
+     */
+    public function generationDirectoryFromCliOption()
     {
         $customGenerationDirectory = '/custom/generated/code/directory';
         $customDiDirectory = '/custom/di/directory';
         $dirResultMap = [
             [
                 $this->logicalNot($this->equalTo($customGenerationDirectory)),
-                $this->logicalNot($this->equalTo($customDiDirectory))
+                $this->logicalNot($this->equalTo($customDiDirectory)),
             ],
             [
                 true,
-                true
-            ]
+                true,
+            ],
         ];
 
         $this->inputMock->expects($this->once())
@@ -226,5 +207,34 @@ class CompilerPreparationTest extends TestCase
             ->willReturn(true);
 
         $this->model->handleCompilerEnvironment();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $this->serviceManagerMock = $this->getMockBuilder(ServiceManager::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->inputMock = $this->getMockBuilder(ArgvInput::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->filesystemDriverMock = $this->getMockBuilder(File::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->generationDirectoryAccessMock = $this->getMockBuilder(GenerationDirectoryAccess::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->model = (new ObjectManager($this))->getObject(
+            CompilerPreparation::class,
+            [
+                'serviceManager' => $this->serviceManagerMock,
+                'input' => $this->inputMock,
+                'filesystemDriver' => $this->filesystemDriverMock,
+                'generationDirectoryAccess' => $this->generationDirectoryAccessMock,
+            ],
+        );
     }
 }

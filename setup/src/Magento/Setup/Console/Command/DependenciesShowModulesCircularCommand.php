@@ -1,8 +1,12 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Console\Command;
 
 use Magento\Framework\App\Utility\Files;
@@ -10,7 +14,7 @@ use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Setup\Module\Dependency\ServiceLocator;
 
 /**
- * Command for showing number of circular dependencies between modules
+ * Command for showing number of circular dependencies between modules.
  */
 class DependenciesShowModulesCircularCommand extends AbstractDependenciesCommand
 {
@@ -25,7 +29,7 @@ class DependenciesShowModulesCircularCommand extends AbstractDependenciesCommand
     }
 
     /**
-     * Return default output filename for modules circular dependencies report
+     * Return default output filename for modules circular dependencies report.
      *
      * @return string
      */
@@ -35,9 +39,10 @@ class DependenciesShowModulesCircularCommand extends AbstractDependenciesCommand
     }
 
     /**
-     * Build circular dependencies between modules report
+     * Build circular dependencies between modules report.
      *
      * @param string $outputPath
+     *
      * @return void
      */
     protected function buildReport($outputPath)
@@ -49,7 +54,7 @@ class DependenciesShowModulesCircularCommand extends AbstractDependenciesCommand
             [
                 'parse' => ['files_for_parse' => $filesForParse],
                 'write' => ['report_filename' => $outputPath],
-            ]
+            ],
         );
     }
 }

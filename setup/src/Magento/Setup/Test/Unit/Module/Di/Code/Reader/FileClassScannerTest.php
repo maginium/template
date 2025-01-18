@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,41 +15,50 @@ use PHPUnit\Framework\TestCase;
 
 class FileClassScannerTest extends TestCase
 {
-    public function testInvalidFileThrowsException()
+    /**
+     * @test
+     */
+    public function invalidFileThrowsException()
     {
         $this->expectException(InvalidFileException::class);
         new FileClassScanner('');
     }
 
-    public function testEmptyArrayForFileWithoutNamespaceOrClass()
+    /**
+     * @test
+     */
+    public function emptyArrayForFileWithoutNamespaceOrClass()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
             ->method('getFileContents')
             ->willReturn(
-                <<<PHP
+                <<<'PHP'
 <?php
 
 echo 'hello world';
 
 if (class_exists('some_class')) {
-    \$object = new some_class();
+    $object = new some_class();
 }
 PHP
             );
-        /** @var $scanner FileClassScanner */
 
+        /** @var $scanner FileClassScanner */
         $result = $scanner->getClassName();
         self::assertEmpty($result);
     }
 
-    public function testGetClassName()
+    /**
+     * @test
+     */
+    public function getClassName()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
             ->method('getFileContents')
             ->willReturn(
-                <<<PHP
+                <<<'PHP'
 <?php
 
 class ThisIsATest {
@@ -62,13 +72,16 @@ PHP
         self::assertEquals('ThisIsATest', $result);
     }
 
-    public function testGetClassNameAndSingleNamespace()
+    /**
+     * @test
+     */
+    public function getClassNameAndSingleNamespace()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
             ->method('getFileContents')
             ->willReturn(
-                <<<PHP
+                <<<'PHP'
 <?php
 
 namespace NS;
@@ -84,7 +97,10 @@ PHP
         self::assertEquals('NS\ThisIsMyTest', $result);
     }
 
-    public function testGetClassNameAndMultiNamespace()
+    /**
+     * @test
+     */
+    public function getClassNameAndMultiNamespace()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -115,7 +131,10 @@ PHP
         self::assertEquals('This\Is\My\Ns\ThisIsMyTest', $result);
     }
 
-    public function testGetMultiClassNameAndMultiNamespace()
+    /**
+     * @test
+     */
+    public function getMultiClassNameAndMultiNamespace()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -153,7 +172,10 @@ PHP
         self::assertEquals('This\Is\My\Ns\ThisIsMyTest', $result);
     }
 
-    public function testBracketedNamespacesAndClasses()
+    /**
+     * @test
+     */
+    public function bracketedNamespacesAndClasses()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -196,7 +218,10 @@ PHP
         self::assertEquals('This\Is\My\Ns\ThisIsMyTest', $result);
     }
 
-    public function testMultipleClassKeywordsInMiddleOfFileWithStringVariableParsing()
+    /**
+     * @test
+     */
+    public function multipleClassKeywordsInMiddleOfFileWithStringVariableParsing()
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -228,12 +253,15 @@ class ThisIsMyTest
 PHP
             );
 
-        /* @var $scanner FileClassScanner */
+        // @var $scanner FileClassScanner
         $result = $scanner->getClassName();
         self::assertEquals('This\Is\My\Ns\ThisIsMyTest', $result);
     }
 
-    public function testInvalidPHPCodeThrowsExceptionWhenCannotDetermineBraceOrSemiColon()
+    /**
+     * @test
+     */
+    public function invalidPHPCodeThrowsExceptionWhenCannotDetermineBraceOrSemiColon()
     {
         $this->expectException(InvalidFileException::class);
         $scanner = $this->getScannerMockObject();
@@ -258,8 +286,10 @@ PHP
 
     /**
      * Checks a case when file with class also contains `class_alias` function for backward compatibility.
+     *
+     * @test
      */
-    public function testFileContainsClassAliasFunction(): void
+    public function fileContainsClassAliasFunction(): void
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -291,15 +321,17 @@ class_alias(\This\Is\My\Ns\ThisIsMyTest::class, stdClass::class);
 PHP
             );
 
-        /* @var $scanner FileClassScanner */
+        // @var $scanner FileClassScanner
         $result = $scanner->getClassName();
         self::assertEquals('This\Is\My\Ns\ThisIsMyTest', $result);
     }
 
     /**
      * Checks a case when file with class also contains `class_exists` function.
+     *
+     * @test
      */
-    public function testFileContainsClassExistsFunction(): void
+    public function fileContainsClassExistsFunction(): void
     {
         $scanner = $this->getScannerMockObject();
         $scanner->expects(self::once())
@@ -319,7 +351,7 @@ trigger_error('This class is does not supported');
 PHP
             );
 
-        /* @var $scanner FileClassScanner */
+        // @var $scanner FileClassScanner
         $result = $scanner->getClassName();
         self::assertEmpty($result);
     }

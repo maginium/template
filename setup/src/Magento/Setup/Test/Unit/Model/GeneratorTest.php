@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -22,12 +23,11 @@ class GeneratorTest extends TestCase
         $pattern = [
             'id' => '%s',
             'name' => 'Static',
-            'calculated' => function ($index) {
-                return $index * 10;
-            },
+            'calculated' => fn($index) => $index * 10,
         ];
         $model = new Generator($pattern, 2);
         $rows = [];
+
         foreach ($model as $row) {
             $rows[] = $row;
         }
@@ -36,7 +36,7 @@ class GeneratorTest extends TestCase
                 ['id' => '1', 'name' => 'Static', 'calculated' => 10],
                 ['id' => '2', 'name' => 'Static', 'calculated' => 20],
             ],
-            $rows
+            $rows,
         );
     }
 }

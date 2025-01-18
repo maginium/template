@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -29,14 +30,14 @@ class TransportInterfaceMock implements TransportInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function sendMessage()
     {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getMessage()
     {

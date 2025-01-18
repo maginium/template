@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -9,12 +10,16 @@ namespace Magento\Setup\Test\Unit\Fixtures\AttributeSet;
 
 use Magento\Catalog\Api\AttributeSetManagementInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Catalog\Api\Data\ProductAttributeInterfaceFactory;
 use Magento\Catalog\Api\ProductAttributeGroupRepositoryInterface;
 use Magento\Catalog\Api\ProductAttributeManagementInterface;
 use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
 use Magento\Eav\Api\Data\AttributeGroupInterface;
+use Magento\Eav\Api\Data\AttributeGroupInterfaceFactory;
 use Magento\Eav\Api\Data\AttributeOptionInterface;
+use Magento\Eav\Api\Data\AttributeOptionInterfaceFactory;
 use Magento\Eav\Api\Data\AttributeSetInterface;
+use Magento\Eav\Api\Data\AttributeSetInterfaceFactory;
 use Magento\Setup\Fixtures\AttributeSet\AttributeSetFixture;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +28,10 @@ use PHPUnit\Framework\TestCase;
  */
 class AttributeSetFixtureTest extends TestCase
 {
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $attributeSets = [
             'name' => 'attribute set name',
@@ -45,13 +53,13 @@ class AttributeSetFixtureTest extends TestCase
                             'option' => [
                                 [
                                     'label' => 'option 1',
-                                    'value' => 'option_1'
+                                    'value' => 'option_1',
                                 ],
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         // Mock Attribute Sets
@@ -60,7 +68,7 @@ class AttributeSetFixtureTest extends TestCase
             ->getMockForAbstractClass();
         $attributeSetMock->expects($this->once())
             ->method('setAttributeSetName')
-            ->with("attribute set name");
+            ->with('attribute set name');
         $attributeSetMock->expects($this->once())
             ->method('setEntityTypeId')
             ->with(ProductAttributeInterface::ENTITY_TYPE_CODE);
@@ -68,7 +76,7 @@ class AttributeSetFixtureTest extends TestCase
             ->method('getAttributeSetName')
             ->willReturn($attributeSets['name']);
 
-        $attributeSetFactoryMock = $this->getMockBuilder(\Magento\Eav\Api\Data\AttributeSetInterfaceFactory::class)
+        $attributeSetFactoryMock = $this->getMockBuilder(AttributeSetInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['create'])
             ->getMock();
@@ -95,7 +103,7 @@ class AttributeSetFixtureTest extends TestCase
             ->method('setAttributeSetId')
             ->with($attributeSetMock->getAttributeSetId());
 
-        $attributeGroupFactoryMock = $this->getMockBuilder(\Magento\Eav\Api\Data\AttributeGroupInterfaceFactory::class)
+        $attributeGroupFactoryMock = $this->getMockBuilder(AttributeGroupInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['create'])
             ->getMock();
@@ -104,7 +112,7 @@ class AttributeSetFixtureTest extends TestCase
             ->willReturn($attributeGroupMock);
 
         $productAttributeGroupRepoMock = $this->getMockBuilder(
-            ProductAttributeGroupRepositoryInterface::class
+            ProductAttributeGroupRepositoryInterface::class,
         )
             ->disableOriginalConstructor()
             ->getMock();
@@ -118,7 +126,7 @@ class AttributeSetFixtureTest extends TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
-        $attributeFactoryMock = $this->getMockBuilder(\Magento\Catalog\Api\Data\ProductAttributeInterfaceFactory::class)
+        $attributeFactoryMock = $this->getMockBuilder(ProductAttributeInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['create'])
             ->getMock();
@@ -131,7 +139,7 @@ class AttributeSetFixtureTest extends TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
-        $optionFactoryMock = $this->getMockBuilder(\Magento\Eav\Api\Data\AttributeOptionInterfaceFactory::class)
+        $optionFactoryMock = $this->getMockBuilder(AttributeOptionInterfaceFactory::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['create'])
             ->getMock();
@@ -140,7 +148,7 @@ class AttributeSetFixtureTest extends TestCase
             ->willReturn($optionMock);
 
         $productAttributeRepoMock = $this->getMockBuilder(
-            ProductAttributeRepositoryInterface::class
+            ProductAttributeRepositoryInterface::class,
         )
             ->disableOriginalConstructor()
             ->getMock();
@@ -150,7 +158,7 @@ class AttributeSetFixtureTest extends TestCase
             ->willReturn($attributeMock);
 
         $productAttributeManagementMock = $this->getMockBuilder(
-            ProductAttributeManagementInterface::class
+            ProductAttributeManagementInterface::class,
         )
             ->disableOriginalConstructor()
             ->getMock();
@@ -166,7 +174,7 @@ class AttributeSetFixtureTest extends TestCase
             $attributeFactoryMock,
             $optionFactoryMock,
             $attributeSetFactoryMock,
-            $attributeGroupFactoryMock
+            $attributeGroupFactoryMock,
         );
         $attributeSet->createAttributeSet($attributeSets);
     }

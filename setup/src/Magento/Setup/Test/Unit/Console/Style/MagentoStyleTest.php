@@ -40,27 +40,19 @@ class MagentoStyleTest extends TestCase
     private $testOutput;
 
     /**
-     * @inheritdoc
-     */
-    protected function setUp(): void
-    {
-        $input = new ArrayInput(['name' => 'foo'], new InputDefinition([new InputArgument('name')]));
-        $this->testOutput = new TestOutput();
-        $this->magentoStyle = new MagentoStyle($input, $this->testOutput);
-    }
-
-    /**
      * Test style decorator will output block with correct style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testBlockStyle()
+    public function blockStyle()
     {
         $this->magentoStyle->block(
             ['test first message', 'test second message'],
             'testBlockType',
             'testBlockStyle',
-            'testBlockPrefix'
+            'testBlockPrefix',
         );
         // @codingStandardsIgnoreStart
         $expected = PHP_EOL . PHP_EOL . PHP_EOL .
@@ -72,7 +64,7 @@ class MagentoStyleTest extends TestCase
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Block does not match output'
+            'Block does not match output',
         );
     }
 
@@ -80,8 +72,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will add title with correct style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testTitleStyle()
+    public function titleStyle()
     {
         $this->magentoStyle->title('My Title');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . ' My Title' . PHP_EOL . ' ========' . PHP_EOL . PHP_EOL;
@@ -92,8 +86,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output section with correct style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testSectionStyle()
+    public function sectionStyle()
     {
         $this->magentoStyle->section('My Section');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . ' My Section' . PHP_EOL . ' ----------' . PHP_EOL . PHP_EOL;
@@ -104,8 +100,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output listing with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testListingStyle()
+    public function listingStyle()
     {
         $this->magentoStyle->listing(['test first element', 'test second element']);
         $expected = PHP_EOL . ' * test first element' . PHP_EOL . ' * test second element' . PHP_EOL . PHP_EOL;
@@ -116,8 +114,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output text with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testTextStyle()
+    public function textStyle()
     {
         $this->magentoStyle->text('test message');
         $expected = PHP_EOL . ' test message' . PHP_EOL;
@@ -129,15 +129,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output comment with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testCommentStyle()
+    public function commentStyle()
     {
         $this->magentoStyle->comment('test comment');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . '\s+test comment\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Comment does not match output'
+            'Comment does not match output',
         );
     }
 
@@ -145,15 +147,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output success message with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testSuccessStyle()
+    public function successStyle()
     {
         $this->magentoStyle->success('test success message');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . ' \[SUCCESS\] test success message\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Success message does not match output'
+            'Success message does not match output',
         );
     }
 
@@ -161,15 +165,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output error message with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testErrorStyle()
+    public function errorStyle()
     {
         $this->magentoStyle->error('test error message');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . '\s+\[ERROR\] test error message\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Error message does not match output'
+            'Error message does not match output',
         );
     }
 
@@ -177,15 +183,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output warning message with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testWarningStyle()
+    public function warningStyle()
     {
         $this->magentoStyle->warning('test warning message');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . '\s+\[WARNING\] test warning message\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Warning message does not match output'
+            'Warning message does not match output',
         );
     }
 
@@ -193,15 +201,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output note message with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testNoteStyle()
+    public function noteStyle()
     {
         $this->magentoStyle->note('test note message');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . '\s+\[NOTE\] test note message\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Note message does not match output'
+            'Note message does not match output',
         );
     }
 
@@ -209,15 +219,17 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output caution message with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testCautionStyle()
+    public function cautionStyle()
     {
         $this->magentoStyle->caution('test caution message');
         $expected = PHP_EOL . PHP_EOL . PHP_EOL . '\s+! \[CAUTION\] test caution message\s+' . PHP_EOL . PHP_EOL;
         $this->assertMatchesRegularExpression(
             '/' . $expected . '/',
             $this->testOutput->output,
-            'Caution message does not match output'
+            'Caution message does not match output',
         );
     }
 
@@ -225,8 +237,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output table with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testTableStyle()
+    public function tableStyle()
     {
         $headers = [
             [new TableCell('Main table title', ['colspan' => 2])],
@@ -255,8 +269,10 @@ class MagentoStyleTest extends TestCase
 
     /**
      * @return void
+     *
+     * @test
      */
-    public function testAsk()
+    public function ask()
     {
         $objectManager = new ObjectManager($this);
         $formatter = $this->getMockBuilder(OutputFormatter::class)
@@ -285,7 +301,7 @@ class MagentoStyleTest extends TestCase
             [
                 'input' => $input,
                 'output' => $output,
-            ]
+            ],
         );
         $questionHelper = $this->getMockBuilder(SymfonyQuestionHelper::class)
             ->disableOriginalConstructor()
@@ -297,7 +313,7 @@ class MagentoStyleTest extends TestCase
 
         $this->assertEquals(
             'test Answer',
-            $magentoStyle->ask('test question?', 'test default')
+            $magentoStyle->ask('test question?', 'test default'),
         );
     }
 
@@ -305,8 +321,10 @@ class MagentoStyleTest extends TestCase
      * Test style decorator will output progress with proper style.
      *
      * @return void
+     *
+     * @test
      */
-    public function testProgress()
+    public function progress()
     {
         $this->magentoStyle->progressStart(2);
         $this->magentoStyle->progressAdvance(3);
@@ -314,5 +332,15 @@ class MagentoStyleTest extends TestCase
         $expected = ' 0/2 [>                           ]   0%' . PHP_EOL .
             ' 3/3 [============================] 100%' . PHP_EOL . PHP_EOL;
         $this->assertEquals($expected, $this->testOutput->output, 'Progress does not match output');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        $input = new ArrayInput(['name' => 'foo'], new InputDefinition([new InputArgument('name')]));
+        $this->testOutput = new TestOutput;
+        $this->magentoStyle = new MagentoStyle($input, $this->testOutput);
     }
 }

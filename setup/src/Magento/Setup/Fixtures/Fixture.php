@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -32,23 +35,24 @@ abstract class Fixture
     }
 
     /**
-     * Execute fixture
+     * Execute fixture.
      *
      * @return void
      */
     abstract public function execute();
 
     /**
-     * Get fixture action description
+     * Get fixture action description.
      *
      * @return string
      */
     abstract public function getActionTitle();
 
     /**
-     * Print information about generated fixture. Print fixture label and amount of generated items
+     * Print information about generated fixture. Print fixture label and amount of generated items.
      *
      * @param OutputInterface $output
+     *
      * @return void
      */
     public function printInfo(OutputInterface $output)
@@ -59,21 +63,21 @@ abstract class Fixture
                 ? count($configValue[array_keys($configValue)[0]])
                 : $configValue;
 
-            if (!empty($generationCount)) {
+            if (! empty($generationCount)) {
                 $output->writeln('<info> |- ' . $label . ': ' . $generationCount . '</info>');
             }
         }
     }
 
     /**
-     * Introduce parameters labels
+     * Introduce parameters labels.
      *
      * @return array
      */
     abstract public function introduceParamLabels();
 
     /**
-     * Get fixture priority
+     * Get fixture priority.
      *
      * @return int
      */

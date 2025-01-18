@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,13 +26,10 @@ class ArgumentsResolverTest extends TestCase
      */
     protected $diContainerConfig;
 
-    protected function setUp(): void
-    {
-        $this->diContainerConfig = $this->getMockForAbstractClass(ConfigInterface::class);
-        $this->model = new ArgumentsResolver($this->diContainerConfig);
-    }
-
-    public function testGetResolvedArgumentsConstructorFormat()
+    /**
+     * @test
+     */
+    public function getResolvedArgumentsConstructorFormat()
     {
         $expectedResultDefault = $this->getResolvedSimpleConfigExpectation();
 
@@ -47,8 +45,8 @@ class ArgumentsResolverTest extends TestCase
             ->willReturnMap(
                 [
                     ['Type\Dependency', false],
-                    ['Type\Dependency\Shared', true]
-                ]
+                    ['Type\Dependency\Shared', true],
+                ],
             );
 
         $type = 'Class';
@@ -59,11 +57,14 @@ class ArgumentsResolverTest extends TestCase
 
         $this->assertSame(
             $expectedResultDefault,
-            $this->model->getResolvedConstructorArguments($type, $constructor)
+            $this->model->getResolvedConstructorArguments($type, $constructor),
         );
     }
 
-    public function testGetResolvedArgumentsConstructorConfiguredFormat()
+    /**
+     * @test
+     */
+    public function getResolvedArgumentsConstructorConfiguredFormat()
     {
         $expectedResultConfigured = $this->getResolvedConfigurableConfigExpectation();
 
@@ -84,8 +85,8 @@ class ArgumentsResolverTest extends TestCase
                     ['Type\Dependency', false],
                     ['Type\Dependency\Shared', true],
                     ['Type\Dependency\Configured', false],
-                    ['Type\Dependency\Shared\Configured', true]
-                ]
+                    ['Type\Dependency\Shared\Configured', true],
+                ],
             );
 
         $type = 'Class';
@@ -93,17 +94,23 @@ class ArgumentsResolverTest extends TestCase
             ->method('getArguments')
             ->with($type)
             ->willReturn(
-                $this->getConfiguredArguments()
+                $this->getConfiguredArguments(),
             );
 
         $this->assertSame(
             $expectedResultConfigured,
-            $this->model->getResolvedConstructorArguments($type, $constructor)
+            $this->model->getResolvedConstructorArguments($type, $constructor),
         );
     }
 
+    protected function setUp(): void
+    {
+        $this->diContainerConfig = $this->getMockForAbstractClass(ConfigInterface::class);
+        $this->model = new ArgumentsResolver($this->diContainerConfig);
+    }
+
     /**
-     * Returns resolved simple config expectation
+     * Returns resolved simple config expectation.
      *
      * @return array
      */
@@ -129,7 +136,7 @@ class ArgumentsResolverTest extends TestCase
     }
 
     /**
-     * Returns configured arguments expectation
+     * Returns configured arguments expectation.
      *
      * @return array
      */
@@ -148,17 +155,17 @@ class ArgumentsResolverTest extends TestCase
                     'array_array_value' => 'value',
                     'array_array_configured_instance' => [
                         'instance' => 'Type\Dependency\Shared\Configured',
-                        'shared' => false
-                    ]
+                        'shared' => false,
+                    ],
                 ],
-                'array_global_argument' => ['argument' => 'global_argument_configured']
+                'array_global_argument' => ['argument' => 'global_argument_configured'],
             ],
             'value_null' => null,
         ];
     }
 
     /**
-     * Returns resolved configurable config expectation
+     * Returns resolved configurable config expectation.
      *
      * @return array
      */
@@ -173,11 +180,11 @@ class ArgumentsResolverTest extends TestCase
             ],
             'global_argument' => [
                 '_a_' => 'global_argument_configured',
-                '_d_' => null
+                '_d_' => null,
             ],
             'global_argument_def' => [
                 '_a_' => 'global_argument_configured',
-                '_d_' => []
+                '_d_' => [],
             ],
             'value_configured' => [
                 '_v_' => 'value_configured',
@@ -196,8 +203,8 @@ class ArgumentsResolverTest extends TestCase
                     ],
                     'array_global_argument' => [
                         '_a_' => 'global_argument_configured',
-                        '_d_' => null
-                    ]
+                        '_d_' => null,
+                    ],
                 ],
             ],
             'value_null' => [

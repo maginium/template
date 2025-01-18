@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,14 +13,17 @@ use PHPUnit\Framework\TestCase;
 
 class AbstractConfigTest extends TestCase
 {
-    public function testGetModules()
+    /**
+     * @test
+     */
+    public function getModules()
     {
         $modules = ['foo', 'baz', 'bar'];
 
         /** @var AbstractConfig $config */
         $config = $this->getMockForAbstractClass(
             AbstractConfig::class,
-            ['modules' => $modules]
+            ['modules' => $modules],
         );
 
         $this->assertEquals($modules, $config->getModules());

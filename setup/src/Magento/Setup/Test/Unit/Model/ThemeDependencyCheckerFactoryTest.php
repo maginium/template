@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -31,18 +32,10 @@ class ThemeDependencyCheckerFactoryTest extends TestCase
      */
     private $objectManager;
 
-    protected function setUp(): void
-    {
-        $this->objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
-        $this->objectManager = $this->getMockForAbstractClass(
-            ObjectManagerInterface::class,
-            [],
-            '',
-            false
-        );
-    }
-
-    public function testCreate()
+    /**
+     * @test
+     */
+    public function create()
     {
         $this->objectManagerProvider->expects($this->once())->method('get')->willReturn($this->objectManager);
         $this->objectManager->expects($this->once())
@@ -50,5 +43,16 @@ class ThemeDependencyCheckerFactoryTest extends TestCase
             ->with(ThemeDependencyChecker::class);
         $this->themeDependencyCheckerFactory = new ThemeDependencyCheckerFactory($this->objectManagerProvider);
         $this->themeDependencyCheckerFactory->create();
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManagerProvider = $this->createMock(ObjectManagerProvider::class);
+        $this->objectManager = $this->getMockForAbstractClass(
+            ObjectManagerInterface::class,
+            [],
+            '',
+            false,
+        );
     }
 }

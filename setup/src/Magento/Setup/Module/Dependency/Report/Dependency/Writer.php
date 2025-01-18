@@ -1,21 +1,27 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Dependency\Report\Dependency;
 
+use Magento\Setup\Module\Dependency\Report\Dependency\Data\Config;
 use Magento\Setup\Module\Dependency\Report\Writer\Csv\AbstractWriter;
 
 /**
- * Csv file writer for modules dependencies report
+ * Csv file writer for modules dependencies report.
  */
 class Writer extends AbstractWriter
 {
     /**
-     * Template method. Prepare data step
+     * Template method. Prepare data step.
      *
-     * @param \Magento\Setup\Module\Dependency\Report\Dependency\Data\Config $config
+     * @param Config $config
+     *
      * @return array
      */
     protected function prepareData($config)
@@ -31,6 +37,7 @@ class Writer extends AbstractWriter
 
         if ($config->getDependenciesCount()) {
             $data[] = ['Dependencies for each module:', 'All', 'Hard', 'Soft'];
+
             foreach ($config->getModules() as $module) {
                 if ($module->getDependenciesCount()) {
                     $data[] = [
@@ -39,12 +46,13 @@ class Writer extends AbstractWriter
                         $module->getHardDependenciesCount(),
                         $module->getSoftDependenciesCount(),
                     ];
+
                     foreach ($module->getDependencies() as $dependency) {
                         $data[] = [
                             ' -- ' . $dependency->getModule(),
                             '',
                             (int)$dependency->isHard(),
-                            (int)(!$dependency->isHard()),
+                            (int)(! $dependency->isHard()),
                         ];
                     }
                     $data[] = [];

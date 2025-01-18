@@ -1,66 +1,72 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\I18n\Dictionary;
 
+use DomainException;
+
 /**
- *  Phrase
+ *  Phrase.
  */
 class Phrase
 {
     /**
-     * Single quote that enclose the phrase
+     * Single quote that enclose the phrase.
      *
      * @var string
      */
-    const QUOTE_SINGLE = "'";
+    public const QUOTE_SINGLE = "'";
 
     /**
-     * Double quote that enclose the phrase
+     * Double quote that enclose the phrase.
      *
      * @var string
      */
-    const QUOTE_DOUBLE = '"';
+    public const QUOTE_DOUBLE = '"';
 
     /**
-     * Phrase
+     * Phrase.
      *
      * @var string
      */
     private $_phrase;
 
     /**
-     * Translation
+     * Translation.
      *
      * @var string
      */
     private $_translation;
 
     /**
-     * Context type
+     * Context type.
      *
      * @var string
      */
     private $_contextType;
 
     /**
-     * Context value
+     * Context value.
      *
      * @var array
      */
     private $_contextValue = [];
 
     /**
-     * Quote type that enclose the phrase, single or double
+     * Quote type that enclose the phrase, single or double.
      *
      * @var string
      */
     private $_quote;
 
     /**
-     * Phrase construct
+     * Phrase construct.
      *
      * @param string $phrase
      * @param string $translation
@@ -78,22 +84,24 @@ class Phrase
     }
 
     /**
-     * Set phrase
+     * Set phrase.
      *
      * @param string $phrase
+     *
+     * @throws DomainException
+     *
      * @return void
-     * @throws \DomainException
      */
     public function setPhrase($phrase)
     {
-        if (!$phrase) {
-            throw new \DomainException('Missed phrase');
+        if (! $phrase) {
+            throw new DomainException('Missed phrase');
         }
         $this->_phrase = $phrase;
     }
 
     /**
-     * Get phrase
+     * Get phrase.
      *
      * @return string
      */
@@ -103,9 +111,10 @@ class Phrase
     }
 
     /**
-     * Set quote type
+     * Set quote type.
      *
      * @param string $quote
+     *
      * @return void
      */
     public function setQuote($quote)
@@ -116,7 +125,7 @@ class Phrase
     }
 
     /**
-     * Get quote type
+     * Get quote type.
      *
      * @return string
      */
@@ -126,22 +135,24 @@ class Phrase
     }
 
     /**
-     * Set translation
+     * Set translation.
      *
      * @param string $translation
+     *
+     * @throws DomainException
+     *
      * @return void
-     * @throws \DomainException
      */
     public function setTranslation($translation)
     {
-        if (!$translation) {
-            throw new \DomainException('Missed translation');
+        if (! $translation) {
+            throw new DomainException('Missed translation');
         }
         $this->_translation = $translation;
     }
 
     /**
-     * Get translation
+     * Get translation.
      *
      * @return string
      */
@@ -151,9 +162,10 @@ class Phrase
     }
 
     /**
-     * Set context type
+     * Set context type.
      *
      * @param string $contextType
+     *
      * @return void
      */
     public function setContextType($contextType)
@@ -162,7 +174,7 @@ class Phrase
     }
 
     /**
-     * Get context type
+     * Get context type.
      *
      * @return string
      */
@@ -172,43 +184,48 @@ class Phrase
     }
 
     /**
-     * Add context value
+     * Add context value.
      *
      * @param string $contextValue
+     *
+     * @throws DomainException
+     *
      * @return void
-     * @throws \DomainException
      */
     public function addContextValue($contextValue)
     {
         if (empty($contextValue)) {
-            throw new \DomainException('Context value is empty');
+            throw new DomainException('Context value is empty');
         }
-        if (!in_array($contextValue, $this->_contextValue)) {
+
+        if (! in_array($contextValue, $this->_contextValue)) {
             $this->_contextValue[] = $contextValue;
         }
     }
 
     /**
-     * Set context type
+     * Set context type.
      *
      * @param string $contextValue
+     *
+     * @throws DomainException
+     *
      * @return void
-     * @throws \DomainException
      */
     public function setContextValue($contextValue)
     {
         if (is_string($contextValue)) {
             $contextValue = explode(',', $contextValue);
-        } elseif (null == $contextValue) {
+        } elseif ($contextValue === null) {
             $contextValue = [];
-        } elseif (!is_array($contextValue)) {
-            throw new \DomainException('Wrong context type');
+        } elseif (! is_array($contextValue)) {
+            throw new DomainException('Wrong context type');
         }
         $this->_contextValue = $contextValue;
     }
 
     /**
-     * Get context value
+     * Get context value.
      *
      * @return array
      */
@@ -218,9 +235,10 @@ class Phrase
     }
 
     /**
-     * Get context value as string
+     * Get context value as string.
      *
      * @param string $separator
+     *
      * @return string
      */
     public function getContextValueAsString($separator = ',')
@@ -229,7 +247,7 @@ class Phrase
     }
 
     /**
-     * Get VO identifier key
+     * Get VO identifier key.
      *
      * @return string
      */
@@ -239,7 +257,7 @@ class Phrase
     }
 
     /**
-     * Compile PHP string based on quotes type it enclosed with
+     * Compile PHP string based on quotes type it enclosed with.
      *
      * @return string
      */
@@ -249,7 +267,7 @@ class Phrase
     }
 
     /**
-     * Compile PHP string based on quotes type it enclosed with
+     * Compile PHP string based on quotes type it enclosed with.
      *
      * @return string
      */
@@ -259,16 +277,18 @@ class Phrase
     }
 
     /**
-     * Compile PHP string (escaping unescaped quotes and processing concatenation)
+     * Compile PHP string (escaping unescaped quotes and processing concatenation).
      *
      * @param string $string
+     *
      * @return string
      */
     private function getCompiledString($string)
     {
-        $encloseQuote = $this->getQuote() == Phrase::QUOTE_DOUBLE ? Phrase::QUOTE_DOUBLE : Phrase::QUOTE_SINGLE;
-        /* Find all occurrences of ' and ", with no \ before it for concatenation */
+        $encloseQuote = $this->getQuote() === self::QUOTE_DOUBLE ? self::QUOTE_DOUBLE : self::QUOTE_SINGLE;
+        // Find all occurrences of ' and ", with no \ before it for concatenation
         preg_match_all('/[^\\\\]' . $encloseQuote . '|' . $encloseQuote . '[^\\\\]/', $string, $matches);
+
         if (count($matches[0])) {
             $string = preg_replace('/([^\\\\])' . $encloseQuote . ' ?\. ?' . $encloseQuote . '/', '$1', $string);
         }
@@ -276,6 +296,7 @@ class Phrase
            Translation for such phrases will use translation for phrase without escaped quote. */
         $string = str_replace('\"', '"', $string);
         $string = str_replace("\\'", "'", $string);
+
         return $string;
     }
 }

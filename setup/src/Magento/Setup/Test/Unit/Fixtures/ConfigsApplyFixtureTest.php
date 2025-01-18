@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -20,7 +21,6 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigsApplyFixtureTest extends TestCase
 {
-
     /**
      * @var MockObject|FixtureModel
      */
@@ -31,14 +31,10 @@ class ConfigsApplyFixtureTest extends TestCase
      */
     private $model;
 
-    protected function setUp(): void
-    {
-        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
-
-        $this->model = new ConfigsApplyFixture($this->fixtureModelMock);
-    }
-
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $cacheMock = $this->createMock(Cache::class);
 
@@ -50,7 +46,7 @@ class ConfigsApplyFixtureTest extends TestCase
             ->method('get')
             ->willReturnMap([
                 [CacheInterface::class, $cacheMock],
-                [System::class, $configMock]
+                [System::class, $configMock],
             ]);
 
         $this->fixtureModelMock
@@ -67,7 +63,10 @@ class ConfigsApplyFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testNoFixtureConfigValue()
+    /**
+     * @test
+     */
+    public function noFixtureConfigValue()
     {
         $configMock = $this->getMockBuilder(ValueInterface::class)
             ->addMethods(['save'])
@@ -91,13 +90,26 @@ class ConfigsApplyFixtureTest extends TestCase
         $this->model->execute();
     }
 
-    public function testGetActionTitle()
+    /**
+     * @test
+     */
+    public function getActionTitle()
     {
         $this->assertSame('Config Changes', $this->model->getActionTitle());
     }
 
-    public function testIntroduceParamLabels()
+    /**
+     * @test
+     */
+    public function introduceParamLabels()
     {
         $this->assertSame([], $this->model->introduceParamLabels());
+    }
+
+    protected function setUp(): void
+    {
+        $this->fixtureModelMock = $this->createMock(FixtureModel::class);
+
+        $this->model = new ConfigsApplyFixture($this->fixtureModelMock);
     }
 }

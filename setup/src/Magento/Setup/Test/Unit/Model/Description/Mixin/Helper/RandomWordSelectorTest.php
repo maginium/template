@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,23 +18,22 @@ class RandomWordSelectorTest extends TestCase
      */
     private $helper;
 
-    protected function setUp(): void
-    {
-        $this->helper = new RandomWordSelector();
-    }
-
     /**
      * @param string $fixtureSource
      * @param int $fixtureCount
+     *
      * @dataProvider getTestData
+     *
+     * @test
      */
-    public function testRandomSelector($fixtureSource, $fixtureCount)
+    public function randomSelector($fixtureSource, $fixtureCount)
     {
         $randWords = $this->helper->getRandomWords($fixtureSource, $fixtureCount);
 
         $this->assertCount($fixtureCount, $randWords);
 
         $fixtureWords = str_word_count($fixtureSource, 1);
+
         foreach ($randWords as $randWord) {
             $this->assertContains($randWord, $fixtureWords);
         }
@@ -50,19 +50,24 @@ class RandomWordSelectorTest extends TestCase
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
                     sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 ',
-                'count' => 1
+                'count' => 1,
             ],
             [
                 'source' => 'Lorem.',
-                'count' => 5
+                'count' => 5,
             ],
             [
                 'source' => '
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
                     sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 ',
-                'count' => 3
+                'count' => 3,
             ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->helper = new RandomWordSelector;
     }
 }

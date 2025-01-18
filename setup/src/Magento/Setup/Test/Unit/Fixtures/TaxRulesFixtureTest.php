@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -14,8 +15,8 @@ use Magento\Tax\Api\Data\TaxRateInterfaceFactory;
 use Magento\Tax\Api\Data\TaxRuleInterfaceFactory;
 use Magento\Tax\Api\TaxRateRepositoryInterface;
 use Magento\Tax\Api\TaxRuleRepositoryInterface;
-use Magento\Tax\Model\ResourceModel\Calculation\Rate\CollectionFactory;
 use Magento\Tax\Model\ResourceModel\Calculation\Rate\Collection;
+use Magento\Tax\Model\ResourceModel\Calculation\Rate\CollectionFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +25,6 @@ use PHPUnit\Framework\TestCase;
  */
 class TaxRulesFixtureTest extends TestCase
 {
-
     /**
      * @var MockObject|FixtureModel
      */
@@ -65,7 +65,10 @@ class TaxRulesFixtureTest extends TestCase
      */
     private $taxRuleRepositoryMock;
 
-    public function testExecute()
+    /**
+     * @test
+     */
+    public function execute()
     {
         $this->fixtureModelMock = $this->getMockBuilder(FixtureModel::class)
             ->disableOriginalConstructor()
@@ -97,7 +100,7 @@ class TaxRulesFixtureTest extends TestCase
             ->method('getValue')
             ->willReturnMap([
                 ['tax_mode', 'VAT'],
-                ['tax_rules', 2]
+                ['tax_rules', 2],
             ]);
 
         $this->taxRateCollectionFactoryMock = $this->getMockBuilder(CollectionFactory::class)
@@ -125,7 +128,7 @@ class TaxRulesFixtureTest extends TestCase
             $this->taxRateCollectionFactoryMock,
             $this->taxRateFactoryMock,
             $this->taxRateRepositoryMock,
-            $this->configWriterMock
+            $this->configWriterMock,
         );
 
         $this->model->execute();

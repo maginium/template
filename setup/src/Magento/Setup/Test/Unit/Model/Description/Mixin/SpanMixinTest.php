@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -30,24 +31,18 @@ class SpanMixinTest extends TestCase
      */
     private $wordWrapperMock;
 
-    protected function setUp(): void
-    {
-        $this->randomWordSelectorMock =
-            $this->createMock(RandomWordSelector::class);
-        $this->wordWrapperMock = $this->createMock(WordWrapper::class);
-
-        $this->mixin = new SpanMixin(
-            $this->randomWordSelectorMock,
-            $this->wordWrapperMock
-        );
-    }
-
-    public function testEmptyApply()
+    /**
+     * @test
+     */
+    public function emptyApply()
     {
         $this->assertEquals('', $this->mixin->apply(''));
     }
 
-    public function testApply()
+    /**
+     * @test
+     */
+    public function apply()
     {
         $fixtureString = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
         $fixtureStringResult = '<span>Lorem</span> ipsum <span>dolor</span> sit amet, consectetur adipiscing elit.';
@@ -66,5 +61,17 @@ class SpanMixinTest extends TestCase
             ->willReturn($fixtureStringResult);
 
         $this->assertEquals($fixtureStringResult, $this->mixin->apply($fixtureString));
+    }
+
+    protected function setUp(): void
+    {
+        $this->randomWordSelectorMock =
+            $this->createMock(RandomWordSelector::class);
+        $this->wordWrapperMock = $this->createMock(WordWrapper::class);
+
+        $this->mixin = new SpanMixin(
+            $this->randomWordSelectorMock,
+            $this->wordWrapperMock,
+        );
     }
 }

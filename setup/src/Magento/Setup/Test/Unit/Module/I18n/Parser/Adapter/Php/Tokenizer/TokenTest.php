@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -21,20 +22,18 @@ class TokenTest extends TestCase
      */
     protected $objectManager;
 
-    protected function setUp(): void
-    {
-        $this->objectManager = new ObjectManager($this);
-    }
-
     /**
      * @covers \Magento\Setup\Module\I18n\Parser\Adapter\Php\Tokenizer\Token::isNew
      *
      * @param int $name
      * @param string $value
      * @param bool $result
+     *
      * @dataProvider testIsNewDataProvider
+     *
+     * @test
      */
-    public function testIsNew($name, $value, $result)
+    public function isNew($name, $value, $result)
     {
         $token = $this->createToken($name, $value);
         $this->assertEquals($result, $token->isNew());
@@ -46,9 +45,12 @@ class TokenTest extends TestCase
      * @param int $name
      * @param string $value
      * @param bool $result
+     *
      * @dataProvider testIsNamespaceSeparatorDataProvider
+     *
+     * @test
      */
-    public function testIsNamespaceSeparator($name, $value, $result)
+    public function isNamespaceSeparator($name, $value, $result)
     {
         $token = $this->createToken($name, $value);
         $this->assertEquals($result, $token->isNamespaceSeparator());
@@ -60,9 +62,12 @@ class TokenTest extends TestCase
      * @param int $name
      * @param string $value
      * @param bool $result
+     *
      * @dataProvider testIsIdentifierDataProvider
+     *
+     * @test
      */
-    public function testIsIdentifier($name, $value, $result)
+    public function isIdentifier($name, $value, $result)
     {
         $token = $this->createToken($name, $value);
         $this->assertEquals($result, $token->isIdentifier());
@@ -70,67 +75,86 @@ class TokenTest extends TestCase
 
     /**
      * @return array
+     *
+     * @test
      */
-    public function testIsNewDataProvider()
+    public function isNewDataProvider()
     {
         return [
             'new' => ['name' => T_NEW, 'value' => 'new', 'result' => true],
             'namespace' => ['name' => T_NS_SEPARATOR, 'value' => '\\', 'result' => false],
-            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => false]
+            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => false],
         ];
     }
 
     /**
      * @return array
+     *
+     * @test
      */
-    public function testIsNamespaceSeparatorDataProvider()
+    public function isNamespaceSeparatorDataProvider()
     {
         return [
             'new' => ['name' => T_NEW, 'value' => 'new', 'result' => false],
             'namespace' => ['name' => T_NS_SEPARATOR, 'value' => '\\', 'result' => true],
-            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => false]
+            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => false],
         ];
     }
 
     /**
      * @return array
+     *
+     * @test
      */
-    public function testIsIdentifierDataProvider()
+    public function isIdentifierDataProvider()
     {
         return [
             'new' => ['name' => T_NEW, 'value' => 'new', 'result' => false],
             'namespace' => ['name' => T_NS_SEPARATOR, 'value' => '\\', 'result' => false],
-            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => true]
+            'identifier' => ['name' => T_STRING, 'value' => '__', 'result' => true],
         ];
     }
 
     /**
-     * @param int $name
-     * @param string $value
-     * @return Token
+     * @test
      */
-    protected function createToken($name, $value)
-    {
-        $line = 110;
-        return $this->objectManager->getObject(
-            Token::class,
-            [
-                'name' => $name,
-                'value' => $value,
-                'line' => $line
-            ]
-        );
-    }
-
-    public function testIsConcatenateOperatorTrue()
+    public function isConcatenateOperatorTrue()
     {
         $token = new Token('.', '.');
         $this->assertTrue($token->isConcatenateOperator());
     }
 
-    public function testIsConcatenateOperatorFalse()
+    /**
+     * @test
+     */
+    public function isConcatenateOperatorFalse()
     {
         $token = new Token(',', ',');
         $this->assertFalse($token->isConcatenateOperator());
+    }
+
+    protected function setUp(): void
+    {
+        $this->objectManager = new ObjectManager($this);
+    }
+
+    /**
+     * @param int $name
+     * @param string $value
+     *
+     * @return Token
+     */
+    protected function createToken($name, $value)
+    {
+        $line = 110;
+
+        return $this->objectManager->getObject(
+            Token::class,
+            [
+                'name' => $name,
+                'value' => $value,
+                'line' => $line,
+            ],
+        );
     }
 }

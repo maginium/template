@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,18 +9,22 @@
 
 namespace Magento\Setup\Model;
 
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use SplFixedArray;
+
 /**
- * Encapsulate logic that performs batch insert into table
+ * Encapsulate logic that performs batch insert into table.
  */
 class BatchInsert
 {
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @var ResourceConnection
      */
     private $resourceConnection;
 
     /**
-     * @var \Magento\Framework\DB\Adapter\AdapterInterface
+     * @var AdapterInterface
      */
     private $dbConnection;
 
@@ -32,7 +39,7 @@ class BatchInsert
     private $batchSize;
 
     /**
-     * @var \SplFixedArray
+     * @var SplFixedArray
      */
     private $dataStorage;
 
@@ -42,25 +49,26 @@ class BatchInsert
     private $currentStorageIndex = 0;
 
     /**
-     * @param \Magento\Framework\App\ResourceConnection $resourceConnection
+     * @param ResourceConnection $resourceConnection
      * @param string $insertIntoTable
      * @param int $batchSize
      */
     public function __construct(
-        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        ResourceConnection $resourceConnection,
         $insertIntoTable,
-        $batchSize
+        $batchSize,
     ) {
         $this->resourceConnection = $resourceConnection;
         $this->insertIntoTable = $insertIntoTable;
         $this->batchSize = $batchSize;
-        $this->dataStorage = new \SplFixedArray($batchSize);
+        $this->dataStorage = new SplFixedArray($batchSize);
     }
 
     /**
-     * Save data to $dataStorage and automatically flush it to DB when storage size becomes equal to $batchSize
+     * Save data to $dataStorage and automatically flush it to DB when storage size becomes equal to $batchSize.
      *
      * @param array $dataToInsert
+     *
      * @return void
      */
     public function insert(array $dataToInsert)
@@ -74,7 +82,7 @@ class BatchInsert
     }
 
     /**
-     * Insert all data form $dataStorage to DB and clear $dataStorage
+     * Insert all data form $dataStorage to DB and clear $dataStorage.
      *
      * @return void
      */
@@ -98,16 +106,16 @@ class BatchInsert
                 ->insertArray(
                     $this->insertIntoTable,
                     $columnsToInsert,
-                    $this->dataStorage->toArray()
+                    $this->dataStorage->toArray(),
                 );
 
-            $this->dataStorage = new \SplFixedArray($this->batchSize);
+            $this->dataStorage = new SplFixedArray($this->batchSize);
             $this->currentStorageIndex = 0;
         }
     }
 
     /**
-     * Retrieve current connection to DB
+     * Retrieve current connection to DB.
      *
      * Method is required to eliminate multiple calls to ResourceConnection class
      *

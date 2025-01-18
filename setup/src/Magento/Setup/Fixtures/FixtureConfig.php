@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,10 +9,11 @@
 
 namespace Magento\Setup\Fixtures;
 
+use Exception;
 use Magento\Framework\Xml\Parser;
 
 /**
- * Config data for fixtures
+ * Config data for fixtures.
  */
 class FixtureConfig
 {
@@ -32,30 +36,31 @@ class FixtureConfig
     }
 
     /**
-     * Load config from file
+     * Load config from file.
      *
      * @param string $filename
-     * @throws \Exception
+     *
+     * @throws Exception
      *
      * @return void
      */
     public function loadConfig($filename)
     {
-        if (!is_readable($filename)) {
-            throw new \Exception("Profile configuration file `{$filename}` is not readable or does not exists.");
+        if (! is_readable($filename)) {
+            throw new Exception("Profile configuration file `{$filename}` is not readable or does not exists.");
         }
         $this->parser->getDom()->load($filename);
         $this->parser->getDom()->xinclude();
         $this->config = $this->parser->xmlToArray();
         $this->config['config']['profile']['di'] = dirname($filename) . '/'
-            . (isset($this->config['config']['profile']['di'])
-                ? $this->config['config']['profile']['di']
-                : '../../config/di.xml'
+            . (
+                $this->config['config']['profile']['di']
+                ?? '../../config/di.xml'
             );
     }
 
     /**
-     * Get profile configuration value
+     * Get profile configuration value.
      *
      * @param string $key
      * @param null|mixed $default
@@ -68,8 +73,7 @@ class FixtureConfig
             (
                 // Work around for how attributes are handled in the XML parser when injected via xinclude due to the
                 // files existing outside of the current working directory.
-            isset($this->config['config']['profile'][$key]['_value']) ?
-                $this->config['config']['profile'][$key]['_value'] : $this->config['config']['profile'][$key]
+                $this->config['config']['profile'][$key]['_value'] ?? $this->config['config']['profile'][$key]
             ) : $default;
     }
 }

@@ -30,7 +30,64 @@ class QuoteConfigurationTest extends TestCase
     private $fixture;
 
     /**
-     * @inheritdoc
+     * Test load method.
+     *
+     * @return void
+     *
+     * @test
+     */
+    public function load()
+    {
+        $dir = str_replace('Test/Unit/', '', dirname(__DIR__));
+        $expectedResult = [
+            'simple_count_to' => 1,
+            'simple_count_from' => 1,
+            'configurable_count_to' => 1,
+            'configurable_count_from' => 1,
+            'big_configurable_count_to' => 1,
+            'big_configurable_count_from' => 1,
+            'fixture_data_filename' => $dir . DIRECTORY_SEPARATOR . '_files'
+                . DIRECTORY_SEPARATOR . 'orders_fixture_data.json',
+            'order_quotes_enable' => 1,
+        ];
+        $this->fixtureModelMock->expects($this->atLeastOnce())
+            ->method('getValue')
+            ->willReturnCallback(
+                function($arg) {
+                    if ($arg === 'order_simple_product_count_to') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_simple_product_count_from') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_configurable_product_count_to') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_configurable_product_count_from') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_big_configurable_product_count_to') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_big_configurable_product_count_from') {
+                        return 1;
+                    }
+
+                    if ($arg === 'order_quotes_enable') {
+                        return 1;
+                    }
+                },
+            );
+        $this->assertSame($expectedResult, $this->fixture->load()->getData());
+    }
+
+    /**
+     * {@inheritdoc}
      */
     protected function setUp(): void
     {
@@ -42,51 +99,8 @@ class QuoteConfigurationTest extends TestCase
         $this->fixture = $objectManager->getObject(
             QuoteConfiguration::class,
             [
-                'fixtureModel' => $this->fixtureModelMock
-            ]
+                'fixtureModel' => $this->fixtureModelMock,
+            ],
         );
-    }
-
-    /**
-     * Test load method.
-     *
-     * @return void
-     */
-    public function testLoad()
-    {
-        $dir = str_replace('Test/Unit/', '', dirname(__DIR__));
-        $expectedResult = [
-            'simple_count_to' => 1,
-            'simple_count_from' => 1,
-            'configurable_count_to' => 1,
-            'configurable_count_from' => 1,
-            'big_configurable_count_to' => 1,
-            'big_configurable_count_from' => 1,
-            'fixture_data_filename' => $dir . DIRECTORY_SEPARATOR . "_files"
-                . DIRECTORY_SEPARATOR . 'orders_fixture_data.json',
-            'order_quotes_enable' => 1,
-        ];
-        $this->fixtureModelMock->expects($this->atLeastOnce())
-            ->method('getValue')
-            ->willReturnCallback(
-                function ($arg) {
-                    if ($arg == 'order_simple_product_count_to') {
-                        return 1;
-                    } elseif ($arg == 'order_simple_product_count_from') {
-                        return 1;
-                    } elseif ($arg == 'order_configurable_product_count_to') {
-                        return 1;
-                    } elseif ($arg == 'order_configurable_product_count_from') {
-                        return 1;
-                    } elseif ($arg == 'order_big_configurable_product_count_to') {
-                        return 1;
-                    } elseif ($arg == 'order_big_configurable_product_count_from') {
-                        return 1;
-                    } elseif ($arg == 'order_quotes_enable') {
-                        return 1;
-                    }
-                }
-            );
-        $this->assertSame($expectedResult, $this->fixture->load()->getData());
     }
 }

@@ -1,43 +1,49 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
 namespace Magento\Setup\Module\Di\Compiler\Log;
+
+use Magento\Framework\Validator\Exception;
 
 class Log
 {
-    const GENERATION_ERROR = 1;
+    public const GENERATION_ERROR = 1;
 
-    const GENERATION_SUCCESS = 2;
+    public const GENERATION_SUCCESS = 2;
 
-    const COMPILATION_ERROR = 3;
+    public const COMPILATION_ERROR = 3;
 
-    const CONFIGURATION_ERROR = 4;
+    public const CONFIGURATION_ERROR = 4;
 
     /**
-     * Success log writer
+     * Success log writer.
      *
      * @var Writer\Console
      */
     protected $_successWriter;
 
     /**
-     * Error log writer
+     * Error log writer.
      *
      * @var Writer\Console
      */
     protected $_errorWriter;
 
     /**
-     * List of success log entries
+     * List of success log entries.
      *
      * @var array
      */
     protected $_successEntries = [];
 
     /**
-     * List of error entries
+     * List of error entries.
      *
      * @var array
      */
@@ -60,11 +66,12 @@ class Log
     }
 
     /**
-     * Add log message
+     * Add log message.
      *
      * @param string $type
      * @param string $key
      * @param string $message
+     *
      * @return void
      */
     public function add($type, $key, $message = '')
@@ -77,10 +84,11 @@ class Log
     }
 
     /**
-     * Write entries
+     * Write entries.
+     *
+     * @throws Exception
      *
      * @return void
-     * @throws \Magento\Framework\Validator\Exception
      */
     public function report()
     {
@@ -88,13 +96,14 @@ class Log
         $this->_errorWriter->write($this->_errorEntries);
         //do not take into account empty items since they are initialized in constructor.
         $errors = array_filter($this->_errorEntries);
+
         if (count($errors) > 0) {
-            throw new \Magento\Framework\Validator\Exception(__('Error during compilation'));
+            throw new Exception(__('Error during compilation'));
         }
     }
 
     /**
-     * Check whether error exists
+     * Check whether error exists.
      *
      * @return bool
      */
@@ -105,6 +114,7 @@ class Log
                 return true;
             }
         }
+
         return false;
     }
 }

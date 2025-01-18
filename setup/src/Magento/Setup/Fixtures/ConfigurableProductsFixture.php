@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -6,6 +9,7 @@
 
 namespace Magento\Setup\Fixtures;
 
+use Closure;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
@@ -13,8 +17,13 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Eav\Model\Entity\Attribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\CollectionFactory;
 use Magento\Framework\Exception\ValidatorException;
+use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Setup\Fixtures\AttributeSet\AttributeSetFixture;
+use Magento\Setup\Fixtures\AttributeSet\Pattern;
+use Magento\Setup\Fixtures\AttributeSet\SwatchesGenerator;
 use Magento\Setup\Model\DataGenerator;
 use Magento\Setup\Model\FixtureGenerator\ConfigurableProductGenerator;
+use Magento\Setup\Model\FixtureGenerator\ConfigurableProductTemplateGenerator;
 use Magento\Setup\Model\FixtureGenerator\ProductGenerator;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -23,7 +32,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Generated configurable options are not displayed individually in catalog
  * Support one of two formats:
  * 1. Distributed per Default and pre-defined attribute sets (@see setup/performance-toolkit/config/attributeSets.xml)
- * <configurable_products>{products amount}</configurable_products>
+ * <configurable_products>{products amount}</configurable_products>.
  *
  * 2.1 Generate products based on existing attribute set:
  * <configurable_products>
@@ -71,6 +80,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * If node "assign_entities_to_all_websites" from profile is set to "1" then products will be assigned to all websites
  *
  * @see setup/performance-toolkit/profiles/ce/small.xml
+ *
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
  * @SuppressWarnings(PHPMD.TooManyFields)
  */
@@ -92,12 +102,12 @@ class ConfigurableProductsFixture extends Fixture
     private $dataGenerator;
 
     /**
-     * @var AttributeSet\AttributeSetFixture
+     * @var AttributeSetFixture
      */
     private $attributeSetsFixture;
 
     /**
-     * @var AttributeSet\Pattern
+     * @var Pattern
      */
     private $attributePattern;
 
@@ -147,19 +157,19 @@ class ConfigurableProductsFixture extends Fixture
     private $priceProvider;
 
     /**
-     * @var \Magento\Setup\Fixtures\AttributeSet\SwatchesGenerator
+     * @var SwatchesGenerator
      */
     private $swatchesGenerator;
 
     /**
-     * @var \Magento\Framework\Serialize\SerializerInterface
+     * @var SerializerInterface
      */
     private $serializer;
 
     /**
      * @param FixtureModel $fixtureModel
-     * @param AttributeSet\AttributeSetFixture $attributeSetsFixture
-     * @param AttributeSet\Pattern $attributePattern
+     * @param AttributeSetFixture $attributeSetsFixture
+     * @param Pattern $attributePattern
      * @param ProductGenerator $productGenerator
      * @param CollectionFactory $attributeCollectionFactory
      * @param ConfigurableProductGenerator $configurableProductGenerator
@@ -168,14 +178,15 @@ class ConfigurableProductsFixture extends Fixture
      * @param CategoryResolver $categoryResolver
      * @param WebsiteCategoryProvider $websiteCategoryProvider
      * @param PriceProvider $priceProvider
-     * @param AttributeSet\SwatchesGenerator $swatchesGenerator
-     * @param \Magento\Framework\Serialize\SerializerInterface $serializer
+     * @param SwatchesGenerator $swatchesGenerator
+     * @param SerializerInterface $serializer
+     *
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         FixtureModel $fixtureModel,
-        \Magento\Setup\Fixtures\AttributeSet\AttributeSetFixture $attributeSetsFixture,
-        \Magento\Setup\Fixtures\AttributeSet\Pattern $attributePattern,
+        AttributeSetFixture $attributeSetsFixture,
+        Pattern $attributePattern,
         ProductGenerator $productGenerator,
         CollectionFactory $attributeCollectionFactory,
         ConfigurableProductGenerator $configurableProductGenerator,
@@ -184,8 +195,8 @@ class ConfigurableProductsFixture extends Fixture
         CategoryResolver $categoryResolver,
         WebsiteCategoryProvider $websiteCategoryProvider,
         PriceProvider $priceProvider,
-        \Magento\Setup\Fixtures\AttributeSet\SwatchesGenerator $swatchesGenerator,
-        \Magento\Framework\Serialize\SerializerInterface $serializer
+        SwatchesGenerator $swatchesGenerator,
+        SerializerInterface $serializer,
     ) {
         parent::__construct($fixtureModel);
         $this->attributeSetsFixture = $attributeSetsFixture;
@@ -203,13 +214,13 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * @SuppressWarnings(PHPMD)
      */
     public function execute()
     {
-        if (!$this->fixtureModel->getValue('configurable_products', [])) {
+        if (! $this->fixtureModel->getValue('configurable_products', [])) {
             return;
         }
         $simpleProductsCount = $this->fixtureModel->getValue('simple_products', 0);
@@ -222,9 +233,10 @@ class ConfigurableProductsFixture extends Fixture
             $configurableSku = $configurableConfig['sku'];
             $productAmount = $this->productsAmountProvider->getAmount(
                 $configurableConfig['products'],
-                $configurableSku
+                $configurableSku,
             );
-            if (!$productAmount) {
+
+            if (! $productAmount) {
                 continue;
             }
             $searchTerms = $this->getSearchTerms();
@@ -234,7 +246,7 @@ class ConfigurableProductsFixture extends Fixture
                 $productAmount,
                 $maxAmountOfWordsShortDescription,
                 $minAmountOfWordsShortDescription,
-                'shortDescription'
+                'shortDescription',
             );
             $descriptionClosure = $this->getDescriptionClosure(
                 $searchTerms,
@@ -242,11 +254,11 @@ class ConfigurableProductsFixture extends Fixture
                 $productAmount,
                 $maxAmountOfWordsDescription,
                 $minAmountOfWordsDescription,
-                'description'
+                'description',
             );
             $variationCount = $configurableConfig['variationCount'];
             $attributeSet = $configurableConfig['attributeSet'];
-            $variationSkuClosure = function ($productId, $entityNumber) use ($configurableSku, $variationCount) {
+            $variationSkuClosure = function($productId, $entityNumber) use ($configurableSku, $variationCount) {
                 $variationIndex = $this->getConfigurableVariationIndex($entityNumber, $variationCount);
                 $productId = $this->getConfigurableProductIndex($entityNumber, $variationCount);
 
@@ -255,10 +267,8 @@ class ConfigurableProductsFixture extends Fixture
             $fixture = [
                 'name' => $variationSkuClosure,
                 'sku' => $variationSkuClosure,
-                'price' => function ($index, $entityNumber) {
-                    return $this->priceProvider->getPrice($entityNumber);
-                },
-                'website_ids' => function ($index, $entityNumber) use ($variationCount) {
+                'price' => fn($index, $entityNumber) => $this->priceProvider->getPrice($entityNumber),
+                'website_ids' => function($index, $entityNumber) use ($variationCount) {
                     $configurableIndex = $this->getConfigurableProductIndex($entityNumber, $variationCount);
 
                     return $this->websiteCategoryProvider->getWebsiteIds($configurableIndex);
@@ -266,15 +276,13 @@ class ConfigurableProductsFixture extends Fixture
                 'attribute_set_id' => $attributeSet['id'],
                 'additional_attributes' => $this->getAdditionalAttributesClosure(
                     $attributeSet['attributes'],
-                    $variationCount
+                    $variationCount,
                 ),
                 'visibility' => Visibility::VISIBILITY_NOT_VISIBLE,
             ];
             $this->productGenerator->generate($productAmount * $variationCount, $fixture);
 
-            $skuClosure = function ($productId, $entityNumber) use ($configurableSku) {
-                return sprintf($configurableSku, $entityNumber + $this->getNewProductStartIndex());
-            };
+            $skuClosure = fn($productId, $entityNumber) => sprintf($configurableSku, $entityNumber + $this->getNewProductStartIndex());
             $fixture = [
                 '_variation_sku_pattern' => $this->getFirstVariationSkuPattern($configurableConfig),
                 '_attributes_count' => count($attributeSet['attributes']),
@@ -297,28 +305,67 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getActionTitle()
+    {
+        return 'Generating configurable products';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function introduceParamLabels()
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @param OutputInterface $output
+     *
+     * @throws ValidatorException
+     *
+     * @return void
+     */
+    public function printInfo(OutputInterface $output)
+    {
+        if (! $this->fixtureModel->getValue('configurable_products', [])) {
+            return;
+        }
+
+        $configurableProductConfig = $this->prepareConfigurableConfig(
+            $this->getDefaultAttributeSetsWithAttributes(),
+        );
+        $generalAmount = array_sum(array_column($configurableProductConfig, 'products'));
+
+        $output->writeln(sprintf('<info> |- Configurable products: %s</info>', $generalAmount));
+    }
+
+    /**
      * Get the closure to return the website IDs.
      *
-     * @return \Closure
+     * @return Closure
+     *
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
     private function getConfigurableWebsiteIdsClosure()
     {
-        return function ($index, $entityNumber) {
-            return $this->websiteCategoryProvider->getWebsiteIds($entityNumber + $this->getNewProductStartIndex());
-        };
+        return fn($index, $entityNumber) => $this->websiteCategoryProvider->getWebsiteIds($entityNumber + $this->getNewProductStartIndex());
     }
 
     /**
-     * Get product distribution per attribute sets for default attribute sets
+     * Get product distribution per attribute sets for default attribute sets.
      *
      * @param array $defaultAttributeSets
      * @param int $configurableProductsCount
+     *
      * @return array
      */
     private function getDefaultAttributeSetsConfig(array $defaultAttributeSets, $configurableProductsCount)
     {
-        $attributeSetClosure = function ($index) use ($defaultAttributeSets) {
+        $attributeSetClosure = function($index) use ($defaultAttributeSets) {
             $attributeSetAmount = count(array_keys($defaultAttributeSets));
             // phpcs:ignore
             mt_srand($index);
@@ -331,14 +378,17 @@ class ConfigurableProductsFixture extends Fixture
                 : 'Default';
         };
         $productsPerSet = [];
+
         for ($i = 1; $i <= $configurableProductsCount; $i++) {
             $attributeSet = $attributeSetClosure($i);
-            if (!isset($productsPerSet[$attributeSet])) {
+
+            if (! isset($productsPerSet[$attributeSet])) {
                 $productsPerSet[$attributeSet] = 0;
             }
             $productsPerSet[$attributeSet]++;
         }
         $configurableConfig = [];
+
         foreach ($defaultAttributeSets as $attributeSetName => $attributeSet) {
             $skuSuffix = $attributeSetName === 'Default' ? '' : ' - ' . $attributeSetName;
             $configurableConfig[] = [
@@ -352,10 +402,12 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Get sku pattern in format "{configurable-sku}{configurable-index}-option 1" for get associated product ids
+     * Get sku pattern in format "{configurable-sku}{configurable-index}-option 1" for get associated product ids.
      *
      * @param array $configurableConfig
-     * @see \Magento\Setup\Model\FixtureGenerator\ConfigurableProductTemplateGenerator
+     *
+     * @see ConfigurableProductTemplateGenerator
+     *
      * @return string
      */
     private function getFirstVariationSkuPattern($configurableConfig)
@@ -366,13 +418,13 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Get start product index which used in product name, sku, url generation
+     * Get start product index which used in product name, sku, url generation.
      *
      * @return int
      */
     private function getNewProductStartIndex()
     {
-        if (null === $this->productStartIndex) {
+        if ($this->productStartIndex === null) {
             $this->productStartIndex = $this->productCollectionFactory->create()
                 ->addFieldToFilter('type_id', Configurable::TYPE_CODE)
                 ->getSize() + 1;
@@ -382,10 +434,11 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Get configurable product index number
+     * Get configurable product index number.
      *
      * @param int $entityNumber
      * @param int $variationCount
+     *
      * @return float
      */
     private function getConfigurableProductIndex($entityNumber, $variationCount)
@@ -394,52 +447,16 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Get configurable variation index number
+     * Get configurable variation index number.
      *
      * @param int $entityNumber
      * @param int $variationCount
+     *
      * @return float
      */
     private function getConfigurableVariationIndex($entityNumber, $variationCount)
     {
         return $entityNumber % $variationCount + 1;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getActionTitle()
-    {
-        return 'Generating configurable products';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function introduceParamLabels()
-    {
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param OutputInterface $output
-     * @return void
-     * @throws ValidatorException
-     */
-    public function printInfo(OutputInterface $output)
-    {
-        if (!$this->fixtureModel->getValue('configurable_products', [])) {
-            return;
-        }
-
-        $configurableProductConfig = $this->prepareConfigurableConfig(
-            $this->getDefaultAttributeSetsWithAttributes()
-        );
-        $generalAmount = array_sum(array_column($configurableProductConfig, 'products'));
-
-        $output->writeln(sprintf('<info> |- Configurable products: %s</info>', $generalAmount));
     }
 
     /**
@@ -459,10 +476,12 @@ class ConfigurableProductsFixture extends Fixture
                 $attributesData = array_key_exists(0, $attributeSet['attributes']['attribute'])
                     ? $attributeSet['attributes']['attribute'] : [$attributeSet['attributes']['attribute']];
                 $attributes = [];
+
                 foreach ($attributesData as $attributeData) {
                     $values = [];
                     $optionsData = array_key_exists(0, $attributeData['options']['option'])
                         ? $attributeData['options']['option'] : [$attributeData['options']['option']];
+
                     foreach ($optionsData as $optionData) {
                         $values[] = $optionData['label'];
                     }
@@ -471,7 +490,7 @@ class ConfigurableProductsFixture extends Fixture
                 }
                 $attributeSetData[$attributeSet['name']] = [
                     'name' => $attributeSet['name'],
-                    'attributes' => $attributes
+                    'attributes' => $attributes,
                 ];
             }
         }
@@ -479,28 +498,30 @@ class ConfigurableProductsFixture extends Fixture
         $attributeOptions = range(1, $this->getConfigurableProductsVariationsValue());
         array_walk(
             $attributeOptions,
-            function (&$item, $key) {
+            function(&$item, $key) {
                 $item = 'option ' . ($key + 1);
-            }
+            },
         );
         $attributeSetData['Default'] = [
             'name' => 'Default',
             'attributes' => [
                 [
                     'name' => 'configurable_variation',
-                    'values' => $attributeOptions
-                ]
-            ]
+                    'values' => $attributeOptions,
+                ],
+            ],
         ];
 
         return $attributeSetData;
     }
 
     /**
-     * Get configurable product configuration for generate products per attribute set
+     * Get configurable product configuration for generate products per attribute set.
+     *
+     * @throws ValidatorException
      *
      * @return array
-     * @throws ValidatorException
+     *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     private function getConfigurableProductConfig()
@@ -508,25 +529,25 @@ class ConfigurableProductsFixture extends Fixture
         $defaultAttributeSets = $this->getDefaultAttributeSetsWithAttributes();
         $configurableProductConfig = $this->prepareConfigurableConfig($defaultAttributeSets);
 
-        $configurableProductConfig = array_map(function ($config) {
-            return array_merge(
-                [
-                    'attributeSet' => null,
-                    'attributes' => null,
-                    'options' => null,
-                    'sku' => null,
-                    'category' => null,
-                    'swatches' => null,
-                ],
-                $config
-            );
-        }, $configurableProductConfig);
+        $configurableProductConfig = array_map(fn($config) => array_merge(
+            [
+                'attributeSet' => null,
+                'attributes' => null,
+                'options' => null,
+                'sku' => null,
+                'category' => null,
+                'swatches' => null,
+            ],
+            $config,
+        ), $configurableProductConfig);
 
         $skuPull = [];
+
         foreach ($configurableProductConfig as $i => &$config) {
             $attributeSet = $config['attributeSet'];
             $attributes = $config['attributes'];
             $options = (int)$config['options'];
+
             if ($attributeSet && isset($defaultAttributeSets[$attributeSet])) {
                 // process default attribute sets
                 $attributeSet = $defaultAttributeSets[$attributeSet];
@@ -537,11 +558,9 @@ class ConfigurableProductsFixture extends Fixture
                 $options = array_column($attributes, 'options');
                 $attributes = count($attributes);
             } elseif ($attributes && $options) {
-                $attributes  = (int)$attributes;
+                $attributes = (int)$attributes;
                 // convert attributes and options to array for process custom attribute set creation
-                $attributesData = array_map(function ($options) use ($config) {
-                    return ['options' => $options, 'swatches' => $config['swatches']];
-                }, array_fill(0, $attributes, $options));
+                $attributesData = array_map(fn($options) => ['options' => $options, 'swatches' => $config['swatches']], array_fill(0, $attributes, $options));
 
                 $attributeSet = $this->getCustomAttributeSet($attributesData);
             }
@@ -549,6 +568,7 @@ class ConfigurableProductsFixture extends Fixture
             // do not process if any required option is missed
             if (count(array_filter([$attributeSet, $attributes, $options])) !== 3) {
                 unset($configurableProductConfig[$i]);
+
                 continue;
             }
 
@@ -563,7 +583,7 @@ class ConfigurableProductsFixture extends Fixture
 
         if (count($skuPull) !== count(array_unique($skuPull))) {
             throw new ValidatorException(
-                __("The configurable product's SKU pattern must be unique in an attribute set.")
+                __("The configurable product's SKU pattern must be unique in an attribute set."),
             );
         }
 
@@ -577,17 +597,20 @@ class ConfigurableProductsFixture extends Fixture
      * else return configuration from profile.
      *
      * @param array $defaultAttributeSets
-     * @return array
+     *
      * @throws ValidatorException
+     *
+     * @return array
      */
     private function prepareConfigurableConfig($defaultAttributeSets)
     {
         $configurableConfigs = $this->fixtureModel->getValue('configurable_products', []);
         $configurableConfigs = is_array($configurableConfigs) ? $configurableConfigs : (int)$configurableConfigs;
+
         if (is_int($configurableConfigs)) {
             $configurableConfigs = $this->getDefaultAttributeSetsConfig($defaultAttributeSets, $configurableConfigs);
         } elseif (isset($configurableConfigs['config'])) {
-            if (!isset($configurableConfigs['config'][0])) {
+            if (! isset($configurableConfigs['config'][0])) {
                 // in case when one variation is passed
                 $configurableConfigs = [$configurableConfigs['config']];
             } else {
@@ -596,7 +619,7 @@ class ConfigurableProductsFixture extends Fixture
 
             foreach ($configurableConfigs as &$config) {
                 if (isset($config['attributes']) && is_array($config['attributes'])) {
-                    if (!isset($config['attributes']['attribute'][0])) {
+                    if (! isset($config['attributes']['attribute'][0])) {
                         $config['attributes'] = [$config['attributes']['attribute']];
                     } else {
                         $config['attributes'] = $config['attributes']['attribute'];
@@ -605,7 +628,7 @@ class ConfigurableProductsFixture extends Fixture
             }
         } else {
             throw new ValidatorException(
-                __('The configurable product config is invalid. Verify the product and try again.')
+                __('The configurable product config is invalid. Verify the product and try again.'),
             );
         }
 
@@ -616,24 +639,23 @@ class ConfigurableProductsFixture extends Fixture
      * Get closure to return configurable category.
      *
      * @param array $config
-     * @return \Closure
+     *
+     * @return Closure
      */
     private function getConfigurableCategory($config)
     {
         if (isset($config['category'])) {
-            return function ($index, $entityNumber) use ($config) {
+            return function($index, $entityNumber) use ($config) {
                 $websiteClosure = $this->getConfigurableWebsiteIdsClosure();
                 $websites = $websiteClosure($index, $entityNumber);
 
                 return $this->categoryResolver->getCategory(
                     array_shift($websites),
-                    $config['category']
+                    $config['category'],
                 );
             };
         } else {
-            return function ($index, $entityNumber) {
-                return $this->websiteCategoryProvider->getCategoryId($entityNumber);
-            };
+            return fn($index, $entityNumber) => $this->websiteCategoryProvider->getCategoryId($entityNumber);
         }
     }
 
@@ -642,15 +664,18 @@ class ConfigurableProductsFixture extends Fixture
      *
      * @param array $config
      * @param string $attributeSetName
+     *
      * @return string
      */
     private function getConfigurableSkuPattern($config, $attributeSetName)
     {
-        $sku = isset($config['sku']) ? $config['sku'] : null;
-        if (!$sku) {
+        $sku = $config['sku'] ?? null;
+
+        if (! $sku) {
             $sku = 'Configurable Product ' . $attributeSetName . ' %s';
         }
-        if (false === strpos($sku, '%s')) {
+
+        if (! str_contains($sku, '%s')) {
             $sku .= ' %s';
         }
 
@@ -658,9 +683,10 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Provide attribute set based on attributes configuration
+     * Provide attribute set based on attributes configuration.
      *
      * @param array $attributes
+     *
      * @return array
      */
     private function getCustomAttributeSet(array $attributes)
@@ -672,12 +698,12 @@ class ConfigurableProductsFixture extends Fixture
             $attributeSetName,
             count($attributes),
             array_column($attributes, 'options'),
-            function ($index, $attribute) use ($attributeSetName, $attributes, $attributeSetHash) {
+            function($index, $attribute) use ($attributeSetName, $attributes, $attributeSetHash) {
                 $swatch = [];
-                $attributeCode = substr(
+                $attributeCode = mb_substr(
                     sprintf('ca_%s_%s', $index, $attributeSetHash),
                     0,
-                    Attribute::ATTRIBUTE_CODE_MAX_LENGTH
+                    Attribute::ATTRIBUTE_CODE_MAX_LENGTH,
                 );
                 $data = [
                     'attribute_code' => $attributeCode,
@@ -692,18 +718,18 @@ class ConfigurableProductsFixture extends Fixture
                     $data['used_in_product_listing'] = 1;
 
                     $swatch = $this->swatchesGenerator->generateSwatchData(
-                        (int) $attributes[$index-1]['options'],
+                        (int)$attributes[$index - 1]['options'],
                         $attributeSetName . $index,
-                        $attributes[$index-1]['swatches']
+                        $attributes[$index - 1]['swatches'],
                     );
                 }
 
                 return array_replace_recursive(
                     $attribute,
                     $data,
-                    $swatch
+                    $swatch,
                 );
-            }
+            },
         );
 
         return $this->attributeSetsFixture->createAttributeSet($pattern);
@@ -716,9 +742,10 @@ class ConfigurableProductsFixture extends Fixture
      */
     private function getSearchConfig()
     {
-        if (!$this->searchConfig) {
+        if (! $this->searchConfig) {
             $this->searchConfig = $this->fixtureModel->getValue('search_config', null);
         }
+
         return $this->searchConfig;
     }
 
@@ -726,6 +753,7 @@ class ConfigurableProductsFixture extends Fixture
      * Get value of search configuration property.
      *
      * @param string $name
+     *
      * @return int|mixed
      */
     private function getSearchConfigValue($name)
@@ -742,12 +770,14 @@ class ConfigurableProductsFixture extends Fixture
     private function getSearchTerms()
     {
         $searchTerms = $this->fixtureModel->getValue('search_terms', null);
+
         if ($searchTerms !== null) {
             $searchTerms = array_key_exists(0, $searchTerms['search_term'])
                 ? $searchTerms['search_term'] : [$searchTerms['search_term']];
         } else {
             $searchTerms = [];
         }
+
         return $searchTerms;
     }
 
@@ -766,25 +796,28 @@ class ConfigurableProductsFixture extends Fixture
      *
      * @param array $attributes
      * @param int $variationCount
-     * @return \Closure
+     *
+     * @return Closure
+     *
      * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
     private function getAdditionalAttributesClosure(array $attributes, $variationCount)
     {
-        $optionsPerAttribute = array_map(function ($attr) {
-            return count($attr['values']);
-        }, $attributes);
+        $optionsPerAttribute = array_map(fn($attr) => count($attr['values']), $attributes);
         $variationsMatrix = $this->generateVariationsMatrix(count($attributes), $optionsPerAttribute);
 
-        return function ($attributeSetId, $index, $entityNumber) use ($attributes, $variationCount, $variationsMatrix) {
+        return function($attributeSetId, $index, $entityNumber) use ($attributes, $variationCount, $variationsMatrix) {
             $variationIndex = $this->getConfigurableVariationIndex($entityNumber, $variationCount) - 1;
+
             if (isset($variationsMatrix[$variationIndex])) {
                 $tempProductData = [];
+
                 foreach ($variationsMatrix[$variationIndex] as $attributeIndex => $optionIndex) {
                     $attributeCode = $attributes[$attributeIndex]['name'];
                     $option = $attributes[$attributeIndex]['values'][$optionIndex];
                     $tempProductData[$attributeCode] = $option;
                 }
+
                 return $tempProductData;
             }
 
@@ -797,14 +830,17 @@ class ConfigurableProductsFixture extends Fixture
      *
      * @param int $attributesPerSet
      * @param int $optionsPerAttribute
+     *
      * @return array
      */
     private function generateVariationsMatrix($attributesPerSet, $optionsPerAttribute)
     {
         $variationsMatrix = null;
+
         for ($i = 0; $i < $attributesPerSet; $i++) {
             $variationsMatrix[] = range(0, $optionsPerAttribute[$i] - 1);
         }
+
         return $this->generateVariations($variationsMatrix);
     }
 
@@ -812,22 +848,25 @@ class ConfigurableProductsFixture extends Fixture
      * Build all possible variations based on attributes and options count.
      *
      * @param array|null $variationsMatrix
+     *
      * @return array
      */
     private function generateVariations($variationsMatrix)
     {
-        if (!$variationsMatrix) {
+        if (! $variationsMatrix) {
             return [[]];
         }
         $set = array_shift($variationsMatrix);
         $subset = $this->generateVariations($variationsMatrix);
         $result = [];
+
         foreach ($set as $value) {
             foreach ($subset as $subValue) {
                 array_unshift($subValue, $value);
                 $result[] = $subValue;
             }
         }
+
         return $result;
     }
 
@@ -835,6 +874,7 @@ class ConfigurableProductsFixture extends Fixture
      * Get configurable option sku pattern.
      *
      * @param string $skuPattern
+     *
      * @return string
      */
     private function getConfigurableOptionSkuPattern($skuPattern)
@@ -851,7 +891,8 @@ class ConfigurableProductsFixture extends Fixture
      * @param int $maxAmountOfWordsDescription
      * @param int $minAmountOfWordsDescription
      * @param string $descriptionPrefix
-     * @return \Closure
+     *
+     * @return Closure
      */
     private function getDescriptionClosure(
         $searchTerms,
@@ -859,14 +900,14 @@ class ConfigurableProductsFixture extends Fixture
         $configurableProductsCount,
         $maxAmountOfWordsDescription,
         $minAmountOfWordsDescription,
-        $descriptionPrefix = 'description'
+        $descriptionPrefix = 'description',
     ) {
-        if (null === $this->dataGenerator) {
+        if ($this->dataGenerator === null) {
             $fileName = __DIR__ . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'dictionary.csv';
             $this->dataGenerator = new DataGenerator($fileName);
         }
 
-        return function ($index) use (
+        return function($index) use (
             $searchTerms,
             $simpleProductsCount,
             $configurableProductsCount,
@@ -875,19 +916,20 @@ class ConfigurableProductsFixture extends Fixture
             $descriptionPrefix
         ) {
             $countSearchTerms = is_array($searchTerms) ? count($searchTerms) : 0;
-            $count = !$searchTerms
+            $count = ! $searchTerms
                 ? 0
                 : round(
                     $searchTerms[$index % $countSearchTerms]['count'] * (
                         $configurableProductsCount / ($simpleProductsCount + $configurableProductsCount)
-                    )
+                    ),
                 );
             // phpcs:ignore
             mt_srand($index);
+
             return $this->dataGenerator->generate(
                 $minAmountOfWordsDescription,
                 $maxAmountOfWordsDescription,
-                $descriptionPrefix . '-' . $index
+                $descriptionPrefix . '-' . $index,
             ) .
             ($index <= ($count * $countSearchTerms) ? ' ' .
             $searchTerms[$index % $countSearchTerms]['term'] : '');
@@ -895,9 +937,10 @@ class ConfigurableProductsFixture extends Fixture
     }
 
     /**
-     * Convert attribute set data to db format for use in simple product generation
+     * Convert attribute set data to db format for use in simple product generation.
      *
      * @param array $attributeSet
+     *
      * @return array
      */
     private function convertAttributesToDBFormat(array $attributeSet)
@@ -905,19 +948,22 @@ class ConfigurableProductsFixture extends Fixture
         $attributeSetName = $attributeSet['name'];
         $attributeSetId = null;
         $attributes = [];
+
         foreach ($attributeSet['attributes'] as $attributeData) {
             $attributeCollection = $this->attributeCollectionFactory->create();
 
             $attributeCollection->setAttributeSetFilterBySetName($attributeSetName, Product::ENTITY);
             $attributeCollection->addFieldToFilter(
                 'attribute_code',
-                $attributeData['name']
+                $attributeData['name'],
             );
+
             /** @var Attribute $attribute */
             foreach ($attributeCollection as $attribute) {
                 $attributeSetId = $attribute->getAttributeSetId();
                 $values = [];
                 $options = $attribute->getOptions();
+
                 foreach ($options ?: [] as $option) {
                     if ($option->getValue()) {
                         $values[] = $option->getValue();
@@ -927,7 +973,7 @@ class ConfigurableProductsFixture extends Fixture
                     [
                         'name' => $attribute->getAttributeCode(),
                         'id' => $attribute->getAttributeId(),
-                        'values' => $values
+                        'values' => $values,
                     ];
             }
         }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -17,15 +18,12 @@ class ParagraphMixinTest extends TestCase
      */
     private $mixin;
 
-    protected function setUp(): void
-    {
-        $this->mixin = new ParagraphMixin();
-    }
-
     /**
      * @dataProvider getTestData
+     *
+     * @test
      */
-    public function testApply($subject, $expectedResult)
+    public function apply($subject, $expectedResult)
     {
         $this->assertEquals($expectedResult, $this->mixin->apply($subject));
     }
@@ -44,8 +42,13 @@ class ParagraphMixinTest extends TestCase
 
                 '<p>Lorem ipsum dolor sit amet.</p>' . PHP_EOL
                 . '<p>Consectetur adipiscing elit.</p>' . PHP_EOL
-                . '<p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>'
-            ]
+                . '<p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>',
+            ],
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->mixin = new ParagraphMixin;
     }
 }

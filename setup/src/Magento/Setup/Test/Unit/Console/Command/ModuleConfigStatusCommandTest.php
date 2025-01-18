@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -25,9 +26,12 @@ class ModuleConfigStatusCommandTest extends TestCase
      * @param array $currentConfig
      * @param array $correctConfig
      * @param string $expectedOutput
+     *
      * @dataProvider executeDataProvider
+     *
+     * @test
      */
-    public function testExecute(array $currentConfig, array $correctConfig, string $expectedOutput)
+    public function execute(array $currentConfig, array $correctConfig, string $expectedOutput)
     {
         $configReader = $this->createMock(Reader::class);
         $configReader->expects($this->once())

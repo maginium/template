@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
@@ -12,14 +13,14 @@ use Laminas\ServiceManager\Factory\FactoryInterface;
 use Magento\Framework\App\ObjectManager;
 
 /**
- * Instantiates the type via Magento object manager
+ * Instantiates the type via Magento object manager.
  */
 class MagentoDiFactory implements FactoryInterface
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
-    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null)
     {
         return ObjectManager::getInstance()->get($requestedName);
     }

@@ -1,21 +1,25 @@
 <?php
+
+declare(strict_types=1);
+
 /**
- *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 
 namespace Magento\Setup\Module\Di\Compiler;
 
+use Magento\Framework\ObjectManager\ConfigInterface;
+
 class ArgumentsResolver
 {
     /**
-     * @var \Magento\Framework\ObjectManager\ConfigInterface
+     * @var ConfigInterface
      */
     private $diContainerConfig;
 
     /**
-     * Shared instance argument pattern used for configuration
+     * Shared instance argument pattern used for configuration.
      *
      * @var array
      */
@@ -24,7 +28,7 @@ class ArgumentsResolver
     ];
 
     /**
-     * Instance argument pattern used for configuration
+     * Instance argument pattern used for configuration.
      *
      * @var array
      */
@@ -33,7 +37,7 @@ class ArgumentsResolver
     ];
 
     /**
-     * Value argument pattern used for configuration
+     * Value argument pattern used for configuration.
      *
      * @var array
      */
@@ -42,7 +46,7 @@ class ArgumentsResolver
     ];
 
     /**
-     * Value null argument pattern used for configuration
+     * Value null argument pattern used for configuration.
      *
      * @var array
      */
@@ -51,7 +55,7 @@ class ArgumentsResolver
     ];
 
     /**
-     * Value configured array argument pattern used for configuration
+     * Value configured array argument pattern used for configuration.
      *
      * @var array
      */
@@ -60,42 +64,45 @@ class ArgumentsResolver
     ];
 
     /**
-     * Configured argument pattern used for configuration
+     * Configured argument pattern used for configuration.
      *
      * @var array
      */
     private $configuredPattern = [
         '_a_' => null,
-        '_d_' => null
+        '_d_' => null,
     ];
 
     /**
-     * @param \Magento\Framework\ObjectManager\ConfigInterface $diContainerConfig
+     * @param ConfigInterface $diContainerConfig
      */
-    public function __construct(\Magento\Framework\ObjectManager\ConfigInterface $diContainerConfig)
+    public function __construct(ConfigInterface $diContainerConfig)
     {
         $this->diContainerConfig = $diContainerConfig;
     }
 
     /**
-     * Returns resolved constructor arguments for given instance type
+     * Returns resolved constructor arguments for given instance type.
      *
      * @param string $instanceType
      * @param ConstructorArgument[] $constructor
+     *
      * @return array|null
      */
     public function getResolvedConstructorArguments($instanceType, $constructor)
     {
-        if (!$constructor) {
-            return null;
+        if (! $constructor) {
+            return;
         }
         $configuredArguments = $this->getConfiguredArguments($instanceType);
 
         $arguments = [];
+
         /** @var ConstructorArgument $constructorArgument */
         foreach ($constructor as $constructorArgument) {
             $argument = $this->getNonObjectArgument(null);
-            if (!$constructorArgument->isRequired()) {
+
+            if (! $constructorArgument->isRequired()) {
                 $argument = $this->getNonObjectArgument($constructorArgument->getDefaultValue());
             } elseif ($constructorArgument->getType()) {
                 $argument = $this->getInstanceArgument($constructorArgument->getType());
@@ -104,27 +111,32 @@ class ArgumentsResolver
             if (isset($configuredArguments[$constructorArgument->getName()])) {
                 $argument = $this->getConfiguredArgument(
                     $configuredArguments[$constructorArgument->getName()],
-                    $constructorArgument
+                    $constructorArgument,
                 );
             }
             $arguments[$constructorArgument->getName()] = $argument;
         }
+
         return $arguments;
     }
 
     /**
-     * Returns formatted configured argument
+     * Returns formatted configured argument.
      *
      * @param array $configuredArgument
      * @param ConstructorArgument $constructorArgument
+     *
      * @return mixed
      */
     private function getConfiguredArgument($configuredArgument, ConstructorArgument $constructorArgument)
     {
         if ($constructorArgument->getType()) {
             $argument = $this->getConfiguredInstanceArgument($configuredArgument);
+
             return $argument;
-        } elseif (isset($configuredArgument['argument'])) {
+        }
+
+        if (isset($configuredArgument['argument'])) {
             return $this->getGlobalArgument($configuredArgument['argument'], $constructorArgument->getDefaultValue());
         }
 
@@ -132,25 +144,28 @@ class ArgumentsResolver
     }
 
     /**
-     * Returns configured array attribute
+     * Returns configured array attribute.
      *
      * @param array $array
+     *
      * @return mixed
      */
     private function getConfiguredArrayAttribute($array)
     {
         foreach ($array as $key => $value) {
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 continue;
             }
 
             if (isset($value['instance'])) {
                 $array[$key] = $this->getConfiguredInstanceArgument($value);
+
                 continue;
             }
 
             if (isset($value['argument'])) {
                 $array[$key] = $this->getGlobalArgument($value['argument'], null);
+
                 continue;
             }
 
@@ -161,14 +176,16 @@ class ArgumentsResolver
     }
 
     /**
-     * Returns configured instance argument
+     * Returns configured instance argument.
      *
      * @param array $config
+     *
      * @return array|mixed
      */
     private function getConfiguredInstanceArgument(array $config)
     {
         $argument = $this->getInstanceArgument($config['instance']);
+
         if (isset($config['shared'])) {
             if ($config['shared']) {
                 $pattern = $this->sharedInstancePattern;
@@ -179,34 +196,38 @@ class ArgumentsResolver
             }
             $argument = $pattern;
         }
+
         return $argument;
     }
 
     /**
-     * Return configured arguments
+     * Return configured arguments.
      *
      * @param string $instanceType
+     *
      * @return array
      */
     private function getConfiguredArguments($instanceType)
     {
         $configuredArguments = $this->diContainerConfig->getArguments($instanceType);
+
         return array_map(
-            function ($type) {
+            function($type) {
                 if (isset($type['instance'])) {
                     $type['instance'] = ltrim($type['instance'], '\\');
                 }
 
                 return $type;
             },
-            $configuredArguments
+            $configuredArguments,
         );
     }
 
     /**
-     * Returns instance argument
+     * Returns instance argument.
      *
      * @param string $instanceType
+     *
      * @return array|mixed
      */
     private function getInstanceArgument($instanceType)
@@ -218,13 +239,15 @@ class ArgumentsResolver
             $argument = $this->notSharedInstancePattern;
             $argument['_ins_'] = $instanceType;
         }
+
         return $argument;
     }
 
     /**
-     * Returns non object argument
+     * Returns non object argument.
      *
      * @param mixed $value
+     *
      * @return array
      */
     private function getNonObjectArgument($value)
@@ -234,29 +257,33 @@ class ArgumentsResolver
         }
 
         $argument = $this->valuePattern;
+
         if (is_array($value)) {
             if ($this->isConfiguredArray($value)) {
                 $value = $this->getConfiguredArrayAttribute($value);
                 $argument = $this->configuredArrayValuePattern;
                 $argument['_vac_'] = $value;
+
                 return $argument;
             }
         }
 
         $argument['_v_'] = $value;
+
         return $argument;
     }
 
     /**
-     * Whether array is configurable
+     * Whether array is configurable.
      *
      * @param array $value
+     *
      * @return bool
      */
     private function isConfiguredArray($value)
     {
         foreach ($value as $configuredValue) {
-            if (!is_array($configuredValue)) {
+            if (! is_array($configuredValue)) {
                 continue;
             }
 
@@ -273,10 +300,11 @@ class ArgumentsResolver
     }
 
     /**
-     * Returns global argument
+     * Returns global argument.
      *
      * @param string $value
      * @param string $default
+     *
      * @return array
      */
     private function getGlobalArgument($value, $default)
@@ -284,6 +312,7 @@ class ArgumentsResolver
         $argument = $this->configuredPattern;
         $argument['_a_'] = $value;
         $argument['_d_'] = $default;
+
         return $argument;
     }
 }
