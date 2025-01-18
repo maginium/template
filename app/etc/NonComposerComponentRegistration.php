@@ -45,7 +45,7 @@ class NonComposerComponentRegistration
     public function __construct(array $globPatterns)
     {
         // Set the base directory two levels up from the current directory.
-        $this->baseDir = dirname(__DIR__, 1) . SP;
+        $this->baseDir = dirname(__DIR__, 2) . SP;
 
         // Load environment variables from the .env file in the base directory.
         $dotenv = Dotenv::createImmutable($this->baseDir);
