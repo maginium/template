@@ -72,24 +72,6 @@ class DiCompileCommandTest extends TestCase
     /**
      * @test
      */
-    public function executeModulesNotEnabled()
-    {
-        $this->deploymentConfigMock->expects($this->once())
-            ->method('get')
-            ->with(ConfigOptionsListConstants::KEY_MODULES)
-            ->willReturn(null);
-        $tester = new CommandTester($this->command);
-        $tester->execute([]);
-        $this->assertEquals(
-            'You cannot run this command because modules are not enabled. You can enable modules by running the '
-            . "'module:enable --all' command." . PHP_EOL,
-            $tester->getDisplay(),
-        );
-    }
-
-    /**
-     * @test
-     */
     public function execute()
     {
         $this->directoryListMock->expects($this->atLeastOnce())->method('getPath')->willReturn(null);
@@ -162,6 +144,24 @@ class DiCompileCommandTest extends TestCase
             explode(PHP_EOL, $tester->getDisplay()),
         );
         $this->assertSame(DiCompileCommand::NAME, $this->command->getName());
+    }
+
+    /**
+     * @test
+     */
+    public function executeModulesNotEnabled()
+    {
+        $this->deploymentConfigMock->expects($this->once())
+            ->method('get')
+            ->with(ConfigOptionsListConstants::KEY_MODULES)
+            ->willReturn(null);
+        $tester = new CommandTester($this->command);
+        $tester->execute([]);
+        $this->assertEquals(
+            'You cannot run this command because modules are not enabled. You can enable modules by running the '
+            . "'module:enable --all' command." . PHP_EOL,
+            $tester->getDisplay(),
+        );
     }
 
     protected function setUp(): void

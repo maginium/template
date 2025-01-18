@@ -49,22 +49,6 @@ class CategoriesFixtureTest extends TestCase
     /**
      * @test
      */
-    public function doNoExecuteIfCategoriesAlreadyGenerated()
-    {
-        $this->collectionFactoryMock->expects($this->once())->method('create')->willReturn($this->collectionMock);
-        $this->collectionMock->expects($this->once())->method('getSize')->willReturn(32);
-        $this->fixtureModelMock
-            ->expects($this->once())
-            ->method('getValue')
-            ->willReturn(30);
-        $this->categoryFactoryMock->expects($this->never())->method('create');
-
-        $this->model->execute();
-    }
-
-    /**
-     * @test
-     */
     public function execute()
     {
         $valueMap = [
@@ -150,6 +134,22 @@ class CategoriesFixtureTest extends TestCase
             ->willReturnSelf();
 
         $this->categoryFactoryMock->expects($this->once())->method('create')->willReturn($categoryMock);
+
+        $this->model->execute();
+    }
+
+    /**
+     * @test
+     */
+    public function doNoExecuteIfCategoriesAlreadyGenerated()
+    {
+        $this->collectionFactoryMock->expects($this->once())->method('create')->willReturn($this->collectionMock);
+        $this->collectionMock->expects($this->once())->method('getSize')->willReturn(32);
+        $this->fixtureModelMock
+            ->expects($this->once())
+            ->method('getValue')
+            ->willReturn(30);
+        $this->categoryFactoryMock->expects($this->never())->method('create');
 
         $this->model->execute();
     }

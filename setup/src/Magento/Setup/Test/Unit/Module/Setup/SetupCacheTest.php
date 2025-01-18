@@ -22,6 +22,21 @@ class SetupCacheTest extends TestCase
     /**
      * @test
      */
+    public function remove()
+    {
+        $table = 'table';
+        $parentId = 'parent';
+        $rowId = 'row';
+        $data = new stdClass;
+
+        $this->object->setRow($table, $parentId, $rowId, $data);
+        $this->object->remove($table, $parentId, $rowId, $data);
+        $this->assertFalse($this->object->get($table, $parentId, $rowId));
+    }
+
+    /**
+     * @test
+     */
     public function setRow()
     {
         $table = 'table';
@@ -69,21 +84,6 @@ class SetupCacheTest extends TestCase
             [null],
             ['field'],
         ];
-    }
-
-    /**
-     * @test
-     */
-    public function remove()
-    {
-        $table = 'table';
-        $parentId = 'parent';
-        $rowId = 'row';
-        $data = new stdClass;
-
-        $this->object->setRow($table, $parentId, $rowId, $data);
-        $this->object->remove($table, $parentId, $rowId, $data);
-        $this->assertFalse($this->object->get($table, $parentId, $rowId));
     }
 
     /**

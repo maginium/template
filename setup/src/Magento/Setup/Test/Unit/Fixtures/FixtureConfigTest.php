@@ -87,5 +87,5 @@ namespace Magento\Setup\Fixtures;
  */
 function is_readable($filename)
 {
-    return ! (str_contains($filename, 'exception'));
+    return ! str_contains($filename, 'exception');
 }

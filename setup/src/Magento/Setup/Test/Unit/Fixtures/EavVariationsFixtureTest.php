@@ -65,24 +65,6 @@ class EavVariationsFixtureTest extends TestCase
     private $attributeFactoryMock;
 
     /**
-     * Test for execute method when attribute already exists.
-     *
-     * @return void
-     *
-     * @test
-     */
-    public function doNotExecuteWhenAttributeAlreadyExist()
-    {
-        $this->fixtureModelMock->expects($this->once())
-            ->method('getValue')->with('configurable_products', [])->willReturn(10);
-        $this->eavConfigMock->expects($this->once())->method('getEntityAttributeCodes')
-            ->willReturn(['configurable_variation']);
-        $this->attributeFactoryMock->expects($this->never())->method('create');
-
-        $this->model->execute();
-    }
-
-    /**
      * Test for execute method.
      *
      * @return void
@@ -169,6 +151,24 @@ class EavVariationsFixtureTest extends TestCase
             )->willReturn($attributeMock);
         $this->cacheMock->expects($this->once())
             ->method('remove')->with(Config::ATTRIBUTES_CACHE_ID . Product::ENTITY);
+
+        $this->model->execute();
+    }
+
+    /**
+     * Test for execute method when attribute already exists.
+     *
+     * @return void
+     *
+     * @test
+     */
+    public function doNotExecuteWhenAttributeAlreadyExist()
+    {
+        $this->fixtureModelMock->expects($this->once())
+            ->method('getValue')->with('configurable_products', [])->willReturn(10);
+        $this->eavConfigMock->expects($this->once())->method('getEntityAttributeCodes')
+            ->willReturn(['configurable_variation']);
+        $this->attributeFactoryMock->expects($this->never())->method('create');
 
         $this->model->execute();
     }

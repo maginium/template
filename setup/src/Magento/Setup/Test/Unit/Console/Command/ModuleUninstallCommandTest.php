@@ -130,6 +130,25 @@ class ModuleUninstallCommandTest extends TestCase
     /**
      * @test
      */
+    public function execute()
+    {
+        $input = ['module' => ['Magento_A', 'Magento_B']];
+        $this->setUpExecute();
+        $this->moduleUninstaller->expects($this->once())
+            ->method('uninstallCode')
+            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
+        $this->moduleRegistryUninstaller->expects($this->once())
+            ->method('removeModulesFromDb')
+            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
+        $this->moduleRegistryUninstaller->expects($this->once())
+            ->method('removeModulesFromDeploymentConfig')
+            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
+        $this->tester->execute($input);
+    }
+
+    /**
+     * @test
+     */
     public function executeApplicationNotInstalled()
     {
         $this->deploymentConfig->expects($this->once())->method('isAvailable')->willReturn(false);
@@ -319,25 +338,6 @@ class ModuleUninstallCommandTest extends TestCase
                 ],
             ],
         ];
-    }
-
-    /**
-     * @test
-     */
-    public function execute()
-    {
-        $input = ['module' => ['Magento_A', 'Magento_B']];
-        $this->setUpExecute();
-        $this->moduleUninstaller->expects($this->once())
-            ->method('uninstallCode')
-            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
-        $this->moduleRegistryUninstaller->expects($this->once())
-            ->method('removeModulesFromDb')
-            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
-        $this->moduleRegistryUninstaller->expects($this->once())
-            ->method('removeModulesFromDeploymentConfig')
-            ->with($this->isInstanceOf(OutputInterface::class), $input['module']);
-        $this->tester->execute($input);
     }
 
     /**
