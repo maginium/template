@@ -15,7 +15,7 @@ composer create-project maginium/template {project_name} --stability=dev
 ```
 
 ⚠️ Heads-Up!
-If you’re using the VS Code editor CLI, remember to restart it after installation. Just hit F1 (or Command + P, or fn + F1) and choose Reload Window. This ensures proper indexing and plugin activation! 💡
+If you’re using the VS Code editor CLI, remember to restart it after installation. Hit F1 (Command + P, or fn + F1) and choose Reload Window. This ensures proper indexing and plugin activation! 💡
 
 ## 🔄 Sync with Template Repo
 
@@ -29,6 +29,6 @@ git merge template/main --allow-unrelated-histories
 
 ## 📚 Documentation
 
-Find all the details you need in the **[official documentation](https://pixiedia.gitbook.io/maginium).**! 📖
+Find all the details you need in the **[official documentation](https://pixiedia.gitbook.io/maginium).**
 
 Happy Coding! 🎉
