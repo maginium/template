@@ -21,9 +21,11 @@ If you’re using the VS Code editor CLI, remember to restart it after installat
 
 Keep your project up-to-date with the latest template changes by running this command:
 
+```bash
 git remote add template https://github.com/maginium/template
 git fetch --all
 git merge template/main --allow-unrelated-histories
+```
 
 ## 📚 Documentation
 
