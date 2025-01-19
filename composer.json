@@ -18,10 +18,10 @@
     "AFL-3.0"
   ],
   "require": {
-    "maginium/meta-package": "*",
+    "magento/composer-dependency-version-audit-plugin": "~0.1",
     "magento/composer-root-update-plugin": "^2.0.4",
     "magento/product-community-edition": "2.4.8-beta1",
-    "magento/composer-dependency-version-audit-plugin": "~0.1"
+    "maginium/module-composer-patch": "^1.0"
   },
   "require-dev": {
     "allure-framework/allure-phpunit": "^3",
