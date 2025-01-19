@@ -181,7 +181,7 @@ class NonComposerComponentRegistration
 function execute(): void
 {
     // Define the glob patterns from 'registration_globlist' file.
-    $globPatterns = require join_paths(__DIR__, 'registration_globlist.php');
+    $globPatterns = require __DIR__ . SP . 'registration_globlist.php';
 
     // Instantiate the component registrar with the defined glob patterns.
     $registrar = new NonComposerComponentRegistration($globPatterns);

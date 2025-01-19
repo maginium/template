@@ -3,7 +3,6 @@
 
 declare(strict_types=1);
 
-use Exception;
 use Magento\Framework\App\ErrorHandler;
 use Magento\Framework\Console\Cli;
 
@@ -53,10 +52,10 @@ try {
     /**
      * Include the bootstrap file to initialize the Magento application environment.
      *
-     * @throws Exception If the bootstrap file cannot be loaded.
+     * @throws \Exception If the bootstrap file cannot be loaded.
      */
     require __DIR__ . '/../app/bootstrap.php';
-} catch (Exception $e) {
+} catch (\Exception $e) {
     /**
      * Handle errors that occur during the loading of the bootstrap file.
      *

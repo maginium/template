@@ -53,7 +53,7 @@ if (! is_readable(VENDOR_PATH)) {
  */
 $findAutoloadFile = function(string $vendorDir, string $autoloadFile): ?string {
     // Construct the path to the autoload file
-    $autoloadPath = join_paths($vendorDir, $autoloadFile);
+    $autoloadPath = $vendorDir . SP . $autoloadFile;
 
     // Check if the autoload file exists and is readable
     return is_readable($autoloadPath) ? $autoloadPath : null;
@@ -71,6 +71,9 @@ $findAutoloadFile = function(string $vendorDir, string $autoloadFile): ?string {
 |
 */
 $vendorAutoload = $findAutoloadFile(VENDOR_PATH, 'autoload.php');
+
+// If the autoload file is found and readable, define the constant for easy access
+defined('VENDOR_AUTOLOAD') || define('VENDOR_AUTOLOAD', $vendorAutoload);
 
 // If no autoload file is found, throw an exception
 if ($vendorAutoload === null) {
