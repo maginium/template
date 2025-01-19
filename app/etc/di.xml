@@ -2008,5 +2008,7 @@
     <preference for="Magento\Framework\App\State\ReloadProcessorInterface" type="Magento\Framework\App\State\ReloadProcessorComposite" />
     <preference for="Magento\Framework\Indexer\Config\Converter\SortingAdjustmentInterface" type="Magento\Framework\Indexer\Config\Converter\SortingAdjustment" />
 
+    <preference for="Maginium\Framework\Prompts\Interfaces\PromptsInterface" type="Maginium\Framework\Prompts\PromptsManager" />
+    <preference for="Magento\Framework\App\Config\ConfigResource\ConfigInterface" type="Magento\Config\Model\ResourceModel\Config" />
     <preference for="Maginium\Framework\Container\Interfaces\ContainerInterface" type="Maginium\Framework\Container\ContainerManager" />
 </config>
